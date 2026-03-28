@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Lost Libraries — Geographic Atlas of Erasure</title>
+  <meta name="description" content="Interactive world map of 108 destroyed libraries across 3,700 years of history.">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600&family=Courier+Prime@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink: #0c0a07; --parch: #f0e8d8; --aged: #c8b896;
+      --ember: #d45e1a; --gold: #c89820; --ash: #4a4238;
+      --smoke: #8a7e72; --panel: #130f0a;
+      --war: #c84428; --religion: #7060c8; --govt: #b08820;
+      --fire: #c87030; --civil: #6858a8; --neglect: #388070;
+    }
+    * { margin:0; padding:0; box-sizing:border-box; }
+    html, body { height:100%; overflow:hidden; }
+    body { background:var(--ink); font-family:'Crimson Pro',Georgia,serif; color:var(--parch); }
+
+    /* MAP */
+    #map { position:absolute; inset:0; z-index:1; }
+    .leaflet-container { background:#0e0c09; }
+    .leaflet-tile-pane { filter: saturate(0.15) brightness(0.45) sepia(0.4); }
+
+    /* TOP BAR */
+    #topbar {
+      position:absolute; top:0; left:0; right:0; z-index:10;
+      background:linear-gradient(180deg,rgba(12,10,7,0.97) 0%,rgba(12,10,7,0.85) 80%,transparent 100%);
+      padding:1rem 1.5rem 2.5rem;
+      display:flex; align-items:flex-start; gap:1.5rem; flex-wrap:wrap;
+    }
+    #topbar h1 {
+      font-family:'Playfair Display',serif;
+      font-size:clamp(1rem,2.5vw,1.5rem); font-weight:900;
+      color:var(--parch); line-height:1.1; flex-shrink:0;
+    }
+    #topbar h1 em { font-style:italic; color:var(--ember); }
+    #topbar h1 span {
+      font-family:'Courier Prime',monospace;
+      font-size:0.6rem; letter-spacing:0.2em; color:var(--gold);
+      text-transform:uppercase; display:block; margin-bottom:0.15rem;
+    }
+
+    /* FILTERS */
+    .filter-group { display:flex; flex-wrap:wrap; gap:0.4rem; align-items:center; }
+    .filter-label {
+      font-family:'Courier Prime',monospace; font-size:0.6rem;
+      letter-spacing:0.2em; text-transform:uppercase; color:var(--smoke);
+      margin-right:0.25rem;
+    }
+    .fbtn {
+      font-family:'Courier Prime',monospace; font-size:0.62rem;
+      letter-spacing:0.1em; text-transform:uppercase;
+      padding:0.3rem 0.75rem; border:1px solid rgba(201,185,154,0.2);
+      background:rgba(12,10,7,0.8); color:var(--smoke); cursor:pointer;
+      border-radius:2px; transition:all 0.2s; white-space:nowrap;
+    }
+    .fbtn:hover { border-color:var(--ember); color:var(--parch); }
+    .fbtn.active { color:var(--ember); border-color:var(--ember); background:rgba(212,94,26,0.12); }
+    .fbtn:focus-visible { outline:2px solid var(--gold); outline-offset:2px; }
+
+    /* ERA SLIDER */
+    .era-wrap { display:flex; align-items:center; gap:0.6rem; }
+    .era-wrap label {
+      font-family:'Courier Prime',monospace; font-size:0.6rem;
+      letter-spacing:0.15em; text-transform:uppercase; color:var(--smoke);
+      white-space:nowrap;
+    }
+    #era-display {
+      font-family:'Courier Prime',monospace; font-size:0.7rem;
+      color:var(--ember); white-space:nowrap; min-width:6rem;
+    }
+    input[type=range] {
+      -webkit-appearance:none; appearance:none;
+      width:140px; height:3px; background:rgba(201,185,154,0.2);
+      border-radius:2px; outline:none; cursor:pointer;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance:none; width:12px; height:12px;
+      background:var(--ember); border-radius:50%; cursor:pointer;
+    }
+    input[type=range]::-moz-range-thumb {
+      width:12px; height:12px; background:var(--ember);
+      border-radius:50%; border:none; cursor:pointer;
+    }
+
+    /* STATS BAR */
+    #statsbar {
+      position:absolute; bottom:0; left:0; right:0; z-index:10;
+      background:linear-gradient(0deg,rgba(12,10,7,0.97) 0%,rgba(12,10,7,0.8) 70%,transparent 100%);
+      padding:2.5rem 1.5rem 1rem;
+      display:flex; gap:2rem; flex-wrap:wrap; align-items:flex-end;
+    }
+    .stat { text-align:center; }
+    .stat-n { font-family:'Playfair Display',serif; font-size:1.8rem; font-weight:700; color:var(--ember); line-height:1; }
+    .stat-l { font-family:'Courier Prime',monospace; font-size:0.55rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--smoke); }
+
+    /* LEGEND */
+    #legend {
+      position:absolute; bottom:4.5rem; right:1rem; z-index:10;
+      background:rgba(13,10,7,0.92); border:1px solid rgba(201,185,154,0.15);
+      padding:1rem; min-width:150px;
+    }
+    .legend-title {
+      font-family:'Courier Prime',monospace; font-size:0.55rem;
+      letter-spacing:0.2em; text-transform:uppercase; color:var(--smoke);
+      margin-bottom:0.6rem;
+    }
+    .legend-item { display:flex; align-items:center; gap:0.5rem; margin-bottom:0.4rem; }
+    .legend-dot { width:10px; height:10px; border-radius:50%; flex-shrink:0; }
+    .legend-label { font-family:'Crimson Pro',serif; font-size:0.78rem; color:var(--aged); }
+
+    /* SIDE PANEL */
+    #panel {
+      position:absolute; top:0; right:0; bottom:0; z-index:20;
+      width:320px; background:var(--panel);
+      border-left:1px solid rgba(201,185,154,0.12);
+      transform:translateX(100%); transition:transform 0.35s cubic-bezier(0.22,1,0.36,1);
+      display:flex; flex-direction:column; overflow:hidden;
+    }
+    #panel.open { transform:translateX(0); }
+    #panel-close {
+      position:absolute; top:0.75rem; left:-2.5rem; z-index:21;
+      background:var(--panel); border:1px solid rgba(201,185,154,0.2);
+      border-right:none; color:var(--smoke); cursor:pointer;
+      font-size:1.1rem; padding:0.4rem 0.6rem; transition:color 0.2s;
+    }
+    #panel-close:hover { color:var(--parch); }
+    #panel-close:focus-visible { outline:2px solid var(--gold); }
+    #panel-inner { overflow-y:auto; padding:1.5rem; flex:1; }
+    #panel-inner::-webkit-scrollbar { width:3px; }
+    #panel-inner::-webkit-scrollbar-thumb { background:var(--ash); }
+    .p-badge {
+      font-family:'Courier Prime',monospace; font-size:0.58rem;
+      letter-spacing:0.2em; text-transform:uppercase;
+      padding:0.2rem 0.7rem; border:1px solid; display:inline-block; margin-bottom:0.75rem;
+    }
+    .p-title {
+      font-family:'Playfair Display',serif; font-size:1.3rem;
+      color:var(--parch); line-height:1.2; margin-bottom:0.3rem;
+    }
+    .p-loc {
+      font-family:'Courier Prime',monospace; font-size:0.65rem;
+      color:var(--smoke); letter-spacing:0.05em; margin-bottom:1.1rem;
+    }
+    .p-desc { font-size:0.95rem; color:var(--aged); line-height:1.85; }
+    .p-perp {
+      margin-top:1.1rem; padding-top:1.1rem;
+      border-top:1px solid rgba(201,185,154,0.1);
+    }
+    .p-perp-lbl {
+      font-family:'Courier Prime',monospace; font-size:0.55rem;
+      letter-spacing:0.2em; text-transform:uppercase; color:var(--ember);
+      display:block; margin-bottom:0.2rem;
+    }
+    .p-perp-val { font-size:0.88rem; color:var(--smoke); }
+
+    /* CLUSTER LABEL */
+    .region-label {
+      font-family:'Courier Prime',monospace; font-size:0.55rem;
+      letter-spacing:0.2em; text-transform:uppercase; color:rgba(240,232,216,0.3);
+      pointer-events:none; white-space:nowrap;
+    }
+
+    /* CUSTOM MARKER */
+    .lib-marker {
+      border-radius:50%; border:2px solid rgba(255,255,255,0.3);
+      cursor:pointer; transition:transform 0.2s, box-shadow 0.2s;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .lib-marker:hover { transform:scale(1.4); box-shadow:0 0 12px currentColor; }
+    .lib-marker.selected { transform:scale(1.5); box-shadow:0 0 16px currentColor; border-color:white; }
+
+    /* TOOLTIP */
+    .leaflet-tooltip {
+      background:rgba(13,10,7,0.92) !important; border:1px solid rgba(201,185,154,0.2) !important;
+      border-radius:0 !important; color:var(--parch) !important;
+      font-family:'Crimson Pro',serif !important; font-size:0.85rem !important;
+      box-shadow:none !important; padding:0.4rem 0.7rem !important;
+    }
+    .leaflet-tooltip::before { display:none !important; }
+
+    @media(max-width:600px) {
+      #panel { width:100%; }
+      #topbar { padding:0.75rem 1rem 2rem; }
+      #statsbar { gap:1rem; }
+      #legend { display:none; }
+    }
+  </style>
+</head>
+<body>
+<a href="#panel" style="position:absolute;top:-100px;left:1rem;background:#ffd040;color:#000;padding:0.5rem 1rem;z-index:9999;text-decoration:none;border-radius:0 0 4px 4px;font-family:'Courier Prime',monospace;font-weight:700;font-size:0.8rem" onfocus="this.style.top='0'" onblur="this.style.top='-100px'">Skip to info panel</a>
+
+<div id="map" role="application" aria-label="Interactive world map of destroyed libraries"></div>
+
+<div id="topbar">
+  <h1>
+    <span>Lost Libraries &mdash; Geographic Atlas</span>
+    The Lost <em>Libraries</em>
+  </h1>
+  <div style="display:flex;flex-direction:column;gap:0.6rem;flex:1;min-width:200px">
+    <div class="filter-group" role="group" aria-label="Filter by cause">
+      <span class="filter-label">Cause:</span>
+      <button class="fbtn active" data-cause="all" aria-pressed="true">All</button>
+      <button class="fbtn" data-cause="war" style="--hc:#c84428" aria-pressed="false">War</button>
+      <button class="fbtn" data-cause="religion" aria-pressed="false">Religion</button>
+      <button class="fbtn" data-cause="govt" aria-pressed="false">State</button>
+      <button class="fbtn" data-cause="fire" aria-pressed="false">Fire</button>
+      <button class="fbtn" data-cause="civil" aria-pressed="false">Civil</button>
+      <button class="fbtn" data-cause="neglect" aria-pressed="false">Neglect</button>
+    </div>
+    <div class="era-wrap">
+      <label for="era-slider">Era:</label>
+      <input type="range" id="era-slider" min="0" max="9" step="1" value="9" aria-label="Filter by historical era">
+      <span id="era-display">All eras</span>
+    </div>
+  </div>
+</div>
+
+<div id="statsbar" role="region" aria-label="Statistics">
+  <div class="stat"><div class="stat-n" id="s-shown">108</div><div class="stat-l">Shown</div></div>
+  <div class="stat"><div class="stat-n" id="s-total">108</div><div class="stat-l">Total</div></div>
+  <div class="stat"><div class="stat-n" id="s-span">3785</div><div class="stat-l">Years</div></div>
+  <div style="margin-left:auto;text-align:right">
+    <div style="font-family:'Courier Prime',monospace;font-size:0.58rem;letter-spacing:0.1em;color:var(--smoke);text-transform:uppercase;margin-bottom:0.3rem">Select a marker to explore</div>
+    <div style="font-family:'Crimson Pro',serif;font-size:0.8rem;font-style:italic;color:rgba(201,185,154,0.5);max-width:200px">Biblioclasm is not random — it follows the fault lines of empire and faith.</div>
+  </div>
+</div>
+
+<div id="legend" role="complementary" aria-label="Map legend">
+  <div class="legend-title">Cause of destruction</div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c84428"></div><div class="legend-label">War & Conquest</div></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#7060c8"></div><div class="legend-label">Religious Purge</div></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#b08820"></div><div class="legend-label">State Censorship</div></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#c87030"></div><div class="legend-label">Accidental Fire</div></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#6858a8"></div><div class="legend-label">Civil Conflict</div></div>
+  <div class="legend-item"><div class="legend-dot" style="background:#388070"></div><div class="legend-label">Neglect & Decay</div></div>
+  <div style="margin-top:0.75rem;border-top:1px solid rgba(201,185,154,0.1);padding-top:0.75rem">
+    <div class="legend-title" style="margin-bottom:0.4rem">Marker size = era</div>
+    <div style="display:flex;align-items:center;gap:0.4rem">
+      <div style="width:6px;height:6px;background:var(--smoke);border-radius:50%"></div>
+      <div style="font-family:'Crimson Pro',serif;font-size:0.72rem;color:var(--smoke)">Ancient</div>
+      <div style="width:10px;height:10px;background:var(--smoke);border-radius:50%;margin-left:auto"></div>
+      <div style="font-family:'Crimson Pro',serif;font-size:0.72rem;color:var(--smoke)">Modern</div>
+    </div>
+  </div>
+</div>
+
+<div id="panel" role="complementary" aria-label="Library details panel" aria-hidden="true">
+  <button id="panel-close" aria-label="Close panel">&#x2715;</button>
+  <div id="panel-inner"></div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet/1.9.4/leaflet.min.js"></script>
+<script>
+'use strict';
+
+var CAUSE_COLORS = {
+  war:'#c84428', religion:'#7060c8', govt:'#b08820',
+  fire:'#c87030', civil:'#6858a8', neglect:'#388070'
+};
+
+var ERAS = [
+  {label:'All eras',     min:-2000, max:2030},
+  {label:'Ancient (pre-500 AD)',  min:-2000, max:500},
+  {label:'Early Medieval (500–1000)', min:500,  max:1000},
+  {label:'High Medieval (1000–1400)', min:1000, max:1400},
+  {label:'Early Modern (1400–1700)', min:1400, max:1700},
+  {label:'Enlightenment (1700–1850)', min:1700, max:1850},
+  {label:'Industrial (1850–1914)',  min:1850, max:1914},
+  {label:'World Wars (1914–1950)',  min:1914, max:1950},
+  {label:'Cold War (1950–2000)',    min:1950, max:2000},
+  {label:'21st Century (2000+)',    min:2000, max:2030}
+];
+
+
+var LIBRARIES = [
+  {id:1,  name:"Library of Zimri-Lim",                   year:-1761, cause:"war",      lat:34.55,  lon:40.88,  loc:"Mari, Mesopotamia",          perp:"Hammurabi of Babylon", desc:"One of the oldest recorded library destructions. Hammurabi conquered Mari and razed its palace, destroying a vast archive of cuneiform tablets — the world's first documented biblioclasm."},
+  {id:2,  name:"Library of Ashurbanipal",                year:-612,  cause:"war",      lat:36.36,  lon:43.15,  loc:"Nineveh, Neo-Assyrian Empire", perp:"Coalition of Babylonians, Scythians & Medes", desc:"A supreme irony: the fire baked the clay tablets and preserved them for 2,600 years. The library held the Epic of Gilgamesh. Much of Mesopotamian literature survived precisely because the library burned."},
+  {id:3,  name:"Xianyang Palace Archives",               year:-206,  cause:"war",      lat:34.36,  lon:108.72, loc:"Xianyang, Qin China",          perp:"Xiang Yu", desc:"The archives held records of the very book burnings Qin Shi Huang had ordered decades earlier — a destruction of the documentation of destruction. A recursive erasure spanning generations."},
+  {id:4,  name:"Library of Alexandria",                  year:-48,   cause:"war",      lat:31.20,  lon:29.92,  loc:"Alexandria, Egypt",            perp:"Disputed — Caesar, Aurelian & others", desc:"The most mythologized library destruction in history. At its height it may have held 700,000 scrolls — the sum of ancient Mediterranean knowledge. Its loss was a slow bleed across four centuries."},
+  {id:5,  name:"Imperial Library of Luoyang",            year:189,   cause:"war",      lat:34.68,  lon:112.45, loc:"Luoyang, Han China",           perp:"Dong Zhuo", desc:"Warlord Dong Zhuo deliberately burned Luoyang to slow pursuing enemies. The imperial library, holding Han dynasty archives on silk and bamboo scrolls, burned with the city."},
+  {id:6,  name:"Library of Pantainos",                   year:267,   cause:"war",      lat:37.97,  lon:23.72,  loc:"Athens, Roman Greece",         perp:"Heruli invasion", desc:"Destroyed during the Herulian invasion of 267. The Heruli sacked Athens in a devastating raid that wiped out much of the city's classical heritage."},
+  {id:7,  name:"Hadrian's Library",                      year:267,   cause:"war",      lat:37.975, lon:23.725, loc:"Athens, Roman Greece",         perp:"Heruli invasion", desc:"Built by Emperor Hadrian in 132 AD, this vast complex held hundreds of rooms of papyrus scrolls. Seriously damaged in the Herulian invasion of 267, its scholarly function never fully recovered."},
+  {id:8,  name:"Library of Antioch",                     year:364,   cause:"religion", lat:36.20,  lon:36.16,  loc:"Antioch, Roman Syria",         perp:"Emperor Jovian", desc:"Emperor Jovian ordered the destruction of Antioch's great library, richly stocked with philosophical and scientific works by Julian the Apostate. An ideological purge disguised as administrative action."},
+  {id:9,  name:"Library of the Serapeum",                year:392,   cause:"religion", lat:31.18,  lon:29.90,  loc:"Alexandria, Egypt",            perp:"Bishop Theophilus", desc:"The daughter library of Alexandria, housed in the Temple of Serapis, was destroyed when Bishop Theophilus converted the pagan temple to a church — a theological coup dressed as renovation."},
+  {id:10, name:"Library of al-Hakam II",                 year:976,   cause:"religion", lat:37.88,  lon:-4.78,  loc:"Cordoba, Al-Andalus",          perp:"Al-Mansur & conservative scholars", desc:"Caliph al-Hakam II assembled 400,000 volumes — the largest library in 10th-century Europe. After his death, Al-Mansur burned all books on philosophy and ancient science to curry favor with conservative clerics."},
+  {id:11, name:"Library of Rayy",                        year:1029,  cause:"religion", lat:35.60,  lon:51.44,  loc:"Rayy, Buyid Emirate",          perp:"Sultan Mahmud of Ghazni", desc:"Sultan Mahmud conquered Rayy and burned all books he deemed heretical, eliminating one of the Islamic world's foremost intellectual collections."},
+  {id:12, name:"Library at Sazava Monastery",            year:1097,  cause:"religion", lat:49.87,  lon:14.90,  loc:"Sazava, Holy Roman Empire",    perp:"Abbot Diethard", desc:"After the Slavonic Benedictines were expelled, the new abbot ordered the destruction of Slavonic books, eliminating the primary repository of Old Church Slavonic literary culture in Bohemia."},
+  {id:13, name:"Library of Banu Ammar",                  year:1109,  cause:"war",      lat:34.43,  lon:35.85,  loc:"Tripoli, Fatimid Caliphate",   perp:"Crusaders under Baldwin I", desc:"An estimated three million volumes — one of the largest collections in the medieval Islamic world. When Crusaders took the city, it reportedly took days to burn. Contemporaries described it as a catastrophe without precedent."},
+  {id:14, name:"Library of Ghazna",                      year:1151,  cause:"war",      lat:33.55,  lon:68.42,  loc:"Ghazna, Ghurid Empire",        perp:"Ala al-Din Husayn", desc:"The city was sacked and burned for seven days. Libraries and palaces built by the Ghaznavid dynasty — the dynasty of the great scholar Al-Biruni — were destroyed in retribution."},
+  {id:15, name:"Library of Nishapur",                    year:1154,  cause:"war",      lat:36.21,  lon:58.80,  loc:"Nishapur, Seljuk Empire",      perp:"Oghuz Turks", desc:"Nishapur, birthplace of Omar Khayyam, was a great intellectual city. Its libraries — at least thirteen institutions along the Silk Road — were sacked and burned during the collapse of the Seljuk Empire."},
+  {id:16, name:"Library of the Church of Jacob Mar",     year:1171,  cause:"war",      lat:37.06,  lon:41.22,  loc:"Nisibis, Zengid State",        perp:"Nur al-Din Zengi", desc:"The church and its library of 1,000 volumes were looted and destroyed. Nisibis had been a significant centre of Syriac Christian scholarship since late antiquity."},
+  {id:17, name:"Nalanda University Library",             year:1193,  cause:"war",      lat:25.14,  lon:85.44,  loc:"Bihar, India",                 perp:"Bakhtiyar Khilji", desc:"The greatest repository of Buddhist scholarship in history — 700 years of accumulated knowledge. Khilji's forces burned it so thoroughly it smoldered for three months."},
+  {id:18, name:"Libraries of Constantinople (1204)",     year:1204,  cause:"war",      lat:41.01,  lon:28.98,  loc:"Constantinople, Byzantine",    perp:"Fourth Crusade", desc:"Christian crusaders sacked the Christian capital, scattering a library preserving classical Greek texts unknown in Western Europe — works of Aristotle, Plato, and ancient drama."},
+  {id:19, name:"Imperial Library of Constantinople",     year:1204,  cause:"war",      lat:41.015, lon:28.975, loc:"Constantinople, Byzantine",    perp:"Disputed — Crusade / Ottoman", desc:"Founded in the 4th century and holding over 100,000 volumes, the Imperial Library outlasted Alexandria and Pergamon only to meet a disputed end — possibly 1204, possibly 1453, possibly gradual erosion."},
+  {id:20, name:"Alamut Castle Library",                  year:1256,  cause:"war",      lat:36.45,  lon:50.57,  loc:"Alamut, Persia",               perp:"Mongols under Hulagu Khan", desc:"The Nizari Ismaili mountain fortress held a legendary library of astronomical and philosophical texts. Astronomer Nasir al-Din al-Tusi rescued some manuscripts before the Mongols arrived."},
+  {id:21, name:"House of Wisdom",                        year:1258,  cause:"war",      lat:33.34,  lon:44.40,  loc:"Baghdad, Iraq",                perp:"Mongols under Hulagu Khan", desc:"The intellectual capital of the Islamic Golden Age. Witnesses said the Tigris ran black with ink. The destruction ended the Golden Age of Islamic scholarship and set back global scientific progress by an estimated two centuries."},
+  {id:22, name:"Libraries of Constantinople (1453)",     year:1453,  cause:"war",      lat:41.02,  lon:28.96,  loc:"Constantinople, Byzantine",    perp:"Ottoman Turks", desc:"The final fall of Constantinople scattered what survived of Byzantine scholarship. Fleeing scholars, carrying whatever texts they could, inadvertently seeded the Italian Renaissance."},
+  {id:23, name:"Madrassah Library of Granada",           year:1499,  cause:"religion", lat:37.18,  lon:-3.60,  loc:"Granada, Spain",               perp:"Cardinal Cisneros", desc:"80,000 Arabic manuscripts burned in Granada's central square as part of forced Christianization. Poetry, philosophy, history, astronomy — ash by morning."},
+  {id:24, name:"Bibliotheca Corviniana",                 year:1526,  cause:"war",      lat:47.50,  lon:19.04,  loc:"Buda, Hungary",                perp:"Ottoman Turks", desc:"King Matthias Corvinus assembled what was considered the second greatest library in Europe after the Vatican — over 2,000 illuminated manuscripts. The Ottomans scattered it after Mohacs in 1526."},
+  {id:25, name:"English Monastic Libraries",             year:1535,  cause:"govt",     lat:52.50,  lon:-1.50,  loc:"England",                      perp:"Royal officials under Henry VIII", desc:"The Dissolution of the Monasteries scattered centuries of medieval scholarship. Manuscripts were used as wastepaper and kindling. An entire literary heritage decimated in a decade."},
+  {id:26, name:"Glasney College Library",                year:1548,  cause:"govt",     lat:50.16,  lon:-5.10,  loc:"Penryn, Cornwall",             perp:"Royal officials under Edward VI", desc:"The only institutional repository of the Cornish literary tradition was destroyed. The Cornish language's near-extinction began here, with a pile of burning manuscripts."},
+  {id:27, name:"Records on Gozo",                        year:1551,  cause:"war",      lat:36.04,  lon:14.24,  loc:"Gozo, Hospitaller Malta",      perp:"Ottoman Turks", desc:"Most paper records held on Gozo were lost during an Ottoman raid that depopulated much of the island. An entire chapter of Maltese documentary history erased in a single raid."},
+  {id:28, name:"Maya Codices of the Yucatan",            year:1562,  cause:"religion", lat:20.39,  lon:-89.56, loc:"Mani, Mexico",                 perp:"Bishop Diego de Landa", desc:"De Landa burned virtually the entire written record of Maya civilization. Only 4 Maya codices survive today. He later wrote a book about Maya culture using oral knowledge from survivors."},
+  {id:29, name:"Raglan Castle Library",                  year:1646,  cause:"civil",    lat:51.77,  lon:-2.87,  loc:"Raglan, Wales",                perp:"Parliamentary Army", desc:"The Earl of Worcester's library was burned during the English Civil War — not as military necessity but as cultural contempt for the Royalist aristocracy."},
+  {id:30, name:"Zaluski Library",                        year:1794,  cause:"war",      lat:52.23,  lon:21.01,  loc:"Warsaw, Poland",               perp:"Imperial Russian Army / Nazi troops", desc:"One of Europe's first public libraries — 400,000 volumes. Destroyed twice: by Russian forces in 1794 and by the Nazis in 1944. One library, two total destructions, 150 years apart."},
+  {id:31, name:"Library of Congress (1814)",             year:1814,  cause:"war",      lat:38.89,  lon:-77.00, loc:"Washington D.C., USA",         perp:"British Army", desc:"British forces burned the Capitol and its fledgling library during the War of 1812. Thomas Jefferson offered his personal collection as a replacement — so eclectic that some congressmen tried to reject it as too radical."},
+  {id:32, name:"Several Libraries, Mexico",              year:1856,  cause:"civil",    lat:19.43,  lon:-99.13, loc:"Mexico City, Mexico",          perp:"Liberal troops & anti-clericalists", desc:"During the Mexican Reform War, liberal governments permitted or carried out the dispersal of numerous ecclesiastical libraries accumulated over three centuries."},
+  {id:33, name:"University of Alabama Library",          year:1865,  cause:"war",      lat:33.21,  lon:-87.54, loc:"Tuscaloosa, Alabama, USA",     perp:"Union Army troops", desc:"Union troops destroyed most buildings on campus including the library. According to legend, only one book survived — an English translation of the Quran that a soldier chose to pocket."},
+  {id:34, name:"Mosque-Library of Turnovo",              year:1877,  cause:"civil",    lat:43.07,  lon:25.62,  loc:"Turnovo, Bulgaria",            perp:"Christian Bulgarian forces", desc:"During Bulgaria's liberation from Ottoman rule, a mosque containing a library of Turkish and Ottoman texts was burned as a symbolic act of political and religious transformation."},
+  {id:35, name:"Royal Library of Burma",                 year:1885,  cause:"war",      lat:21.96,  lon:96.08,  loc:"Mandalay, Burma",              perp:"British Army", desc:"British troops looted the royal palace, dispersing the royal library's parabaik manuscripts — hand-painted books recording Burmese history, religion, and art. Much ended up in British museums."},
+  {id:36, name:"Hanlin Academy Library",                 year:1900,  cause:"civil",    lat:39.91,  lon:116.39, loc:"Beijing, China",               perp:"Boxer Uprising", desc:"China's oldest and most prestigious literary institution burned during the Boxer Uprising. Western diplomats reportedly watched it burn, unwilling to risk soldiers to save Chinese books."},
+  {id:37, name:"Catholic University of Leuven",          year:1914,  cause:"war",      lat:50.88,  lon:4.70,   loc:"Leuven, Belgium",              perp:"German Occupation Forces", desc:"German troops systematically burned the medieval library as collective punishment. 300,000 volumes destroyed. Rebuilt with international donations — then burned again by Germany in 1940. Twice."},
+  {id:38, name:"Public Records Office of Ireland",       year:1922,  cause:"civil",    lat:53.35,  lon:-6.27,  loc:"Dublin, Ireland",              perp:"Irish Civil War", desc:"An explosion during the Civil War destroyed the Four Courts archive — 1,000 years of Irish legal and genealogical records. The paper memory of a nation, gone in an instant."},
+  {id:39, name:"Several Religious Libraries, Madrid",    year:1931,  cause:"civil",    lat:40.42,  lon:-3.70,  loc:"Madrid, Spain",                perp:"Anarchists & anti-clericalists", desc:"In 1931, radical leftists burned several churches and their associated libraries across Madrid, destroying ecclesiastical collections accumulated over centuries."},
+  {id:40, name:"Oriental Library, Shanghai",             year:1932,  cause:"war",      lat:31.23,  lon:121.47, loc:"Shanghai, China",              perp:"Imperial Japanese Army", desc:"Japanese forces deliberately burned the Oriental Library — 450,000 volumes including rare Song dynasty texts. One of China's largest libraries, recognized internationally as a deliberate cultural atrocity."},
+  {id:41, name:"Institut fuer Sexualwissenschaft",       year:1933,  cause:"govt",     lat:52.52,  lon:13.38,  loc:"Berlin, Germany",              perp:"Nazi regime", desc:"Magnus Hirschfeld's pioneering institute — holding the world's most comprehensive research on gender and sexuality — was ransacked and burned. The footage became the defining image of Nazi censorship."},
+  {id:42, name:"University of Oviedo Library",           year:1934,  cause:"civil",    lat:43.36,  lon:-5.85,  loc:"Oviedo, Spain",                perp:"Revolutionaries / disputed", desc:"During the Asturian miners' strike of 1934, the University library was badly damaged — either by revolutionaries who seized the building or by government bombs."},
+  {id:43, name:"Chinese University Libraries (WWII)",    year:1937,  cause:"war",      lat:30.00,  lon:114.00, loc:"Multiple cities, China",       perp:"Imperial Japanese Army", desc:"During the Second Sino-Japanese War, Japanese forces destroyed or severely damaged the libraries of National Tsing Hua University, Nankai University, and numerous other institutions."},
+  {id:44, name:"National Library of Serbia",             year:1941,  cause:"war",      lat:44.82,  lon:20.46,  loc:"Belgrade, Yugoslavia",         perp:"Nazi German Luftwaffe", desc:"Bombed on Hitler's direct orders on Easter Sunday, 1941. The library held the largest collection of Serbian medieval manuscripts. Over 350,000 books incinerated overnight."},
+  {id:45, name:"SS. Cyril & Methodius Library",          year:1943,  cause:"war",      lat:42.70,  lon:23.32,  loc:"Sofia, Bulgaria",              perp:"Allied air forces", desc:"The national library sustained severe damage during Allied bombing raids in 1943-1944, among them rare Bulgarian manuscripts and Ottoman-era documents irreplaceable to Balkan history."},
+  {id:46, name:"Krasinski Library, Warsaw",              year:1944,  cause:"govt",     lat:52.25,  lon:21.00,  loc:"Warsaw, Poland",               perp:"Nazi German troops", desc:"After suppressing the Warsaw Uprising, Nazi troops burned Warsaw library by library — a systematic campaign to erase Polish cultural identity. Over a million volumes destroyed."},
+  {id:47, name:"Library of the Zamoyski Family",         year:1944,  cause:"govt",     lat:52.24,  lon:21.01,  loc:"Warsaw, Poland",               perp:"Nazi German troops", desc:"One of Poland's great private scholarly libraries, deliberately set ablaze by Nazi troops in the aftermath of the Warsaw Uprising."},
+  {id:48, name:"Central Archives of Historical Records", year:1944,  cause:"govt",     lat:52.245, lon:21.015, loc:"Warsaw, Poland",               perp:"Nazi German troops", desc:"Nazi troops burned the Central Archives after the Warsaw Uprising — centuries of Polish administrative and legal records. Not collateral damage but deliberate policy."},
+  {id:49, name:"Private Libraries of Tokyo",             year:1945,  cause:"war",      lat:35.69,  lon:139.69, loc:"Tokyo, Japan",                 perp:"US Army Air Force firebombing", desc:"US firebombing of Tokyo in 1945 destroyed many private Japanese libraries, eliminating irreplaceable collections of Japanese literature, family records, and local history."},
+  {id:50, name:"Warsaw Public Library",                  year:1945,  cause:"govt",     lat:52.23,  lon:21.03,  loc:"Warsaw, Poland",               perp:"Nazi German troops", desc:"Before World War II the library contained 500,000 books. By 1945, after systematic Nazi destruction, it was reduced to rubble — part of the plan to permanently eliminate Polish cultural identity."},
+  {id:51, name:"Raczynski Library, Poznan",              year:1945,  cause:"govt",     lat:52.41,  lon:16.93,  loc:"Poznan, Poland",               perp:"Nazi German troops", desc:"Retreating Nazi troops planted explosives and detonated them, destroying this important Polish library. Its deliberate destruction in the final days of war was a calculated act."},
+  {id:52, name:"Lebanese National Library",              year:1975,  cause:"civil",    lat:33.89,  lon:35.50,  loc:"Beirut, Lebanon",              perp:"Lebanese Civil War", desc:"Caught in the downtown front lines, shelled to a shell. 200,000 volumes destroyed including much of Lebanon's Ottoman-era historical record. The roofless building stood for 25 years."},
+  {id:53, name:"National Library of Cambodia",           year:1976,  cause:"govt",     lat:11.57,  lon:104.93, loc:"Phnom Penh, Cambodia",         perp:"Khmer Rouge", desc:"The Khmer Rouge burned most collections and converted the building into a pigsty. Only 20% of materials survived. Year Zero ideology targeted libraries as the embodiment of a past to be abolished."},
+  {id:54, name:"Jaffna Public Library",                  year:1981,  cause:"war",      lat:9.66,   lon:80.01,  loc:"Jaffna, Sri Lanka",            perp:"Government-aligned mob", desc:"One of Asia's largest libraries — 97,000 volumes including irreplaceable Tamil manuscripts. Its burning is still cited as the moment the Sri Lankan civil war became inevitable."},
+  {id:55, name:"Sikh Reference Library",                 year:1984,  cause:"war",      lat:31.62,  lon:74.88,  loc:"Punjab, India",                perp:"Indian Army (Operation Blue Star)", desc:"During the storming of the Golden Temple complex, the Reference Library — holding rare Sikh manuscripts going back centuries — was looted. The Indian government denied it for years."},
+  {id:56, name:"Central University Library of Bucharest",year:1989,  cause:"civil",    lat:44.43,  lon:26.10,  loc:"Bucharest, Romania",           perp:"Romanian Land Forces", desc:"Set on fire during the Romanian Revolution of December 1989. Hundreds of thousands of volumes destroyed, including irreplaceable Romanian historical documents."},
+  {id:57, name:"Oriental Institute, Sarajevo",           year:1992,  cause:"civil",    lat:43.86,  lon:18.41,  loc:"Sarajevo, Bosnia",             perp:"Bosnian Serb Army", desc:"Held the world's largest collection of Islamic manuscripts in the Balkans — 5,263 manuscripts spanning Ottoman history. Destroyed by deliberate shelling as part of systematic cultural genocide."},
+  {id:58, name:"National Library of Bosnia",             year:1992,  cause:"civil",    lat:43.85,  lon:18.42,  loc:"Sarajevo, Bosnia",             perp:"Bosnian Serb Army", desc:"Over 2 million books. Deliberately shelled for three days until it collapsed in flames. Citizens formed human chains under sniper fire to rescue books. Librarian Aida Buturovc was killed doing so."},
+  {id:59, name:"Abkhazian Research Institute Library",   year:1992,  cause:"civil",    lat:43.00,  lon:41.02,  loc:"Sukhumi, Abkhazia",            perp:"Georgian Armed Forces", desc:"Destroyed during the War in Abkhazia in October 1992, eliminating the primary repository of Abkhazian cultural heritage including unique manuscripts of the Abkhaz language and history."},
+  {id:60, name:"City Library, Linkoping",                year:1996,  cause:"fire",     lat:58.41,  lon:15.62,  loc:"Linkoping, Sweden",            perp:"Arson (unidentified)", desc:"After a year of arson attempts against an LGBTQ+ information bureau operating from the building, the library was burned in September 1996. No one was ever convicted."},
+  {id:61, name:"Pol-i-Khomri Public Library",            year:1998,  cause:"religion", lat:35.95,  lon:68.71,  loc:"Pol-i-Khomri, Afghanistan",    perp:"Taliban", desc:"55,000 books and manuscripts. Burned as part of the Taliban's systematic destruction of secular knowledge. This destruction received almost no international coverage at the time."},
+  {id:62, name:"Iraq National Library and Archive",      year:2003,  cause:"civil",    lat:33.34,  lon:44.39,  loc:"Baghdad, Iraq",                perp:"Looters amid US invasion", desc:"In the chaos of the 2003 invasion, the National Library was looted and burned. Cuneiform tablets, Ottoman manuscripts, and 450,000 books were lost. US forces had been warned in advance."},
+  {id:63, name:"People's Library, Occupy Wall Street",   year:2011,  cause:"govt",     lat:40.71,  lon:-74.01, loc:"New York City, USA",           perp:"NYC Dept. of Sanitation", desc:"The People's Library had catalogued over 5,500 donated books. When the NYPD cleared Zuccotti Park in November 2011, the library was seized and most books destroyed — the first significant US library destruction in nearly two centuries."},
+  {id:64, name:"Egyptian Scientific Institute",          year:2011,  cause:"civil",    lat:30.05,  lon:31.25,  loc:"Cairo, Egypt",                 perp:"Egyptian Revolution", desc:"A fire during the revolution spread to the 200-year-old institute. Of 200,000 volumes, only 30,000 were saved. Among the losses: one of only 21 surviving copies of Napoleon's Description de l'Egypte."},
+  {id:65, name:"Ahmed Baba Institute, Timbuktu",         year:2013,  cause:"religion", lat:16.77,  lon:-3.00,  loc:"Timbuktu, Mali",               perp:"Islamist militias (AQIM)", desc:"Over 20,000 manuscripts from the 13th century — works on astronomy, mathematics, and theology from Timbuktu's era as the intellectual capital of sub-Saharan Africa."},
+  {id:66, name:"Ratanda Public Library",                 year:2013,  cause:"civil",    lat:-26.48, lon:28.08,  loc:"Lesedi, South Africa",         perp:"Public riots", desc:"Burned during public service delivery riots in March 2013. 1,807 books destroyed along with computers and all technological infrastructure. A tragic irony in a community where access to books was already severely limited."},
+  {id:67, name:"Fisheries & Oceans Canada Libraries",    year:2013,  cause:"govt",     lat:45.42,  lon:-75.70, loc:"Canada",                       perp:"Harper Government", desc:"Seven of nine Fisheries and Oceans libraries closed and collections discarded to save $443,000 Canadian. Scientists called it data destruction. Research built over 50 years thrown away and irreplaceable."},
+  {id:68, name:"Saeh Library, Tripoli",                  year:2014,  cause:"religion", lat:34.44,  lon:35.84,  loc:"Tripoli, Lebanon",             perp:"Sectarian attack", desc:"The Christian Saeh Library, containing over 80,000 manuscripts and books, was burned in January 2014 in a widely condemned sectarian attack. Its founder described standing in the ashes of his life's work."},
+  {id:69, name:"National Archives of Bosnia (partial)",  year:2014,  cause:"civil",    lat:43.855, lon:18.405, loc:"Sarajevo, Bosnia",             perp:"Bosnian rioters", desc:"During 2014 unrest, large amounts of historical documents were destroyed when rioters set fire to the National Archives building containing irreplaceable Ottoman-era records."},
+  {id:70, name:"Mosul University Libraries",             year:2014,  cause:"religion", lat:36.34,  lon:43.13,  loc:"Mosul, Iraq",                  perp:"ISIS / ISIL", desc:"Systematic public book burnings across Mosul — the university library, museum library, and countless private collections. Rare manuscripts burned as tools of infidelity and filmed as propaganda."},
+  {id:71, name:"Libraries of Al Anbar Governorate",      year:2014,  cause:"religion", lat:33.42,  lon:43.30,  loc:"Al Anbar, Iraq",               perp:"ISIS / ISIL", desc:"ISIS extended its book burning campaign across Al Anbar Governorate in late 2014, destroying libraries in towns throughout the region as part of the campaign to obliterate pre-Islamic knowledge."},
+  {id:72, name:"INION Library, Moscow",                  year:2015,  cause:"fire",     lat:55.67,  lon:37.56,  loc:"Moscow, Russia",               perp:"Accidental fire", desc:"The Institute of Scientific Information on Social Sciences held around 14 million items. A fire in January 2015 destroyed an estimated 15% of the collection including irreplaceable 18th and 19th-century periodicals."},
+  {id:73, name:"Mosul Public Library",                   year:2015,  cause:"religion", lat:36.33,  lon:43.12,  loc:"Mosul, Iraq",                  perp:"ISIS / ISIL", desc:"The Central Public Library held 8,000 rare books and manuscripts including Syriac and Latin printed books from the 16th century and rare Ottoman newspapers. ISIS publicly burned them in February 2015."},
+  {id:74, name:"Howard College Law Library",             year:2016,  cause:"civil",    lat:-29.87, lon:30.98,  loc:"Durban, South Africa",         perp:"FeesMustFall protestors", desc:"The law library was burned by protestors during the FeesMustFall movement in September 2016. Early Roman-Dutch law texts and rare legal manuscripts were among the losses."},
+  {id:75, name:"Azizia Madrasa Library",                 year:2023,  cause:"civil",    lat:25.18,  lon:85.52,  loc:"Bihar Sharif, India",          perp:"Ram Navami rioters", desc:"The library contained around 4,500 works that were all lost when it was set on fire during Ram Navami riots in March 2023, including rare Islamic manuscripts."},
+  {id:76, name:"Diana Tamari Sabbagh Library",           year:2023,  cause:"war",      lat:31.50,  lon:34.46,  loc:"Gaza City, Palestine",         perp:"Israeli military airstrike", desc:"The Diana Tamari Sabbagh Library and the Rashad Shawa Cultural Center were destroyed by an airstrike in November 2023, eliminating collections documenting Palestinian literary and cultural heritage."},
+  {id:77, name:"Edward Said Public Library",             year:2023,  cause:"war",      lat:31.55,  lon:34.50,  loc:"Beit Lahia, Palestine",        perp:"Israeli military", desc:"The Edward Said Public Library was destroyed during the Gaza war. Named after the Palestinian-American intellectual, it held collections serving the local community and preserving Palestinian cultural memory."},
+  {id:78, name:"Royal Library of Portugal, Lisbon",      year:1755,  cause:"fire",     lat:38.71,  lon:-9.14,  loc:"Lisbon, Portugal",             perp:"Great Lisbon Earthquake", desc:"The catastrophic 1755 earthquake triggered a tsunami and fires that burned for six days. The Royal Library in the Palace of Ribeira, holding 70,000 volumes including Vasco da Gama's original voyage records, was completely destroyed."},
+  {id:79, name:"University of Tokyo Library",            year:1923,  cause:"fire",     lat:35.71,  lon:139.76, loc:"Tokyo, Japan",                 perp:"Great Kanto Earthquake", desc:"The catastrophic Great Kanto Earthquake of 1923 and the firestorms that followed destroyed the University of Tokyo Library, including irreplaceable collections of Asian studies primary sources."},
+  {id:80, name:"Library of Celsus",                      year:262,   cause:"fire",     lat:37.94,  lon:27.34,  loc:"Ephesus, Asia Minor",          perp:"Herulian invasion / earthquake", desc:"The third largest library of the ancient world, holding 12,000 scrolls. Its magnificent facade still stands in modern Turkey. Destroyed in 262 AD — the building survived as a shell for centuries after the knowledge inside was ash."},
+  {id:81, name:"Swedish National Library, Tre Kronor",   year:1697,  cause:"fire",     lat:59.33,  lon:18.07,  loc:"Stockholm, Sweden",            perp:"Accidental fire", desc:"The Tre Kronor castle fire of 1697 destroyed the Swedish National Library and Royal Archives. Centuries of Swedish royal records and medieval manuscripts were lost."},
+  {id:82, name:"University of Copenhagen Library",       year:1728,  cause:"fire",     lat:55.68,  lon:12.57,  loc:"Copenhagen, Denmark",          perp:"Copenhagen Fire of 1728", desc:"The great fire of 1728 consumed the University Library, including irreplaceable manuscripts of Old Norse literature and centuries of Nordic scholarship."},
+  {id:83, name:"Cotton Library, London",                 year:1731,  cause:"fire",     lat:51.50,  lon:-0.13,  loc:"London, UK",                   perp:"Accidental fire, Ashburnham House", desc:"The Cotton Library contained irreplaceable Anglo-Saxon manuscripts including Beowulf and two copies of Magna Carta. About a quarter was destroyed or badly damaged in the 1731 fire."},
+  {id:84, name:"Birmingham Central Library",             year:1879,  cause:"fire",     lat:52.48,  lon:-1.90,  loc:"Birmingham, UK",               perp:"Accidental fire", desc:"A fire during building renovations in January 1879 destroyed much of the Birmingham Central Library's collection including thousands of volumes of local history and rare books."},
+  {id:85, name:"University of Virginia Library",         year:1895,  cause:"fire",     lat:38.03,  lon:-78.50, loc:"Charlottesville, Virginia",    perp:"Accidental fire", desc:"Jefferson's Rotunda building was damaged and the library severely hurt in October 1895. Thousands of irreplaceable books and manuscripts including early Americana were lost."},
+  {id:86, name:"New York State Library",                 year:1911,  cause:"fire",     lat:42.65,  lon:-73.75, loc:"Albany, New York, USA",        perp:"Capitol building fire", desc:"A fire in the New York State Capitol destroyed the State Library. Around 450,000 books and thousands of manuscripts were destroyed, including records once owned by Benjamin Franklin."},
+  {id:87, name:"National Library of Peru",               year:1943,  cause:"fire",     lat:-12.06, lon:-77.04, loc:"Lima, Peru",                   perp:"Accidental fire", desc:"The National Library of Peru, founded in 1821, was severely damaged by fire. Thousands of colonial-era manuscripts and historical documents tracing Peru's history from pre-Columbian times were destroyed."},
+  {id:88, name:"Jewish Theological Seminary Library",    year:1966,  cause:"fire",     lat:40.81,  lon:-73.96, loc:"New York City, USA",           perp:"Accidental fire", desc:"A fire in April 1966 destroyed or severely damaged thousands of volumes from one of the world's most important collections of Judaica, including rare Hebrew manuscripts and incunabula."},
+  {id:89, name:"Los Angeles Central Library",            year:1986,  cause:"fire",     lat:34.05,  lon:-118.26,loc:"Los Angeles, California",      perp:"Arson (suspected)", desc:"Two fires in 1986 destroyed or damaged around 400,000 books. The first fire in April was one of the largest library fires in US history. A massive volunteer effort helped salvage portions of the collection."},
+  {id:90, name:"Academy of Sciences Library, Leningrad", year:1988,  cause:"fire",     lat:59.94,  lon:30.30,  loc:"Leningrad, USSR",              perp:"Accidental fire", desc:"A fire in February 1988 damaged around 400,000 volumes and destroyed approximately 4,000 rare manuscripts. The library had survived the Siege of Leningrad only to fall victim to an accidental fire during renovation."},
+  {id:91, name:"Norwich Central Library",                year:1994,  cause:"fire",     lat:52.63,  lon:1.30,   loc:"Norwich, England",             perp:"Electrical fault", desc:"Norwich Central Library caught fire in August 1994 due to an electrical fault, destroying the building and most of its contents. The library's rebuilding became a symbol of civic renewal."},
+  {id:92, name:"Glasgow School of Art Library",          year:2014,  cause:"fire",     lat:55.87,  lon:-4.26,  loc:"Glasgow, Scotland",            perp:"Accidental fire (twice)", desc:"The Mackintosh Library was badly damaged in 2014 and almost completely destroyed by a second fire in 2018 during restoration. The double loss of one of the world's finest Art Nouveau buildings and its library is considered a great cultural tragedy."},
+  {id:93, name:"Mzuzu University Library",               year:2015,  cause:"fire",     lat:-11.46, lon:34.02,  loc:"Mzuzu, Malawi",                perp:"Accidental fire", desc:"The entire book collection, computer equipment, and institutional archives were lost. For a developing nation with limited resources, the loss represented a severe setback to higher education in northern Malawi."},
+  {id:94, name:"National Museum of Brazil Library",      year:2018,  cause:"fire",     lat:-22.91, lon:-43.22, loc:"Rio de Janeiro, Brazil",       perp:"Accidental electrical fire", desc:"A catastrophic fire on September 2, 2018 destroyed the National Museum and its library — Brazil's oldest natural history museum founded in 1818. An estimated 20 million items were lost."},
+  {id:95, name:"Jagger Library, Cape Town",              year:2021,  cause:"fire",     lat:-33.96, lon:18.46,  loc:"Cape Town, South Africa",      perp:"Table Mountain wildfire", desc:"The 2021 Table Mountain fire partially destroyed the Jagger Library at UCT, including the African Studies collection — one of the most important repositories of African history on the continent."},
+  {id:96, name:"National Library of Nicaragua",          year:1931,  cause:"fire",     lat:12.14,  lon:-86.28, loc:"Nicaragua",                    perp:"Managua earthquake and fire", desc:"The National Library was damaged in the catastrophic 1931 Managua earthquake and fires, then again in 1972 — repeated natural disasters leaving the national library's collection severely depleted."},
+  {id:97, name:"Libraries in 2004 Tsunami",              year:2004,  cause:"fire",     lat:3.32,   lon:95.85,  loc:"Indonesia, Thailand, Sri Lanka",perp:"2004 Indian Ocean earthquake and tsunami", desc:"The catastrophic 2004 Indian Ocean tsunami caused widespread damage to libraries, archives, and museums across coastal communities in Indonesia, Thailand, Sri Lanka, and the Maldives."},
+  {id:98, name:"Duchess Anna Amalia Library",            year:2004,  cause:"fire",     lat:50.98,  lon:11.33,  loc:"Weimar, Germany",              perp:"Accidental electrical fault", desc:"Goethe's library was devastated by an accidental electrical fire in September 2004. Around 50,000 books destroyed and 35,000 damaged. Volunteers formed a human chain through the night passing burning books to safety. The library was restored and reopened in 2007."},
+  {id:99, name:"Dalhousie University Law Library",       year:1985,  cause:"fire",     lat:44.63,  lon:-63.59, loc:"Halifax, Nova Scotia",         perp:"Lightning strike", desc:"A lightning strike in August 1985 caused a fire at the Dalhousie Law Library, destroying significant portions of the legal collection including rare Canadian legal texts and historical case records."},
+  {id:100,name:"Library of Pergamon",                    year:-133,  cause:"war",      lat:39.13,  lon:27.18,  loc:"Pergamon, Asia Minor",         perp:"Rome / Mark Antony", desc:"The second greatest library of antiquity, holding 200,000 scrolls. Mark Antony allegedly stripped its entire contents and gave them to Cleopatra as a gift — transferring one civilisation's memory to another as a romantic gesture."},
+  {id:101,name:"Library of York (Eboracum)",             year:867,   cause:"war",      lat:53.96,  lon:-1.08,  loc:"York, England",                perp:"Viking Great Heathen Army", desc:"York was the greatest centre of learning in 8th-century Europe, its library assembled by the scholar Alcuin — tutor to Charlemagne and a key architect of the Carolingian Renaissance. The Viking sack in 867 AD effectively ended York's role as a European intellectual hub."},
+  {id:102,name:"Royal Library of Lisbon (expanded)",     year:1755,  cause:"fire",     lat:38.70,  lon:-9.15,  loc:"Lisbon, Portugal",             perp:"Great Lisbon Earthquake", desc:"The Royal Library specifically held the only surviving logs and charts from Vasco da Gama's original voyages and early Portuguese imperial explorations. These records of the Age of Discovery were irretrievably lost."},
+  {id:103,name:"Mughal Imperial Library, Delhi",         year:1857,  cause:"war",      lat:28.65,  lon:77.23,  loc:"Delhi, India",                 perp:"British forces (Indian Rebellion)", desc:"The Mughal court's library represented centuries of accumulated scholarship — Persian manuscripts, Sanskrit translations, illuminated Qurans. When British forces entered Delhi following the 1857 suppression, the library was looted or destroyed."},
+  {id:104,name:"Library of Banu Ammar (expanded)",       year:1109,  cause:"war",      lat:34.445, lon:35.845, loc:"Tripoli, Fatimid Caliphate",   perp:"Crusaders under Baldwin I", desc:"The Dar al-Ilm of Tripoli was among the greatest libraries of the medieval world. Muslim chroniclers reported that scholars wept watching manuscripts — some unique in all the world — fed to the flames over several days."},
+  {id:105,name:"Bibliotheca Corviniana (expanded)",      year:1526,  cause:"war",      lat:47.505, lon:19.045, loc:"Buda, Hungary",                perp:"Ottoman Turks", desc:"The humanist library of King Matthias Corvinus was the jewel of the Renaissance north of the Alps — over 2,000 illuminated manuscripts in Greek, Latin, and Hebrew, many unique copies commissioned by the king himself."},
+  {id:106,name:"Gaza Libraries (2023-24)",               year:2023,  cause:"war",      lat:31.505, lon:34.47,  loc:"Gaza, Palestine",              perp:"Israeli military", desc:"Beyond individual libraries, numerous smaller libraries, school collections, university archives, and community reading rooms across Gaza were destroyed during the 2023-2024 conflict, representing systematic loss of Palestinian documentary heritage."},
+  {id:107,name:"Occupy Wall Street Library (expanded)",  year:2011,  cause:"govt",     lat:40.715, lon:-74.01, loc:"New York City, USA",           perp:"NYC Dept. of Sanitation", desc:"The People's Library grew to over 5,500 catalogued volumes donated by supporters worldwide. When city authorities cleared the encampment, books were dumped in garbage trucks and found damaged at a city sanitation facility. A court later found the city liable."},
+  {id:108,name:"Library of York (Alcuin context)",       year:782,   cause:"neglect",  lat:53.965, lon:-1.085, loc:"York, England",                perp:"Dispersal on Alcuin's departure", desc:"Alcuin built what he called the finest library in Europe — a collection spanning theology, classical literature, grammar, and natural philosophy. When he left York in 782 AD to join Charlemagne's court, he took many important volumes to seed the libraries of Frankish Europe. What remained was destroyed by Vikings."}
+];
+
+// MAP INIT
+var map = L.map('map', {
+  center: [30, 20], zoom: 2,
+  minZoom: 1, maxZoom: 10,
+  zoomControl: false
+});
+L.control.zoom({ position: 'bottomright' }).addTo(map);
+
+L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png', {
+  attribution: '&copy; OpenStreetMap contributors &copy; CARTO',
+  subdomains: 'abcd', maxZoom: 19
+}).addTo(map);
+
+// REGION LABELS
+var regions = [
+  { lat:33, lon:44,  label:"FERTILE CRESCENT" },
+  { lat:41, lon:28,  label:"CONSTANTINOPLE" },
+  { lat:52, lon:21,  label:"WARSAW CLUSTER" },
+  { lat:37, lon:23,  label:"ATHENS" },
+  { lat:43.85, lon:18.4, label:"SARAJEVO" },
+  { lat:25, lon:82,  label:"SOUTH ASIA" },
+  { lat:35, lon:109, label:"CHINA" },
+  { lat:16, lon:-3,  label:"TIMBUKTU" }
+];
+regions.forEach(function(r) {
+  L.marker([r.lat, r.lon], {
+    icon: L.divIcon({ className:'region-label', html:r.label, iconAnchor:[0,0] }),
+    interactive: false, keyboard: false
+  }).addTo(map);
+});
+
+// STATE
+var activeMarker = null;
+var allMarkers = [];
+var activeCause = 'all';
+var activeEra = 0;
+var panel = document.getElementById('panel');
+var panelInner = document.getElementById('panel-inner');
+
+function getColor(cause) { return CAUSE_COLORS[cause] || '#888'; }
+function getSize(year) {
+  if (year < 0) return 7;
+  if (year < 500) return 8;
+  if (year < 1000) return 8;
+  if (year < 1500) return 9;
+  if (year < 1800) return 10;
+  if (year < 1900) return 11;
+  return 12;
+}
+
+function makeMarker(lib) {
+  var color = getColor(lib.cause);
+  var size = getSize(lib.year);
+  var icon = L.divIcon({
+    className: '',
+    html: '<div class="lib-marker" style="width:'+size+'px;height:'+size+'px;background:'+color+';color:'+color+'" aria-label="'+lib.name+'"></div>',
+    iconSize: [size, size],
+    iconAnchor: [size/2, size/2]
+  });
+  var marker = L.marker([lib.lat, lib.lon], { icon: icon, title: lib.name, alt: lib.name });
+  var yr = lib.year < 0 ? (Math.abs(lib.year)+' BC') : (lib.year+' AD');
+  marker.bindTooltip(lib.name + ' · ' + yr, { permanent: false, direction: 'top', offset:[0,-4] });
+  marker.on('click', function() { selectLib(lib, marker); });
+  marker.on('keypress', function(e) { if (e.originalEvent.key==='Enter') selectLib(lib, marker); });
+  marker._libData = lib;
+  return marker;
+}
+
+// BUILD ALL MARKERS
+var markerLayer = L.layerGroup().addTo(map);
+LIBRARIES.forEach(function(lib) {
+  var m = makeMarker(lib);
+  allMarkers.push(m);
+});
+
+function updateMarkers() {
+  markerLayer.clearLayers();
+  var shown = 0;
+  var era = ERAS[activeEra];
+  allMarkers.forEach(function(m) {
+    var lib = m._libData;
+    var causeOk = (activeCause === 'all' || lib.cause === activeCause);
+    var eraOk = (lib.year >= era.min && lib.year < era.max);
+    if (causeOk && eraOk) { markerLayer.addLayer(m); shown++; }
+  });
+  document.getElementById('s-shown').textContent = shown;
+  document.getElementById('s-total').textContent = LIBRARIES.length;
+}
+updateMarkers();
+
+function selectLib(lib, marker) {
+  if (activeMarker) {
+    var el = activeMarker.getElement();
+    if (el) el.querySelector('.lib-marker').classList.remove('selected');
+  }
+  activeMarker = marker;
+  var el = marker.getElement();
+  if (el) el.querySelector('.lib-marker').classList.add('selected');
+
+  var color = getColor(lib.cause);
+  var yr = lib.year < 0 ? (Math.abs(lib.year)+' BC') : (lib.year+' AD');
+  var causeLabel = { war:'War & Conquest', religion:'Religious Purge', govt:'State Censorship', fire:'Accidental Fire', civil:'Civil Conflict', neglect:'Neglect & Decay' };
+
+  panelInner.innerHTML =
+    '<div class="p-badge" style="color:'+color+';border-color:'+color+'">'+causeLabel[lib.cause]+'</div>' +
+    '<div class="p-title">'+lib.name+'</div>' +
+    '<div class="p-loc">&#x1F4CD; '+lib.loc+' &middot; '+yr+'</div>' +
+    '<div class="p-desc">'+lib.desc+'</div>' +
+    '<div class="p-perp"><span class="p-perp-lbl">Perpetrator</span><span class="p-perp-val">'+lib.perp+'</span></div>';
+
+  panel.classList.add('open');
+  panel.setAttribute('aria-hidden', 'false');
+  map.panTo([lib.lat, lib.lon], { animate: true, duration: 0.5 });
+}
+
+document.getElementById('panel-close').addEventListener('click', function() {
+  panel.classList.remove('open');
+  panel.setAttribute('aria-hidden', 'true');
+  if (activeMarker) {
+    var el = activeMarker.getElement();
+    if (el) el.querySelector('.lib-marker').classList.remove('selected');
+    activeMarker = null;
+  }
+});
+
+// FILTERS
+document.querySelectorAll('.fbtn[data-cause]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    activeCause = btn.dataset.cause;
+    document.querySelectorAll('.fbtn[data-cause]').forEach(function(b) {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+    updateMarkers();
+  });
+});
+
+// ERA SLIDER
+document.getElementById('era-slider').addEventListener('input', function() {
+  activeEra = parseInt(this.value);
+  document.getElementById('era-display').textContent = ERAS[activeEra].label;
+  updateMarkers();
+});
+
+// PROGRESS BAR (reading/scroll proxy — not applicable here, skip)
+</script>
+</body>
+</html>

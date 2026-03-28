@@ -1,0 +1,734 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Lost Libraries — Animated Timeline of Erasure</title>
+  <meta name="description" content="Year-by-year animated sweep of 108 library destructions across 3,785 years.">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:ital,wght@0,300;0,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --ink:#08060a; --parch:#ede4d4; --aged:#c0a880;
+      --ember:#e05520; --gold:#d09820; --ash:#4a3e5a;
+      --smoke:#8a7a9a; --panel:#10080f;
+      --war:#d03820; --religion:#6848c8; --govt:#c88020;
+      --fire:#c87020; --civil:#5848a8; --neglect:#308060;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:var(--ink)}
+    body{font-family:'Crimson Pro',Georgia,serif;color:var(--parch)}
+
+    /* SVG MAP */
+    #stage{position:absolute;inset:0;display:flex;flex-direction:column}
+    #map-svg{flex:1;display:block;width:100%}
+
+    /* GRATICULE + LAND */
+    .land{fill:#1a1420;stroke:#2a2030;stroke-width:0.3}
+    .graticule{fill:none;stroke:rgba(201,185,154,0.04);stroke-width:0.5}
+    .border{fill:none;stroke:#2a2030;stroke-width:0.4}
+
+    /* PARTICLES */
+    .lib-dot{
+      cursor:pointer;
+      transition:r 0.3s ease;
+    }
+    .lib-dot:hover{filter:brightness(1.5)}
+    .lib-ring{
+      fill:none; pointer-events:none;
+      animation:ringOut 1.2s ease-out forwards;
+    }
+    @keyframes ringOut{
+      from{r:0;opacity:0.8;stroke-width:3}
+      to{r:22;opacity:0;stroke-width:0.5}
+    }
+    .lib-flash{
+      pointer-events:none;
+      animation:flash 0.8s ease-out forwards;
+    }
+    @keyframes flash{
+      0%{r:14;opacity:1}
+      100%{r:0;opacity:0}
+    }
+
+    /* YEAR DISPLAY */
+    #year-display{
+      position:absolute;
+      left:50%;transform:translateX(-50%);
+      top:50%;margin-top:-4rem;
+      font-family:'Playfair Display',serif;
+      font-size:clamp(3rem,8vw,7rem);
+      font-weight:900;
+      color:rgba(224,85,32,0.08);
+      pointer-events:none;
+      white-space:nowrap;
+      transition:color 0.3s;
+      z-index:1;
+    }
+
+    /* TOP HUD */
+    #hud{
+      position:absolute;top:0;left:0;right:0;z-index:10;
+      background:linear-gradient(180deg,rgba(8,6,10,0.96) 0%,rgba(8,6,10,0.8) 70%,transparent 100%);
+      padding:1rem 1.5rem 3rem;
+      display:flex;align-items:flex-start;gap:1.5rem;flex-wrap:wrap;
+    }
+    #hud-title{flex-shrink:0}
+    #hud-title h1{
+      font-family:'Playfair Display',serif;
+      font-size:clamp(0.95rem,2.2vw,1.4rem);
+      font-weight:900;color:var(--parch);line-height:1.1;
+    }
+    #hud-title h1 em{font-style:italic;color:var(--ember)}
+    #hud-title p{
+      font-family:'Courier Prime',monospace;
+      font-size:0.58rem;letter-spacing:0.2em;
+      color:var(--gold);text-transform:uppercase;margin-bottom:0.15rem;
+    }
+
+    /* CONTROLS */
+    #controls{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:0.3rem}
+    .ctrl-btn{
+      font-family:'Courier Prime',monospace;
+      font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;
+      padding:0.4rem 1rem;border:1px solid rgba(201,185,154,0.25);
+      background:rgba(8,6,10,0.8);color:var(--smoke);
+      cursor:pointer;border-radius:2px;transition:all 0.2s;
+      min-width:44px;min-height:36px;
+    }
+    .ctrl-btn:hover,.ctrl-btn.active{border-color:var(--ember);color:var(--ember);background:rgba(224,85,32,0.12)}
+    .ctrl-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+    .ctrl-btn#btn-play{font-size:1rem;padding:0.3rem 0.9rem}
+
+    .speed-group{display:flex;align-items:center;gap:0.4rem}
+    .speed-label{font-family:'Courier Prime',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--smoke)}
+
+    /* YEAR COUNTER HUD */
+    #year-hud{display:flex;align-items:baseline;gap:0.5rem;margin-left:auto}
+    #year-now{
+      font-family:'Playfair Display',serif;
+      font-size:clamp(1.5rem,4vw,2.8rem);font-weight:900;
+      color:var(--ember);line-height:1;
+    }
+    #year-label{
+      font-family:'Courier Prime',monospace;
+      font-size:0.6rem;letter-spacing:0.1em;
+      text-transform:uppercase;color:var(--smoke);
+    }
+
+    /* BOTTOM HUD */
+    #bottom{
+      position:absolute;bottom:0;left:0;right:0;z-index:10;
+      background:linear-gradient(0deg,rgba(8,6,10,0.97) 0%,rgba(8,6,10,0.8) 60%,transparent 100%);
+      padding:3rem 1.5rem 1rem;
+    }
+
+    /* PROGRESS TIMELINE */
+    #progress-wrap{position:relative;margin-bottom:0.75rem}
+    #progress-track{
+      height:3px;background:rgba(201,185,154,0.12);
+      border-radius:2px;position:relative;cursor:pointer;
+    }
+    #progress-fill{
+      height:100%;background:linear-gradient(90deg,var(--ember),var(--gold));
+      border-radius:2px;width:0%;transition:width 0.1s linear;pointer-events:none;
+    }
+    #scrubber{
+      position:absolute;top:-4px;
+      width:11px;height:11px;background:var(--ember);
+      border-radius:50%;transform:translateX(-50%);
+      cursor:grab;transition:left 0.1s linear;
+      box-shadow:0 0 6px var(--ember);
+    }
+    #scrubber:active{cursor:grabbing}
+
+    /* ERA MARKERS */
+    .era-tick{
+      position:absolute;top:-8px;width:1px;height:19px;
+      background:rgba(201,185,154,0.15);pointer-events:none;
+    }
+    .era-tick-label{
+      position:absolute;top:10px;
+      font-family:'Courier Prime',monospace;font-size:0.45rem;
+      color:rgba(201,185,154,0.35);text-transform:uppercase;
+      transform:translateX(-50%);white-space:nowrap;pointer-events:none;
+    }
+
+    /* STATS ROW */
+    #stats-row{display:flex;gap:2rem;align-items:center;flex-wrap:wrap}
+    .sstat{text-align:center}
+    .sstat-n{
+      font-family:'Playfair Display',serif;font-size:1.6rem;
+      font-weight:700;color:var(--ember);line-height:1;
+    }
+    .sstat-l{
+      font-family:'Courier Prime',monospace;font-size:0.52rem;
+      letter-spacing:0.12em;text-transform:uppercase;color:var(--smoke);
+    }
+
+    /* LEGEND */
+    #legend{
+      display:flex;gap:0.75rem;flex-wrap:wrap;margin-left:auto;align-items:center;
+    }
+    .leg-item{display:flex;align-items:center;gap:0.3rem}
+    .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .leg-lbl{font-family:'Courier Prime',monospace;font-size:0.55rem;color:var(--aged)}
+
+    /* TOOLTIP */
+    #tooltip{
+      position:absolute;z-index:20;pointer-events:none;
+      background:rgba(10,7,14,0.94);border:1px solid rgba(201,185,154,0.2);
+      padding:0.5rem 0.8rem;max-width:220px;display:none;
+    }
+    .tt-name{font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--parch);margin-bottom:0.15rem}
+    .tt-loc{font-family:'Courier Prime',monospace;font-size:0.6rem;color:var(--smoke)}
+
+    /* FLASH LOG */
+    #flash-log{
+      position:absolute;right:1.5rem;top:6rem;z-index:10;
+      display:flex;flex-direction:column;gap:0.3rem;
+      max-width:200px;pointer-events:none;
+    }
+    .log-entry{
+      font-family:'Courier Prime',monospace;font-size:0.6rem;
+      color:var(--parch);background:rgba(8,6,10,0.85);
+      border-left:2px solid var(--ember);padding:0.2rem 0.5rem;
+      animation:logIn 0.3s ease forwards, logOut 0.5s 3s ease forwards;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    @keyframes logIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+    @keyframes logOut{to{opacity:0;height:0;padding:0;margin:0}}
+
+    @media(max-width:600px){
+      #hud{padding:0.75rem 1rem 2.5rem}
+      #bottom{padding:2.5rem 1rem 0.75rem}
+      #flash-log{display:none}
+      #legend{display:none}
+    }
+  </style>
+</head>
+<body>
+<a href="#controls" style="position:absolute;top:-100px;left:1rem;background:#ffd040;color:#000;padding:0.5rem 1rem;z-index:9999;text-decoration:none;border-radius:0 0 4px 4px;font-family:'Courier Prime',monospace;font-weight:700;font-size:0.8rem" onfocus="this.style.top='0'" onblur="this.style.top='-100px'">Skip to controls</a>
+
+<div id="stage">
+  <svg id="map-svg" viewBox="0 0 960 500" preserveAspectRatio="xMidYMid meet"
+       role="img" aria-label="Animated world map showing library destructions over time">
+    <defs>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="2.5" result="blur"/>
+        <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+      </filter>
+      <radialGradient id="pulseGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#e05520" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#e05520" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <!-- World map paths drawn with equirectangular projection, simplified -->
+    <g id="countries"></g>
+    <g id="dots-layer"></g>
+    <g id="anim-layer"></g>
+  </svg>
+</div>
+
+<div id="year-display" aria-hidden="true">1761 BC</div>
+
+<div id="hud">
+  <div id="hud-title">
+    <p>Lost Libraries &mdash; Animated Timeline</p>
+    <h1>The Lost <em>Libraries</em></h1>
+  </div>
+  <div style="flex:1">
+    <div id="controls" role="toolbar" aria-label="Playback controls">
+      <button class="ctrl-btn" id="btn-play" aria-label="Play animation" aria-pressed="false">&#9654;</button>
+      <button class="ctrl-btn" id="btn-reset" aria-label="Reset to beginning">&#9664;&#9664;</button>
+      <div class="speed-group" role="group" aria-label="Playback speed">
+        <span class="speed-label">Speed:</span>
+        <button class="ctrl-btn active" data-speed="1" aria-pressed="true">1×</button>
+        <button class="ctrl-btn" data-speed="3" aria-pressed="false">3×</button>
+        <button class="ctrl-btn" data-speed="8" aria-pressed="false">8×</button>
+        <button class="ctrl-btn" data-speed="20" aria-pressed="false">20×</button>
+      </div>
+    </div>
+  </div>
+  <div id="year-hud">
+    <div id="year-now" aria-live="polite" aria-atomic="true">1761 BC</div>
+    <div id="year-label">Current year</div>
+  </div>
+</div>
+
+<div id="flash-log" aria-live="polite" aria-label="Recently destroyed libraries"></div>
+<div id="tooltip" role="tooltip"><div class="tt-name" id="tt-name"></div><div class="tt-loc" id="tt-loc"></div></div>
+
+<div id="bottom">
+  <div id="progress-wrap">
+    <div id="progress-track" role="slider" aria-label="Timeline position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+      <div id="progress-fill"></div>
+      <div id="scrubber"></div>
+    </div>
+  </div>
+  <div id="stats-row">
+    <div class="sstat"><div class="sstat-n" id="cnt-total">0</div><div class="sstat-l">Libraries Destroyed</div></div>
+    <div class="sstat"><div class="sstat-n" id="cnt-century">0</div><div class="sstat-l">This Century</div></div>
+    <div class="sstat"><div class="sstat-n" id="cnt-year">—</div><div class="sstat-l">This Year</div></div>
+    <div id="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#d03820"></div><div class="leg-lbl">War</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#6848c8"></div><div class="leg-lbl">Religion</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#c88020"></div><div class="leg-lbl">State</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#c87020"></div><div class="leg-lbl">Fire</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#5848a8"></div><div class="leg-lbl">Civil</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#308060"></div><div class="leg-lbl">Neglect</div></div>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+var CAUSE_COLORS = {
+  war:'#d03820', religion:'#6848c8', govt:'#c88020',
+  fire:'#c87020', civil:'#5848a8', neglect:'#308060'
+};
+
+var LIBRARIES = [
+  {id:1,  name:"Library of Zimri-Lim",                   year:-1761, cause:"war",      lat:34.55,  lon:40.88,  loc:"Mari, Mesopotamia"},
+  {id:2,  name:"Library of Ashurbanipal",                year:-612,  cause:"war",      lat:36.36,  lon:43.15,  loc:"Nineveh, Neo-Assyrian"},
+  {id:3,  name:"Library of Pergamon",                    year:-133,  cause:"war",      lat:39.13,  lon:27.18,  loc:"Pergamon, Asia Minor"},
+  {id:4,  name:"Xianyang Palace Archives",               year:-206,  cause:"war",      lat:34.36,  lon:108.72, loc:"Xianyang, Qin China"},
+  {id:5,  name:"Library of Alexandria",                  year:-48,   cause:"war",      lat:31.20,  lon:29.92,  loc:"Alexandria, Egypt"},
+  {id:6,  name:"Imperial Library of Luoyang",            year:189,   cause:"war",      lat:34.68,  lon:112.45, loc:"Luoyang, Han China"},
+  {id:7,  name:"Library of Pantainos",                   year:267,   cause:"war",      lat:37.97,  lon:23.72,  loc:"Athens"},
+  {id:8,  name:"Hadrian's Library",                      year:267,   cause:"war",      lat:37.975, lon:23.725, loc:"Athens"},
+  {id:9,  name:"Library of Celsus",                      year:262,   cause:"fire",     lat:37.94,  lon:27.34,  loc:"Ephesus"},
+  {id:10, name:"Library of Antioch",                     year:364,   cause:"religion", lat:36.20,  lon:36.16,  loc:"Antioch"},
+  {id:11, name:"Library of the Serapeum",                year:392,   cause:"religion", lat:31.18,  lon:29.90,  loc:"Alexandria, Egypt"},
+  {id:12, name:"Library of al-Hakam II",                 year:976,   cause:"religion", lat:37.88,  lon:-4.78,  loc:"Cordoba, Al-Andalus"},
+  {id:13, name:"Library of York (Eboracum)",             year:867,   cause:"war",      lat:53.96,  lon:-1.08,  loc:"York, England"},
+  {id:14, name:"Library of Rayy",                        year:1029,  cause:"religion", lat:35.60,  lon:51.44,  loc:"Rayy, Persia"},
+  {id:15, name:"Library at Sazava Monastery",            year:1097,  cause:"religion", lat:49.87,  lon:14.90,  loc:"Sazava, Bohemia"},
+  {id:16, name:"Library of Banu Ammar",                  year:1109,  cause:"war",      lat:34.43,  lon:35.85,  loc:"Tripoli"},
+  {id:17, name:"Library of Ghazna",                      year:1151,  cause:"war",      lat:33.55,  lon:68.42,  loc:"Ghazna"},
+  {id:18, name:"Library of Nishapur",                    year:1154,  cause:"war",      lat:36.21,  lon:58.80,  loc:"Nishapur"},
+  {id:19, name:"Library of the Church of Jacob Mar",     year:1171,  cause:"war",      lat:37.06,  lon:41.22,  loc:"Nisibis"},
+  {id:20, name:"Nalanda University Library",             year:1193,  cause:"war",      lat:25.14,  lon:85.44,  loc:"Bihar, India"},
+  {id:21, name:"Libraries of Constantinople (1204)",     year:1204,  cause:"war",      lat:41.01,  lon:28.98,  loc:"Constantinople"},
+  {id:22, name:"Imperial Library of Constantinople",     year:1204,  cause:"war",      lat:41.015, lon:28.975, loc:"Constantinople"},
+  {id:23, name:"Alamut Castle Library",                  year:1256,  cause:"war",      lat:36.45,  lon:50.57,  loc:"Alamut, Persia"},
+  {id:24, name:"House of Wisdom",                        year:1258,  cause:"war",      lat:33.34,  lon:44.40,  loc:"Baghdad"},
+  {id:25, name:"Libraries of Constantinople (1453)",     year:1453,  cause:"war",      lat:41.02,  lon:28.96,  loc:"Constantinople"},
+  {id:26, name:"Madrassah Library of Granada",           year:1499,  cause:"religion", lat:37.18,  lon:-3.60,  loc:"Granada, Spain"},
+  {id:27, name:"Bibliotheca Corviniana",                 year:1526,  cause:"war",      lat:47.50,  lon:19.04,  loc:"Buda, Hungary"},
+  {id:28, name:"English Monastic Libraries",             year:1535,  cause:"govt",     lat:52.50,  lon:-1.50,  loc:"England"},
+  {id:29, name:"Glasney College Library",                year:1548,  cause:"govt",     lat:50.16,  lon:-5.10,  loc:"Cornwall"},
+  {id:30, name:"Records on Gozo",                        year:1551,  cause:"war",      lat:36.04,  lon:14.24,  loc:"Gozo, Malta"},
+  {id:31, name:"Maya Codices of the Yucatan",            year:1562,  cause:"religion", lat:20.39,  lon:-89.56, loc:"Mani, Mexico"},
+  {id:32, name:"Raglan Castle Library",                  year:1646,  cause:"civil",    lat:51.77,  lon:-2.87,  loc:"Raglan, Wales"},
+  {id:33, name:"Swedish National Library, Tre Kronor",   year:1697,  cause:"fire",     lat:59.33,  lon:18.07,  loc:"Stockholm"},
+  {id:34, name:"Zaluski Library",                        year:1794,  cause:"war",      lat:52.23,  lon:21.01,  loc:"Warsaw"},
+  {id:35, name:"University of Copenhagen Library",       year:1728,  cause:"fire",     lat:55.68,  lon:12.57,  loc:"Copenhagen"},
+  {id:36, name:"Cotton Library, London",                 year:1731,  cause:"fire",     lat:51.50,  lon:-0.13,  loc:"London"},
+  {id:37, name:"Royal Library of Portugal, Lisbon",      year:1755,  cause:"fire",     lat:38.71,  lon:-9.14,  loc:"Lisbon"},
+  {id:38, name:"Library of Congress (1814)",             year:1814,  cause:"war",      lat:38.89,  lon:-77.00, loc:"Washington D.C."},
+  {id:39, name:"Birmingham Central Library",             year:1879,  cause:"fire",     lat:52.48,  lon:-1.90,  loc:"Birmingham, UK"},
+  {id:40, name:"Several Libraries, Mexico",              year:1856,  cause:"civil",    lat:19.43,  lon:-99.13, loc:"Mexico City"},
+  {id:41, name:"University of Alabama Library",          year:1865,  cause:"war",      lat:33.21,  lon:-87.54, loc:"Tuscaloosa, USA"},
+  {id:42, name:"Mosque-Library of Turnovo",              year:1877,  cause:"civil",    lat:43.07,  lon:25.62,  loc:"Turnovo, Bulgaria"},
+  {id:43, name:"Royal Library of Burma",                 year:1885,  cause:"war",      lat:21.96,  lon:96.08,  loc:"Mandalay"},
+  {id:44, name:"University of Virginia Library",         year:1895,  cause:"fire",     lat:38.03,  lon:-78.50, loc:"Charlottesville, USA"},
+  {id:45, name:"Hanlin Academy Library",                 year:1900,  cause:"civil",    lat:39.91,  lon:116.39, loc:"Beijing"},
+  {id:46, name:"New York State Library",                 year:1911,  cause:"fire",     lat:42.65,  lon:-73.75, loc:"Albany, USA"},
+  {id:47, name:"Catholic University of Leuven",          year:1914,  cause:"war",      lat:50.88,  lon:4.70,   loc:"Leuven, Belgium"},
+  {id:48, name:"University of Tokyo Library",            year:1923,  cause:"fire",     lat:35.71,  lon:139.76, loc:"Tokyo"},
+  {id:49, name:"National Library of Nicaragua",          year:1931,  cause:"fire",     lat:12.14,  lon:-86.28, loc:"Nicaragua"},
+  {id:50, name:"Public Records Office of Ireland",       year:1922,  cause:"civil",    lat:53.35,  lon:-6.27,  loc:"Dublin"},
+  {id:51, name:"Several Religious Libraries, Madrid",    year:1931,  cause:"civil",    lat:40.42,  lon:-3.70,  loc:"Madrid"},
+  {id:52, name:"Oriental Library, Shanghai",             year:1932,  cause:"war",      lat:31.23,  lon:121.47, loc:"Shanghai"},
+  {id:53, name:"Institut fuer Sexualwissenschaft",       year:1933,  cause:"govt",     lat:52.52,  lon:13.38,  loc:"Berlin"},
+  {id:54, name:"University of Oviedo Library",           year:1934,  cause:"civil",    lat:43.36,  lon:-5.85,  loc:"Oviedo, Spain"},
+  {id:55, name:"Chinese University Libraries (WWII)",    year:1937,  cause:"war",      lat:30.00,  lon:114.00, loc:"China"},
+  {id:56, name:"National Library of Serbia",             year:1941,  cause:"war",      lat:44.82,  lon:20.46,  loc:"Belgrade"},
+  {id:57, name:"SS. Cyril & Methodius Library",          year:1943,  cause:"war",      lat:42.70,  lon:23.32,  loc:"Sofia, Bulgaria"},
+  {id:58, name:"National Library of Peru",               year:1943,  cause:"fire",     lat:-12.06, lon:-77.04, loc:"Lima, Peru"},
+  {id:59, name:"Krasinski Library, Warsaw",              year:1944,  cause:"govt",     lat:52.25,  lon:21.00,  loc:"Warsaw"},
+  {id:60, name:"Library of the Zamoyski Family",         year:1944,  cause:"govt",     lat:52.24,  lon:21.01,  loc:"Warsaw"},
+  {id:61, name:"Central Archives of Historical Records", year:1944,  cause:"govt",     lat:52.245, lon:21.015, loc:"Warsaw"},
+  {id:62, name:"Private Libraries of Tokyo",             year:1945,  cause:"war",      lat:35.69,  lon:139.69, loc:"Tokyo"},
+  {id:63, name:"Warsaw Public Library",                  year:1945,  cause:"govt",     lat:52.23,  lon:21.03,  loc:"Warsaw"},
+  {id:64, name:"Raczynski Library, Poznan",              year:1945,  cause:"govt",     lat:52.41,  lon:16.93,  loc:"Poznan"},
+  {id:65, name:"Jewish Theological Seminary Library",    year:1966,  cause:"fire",     lat:40.81,  lon:-73.96, loc:"New York City"},
+  {id:66, name:"Lebanese National Library",              year:1975,  cause:"civil",    lat:33.89,  lon:35.50,  loc:"Beirut"},
+  {id:67, name:"National Library of Cambodia",           year:1976,  cause:"govt",     lat:11.57,  lon:104.93, loc:"Phnom Penh"},
+  {id:68, name:"Jaffna Public Library",                  year:1981,  cause:"war",      lat:9.66,   lon:80.01,  loc:"Jaffna, Sri Lanka"},
+  {id:69, name:"Sikh Reference Library",                 year:1984,  cause:"war",      lat:31.62,  lon:74.88,  loc:"Punjab, India"},
+  {id:70, name:"Dalhousie University Law Library",       year:1985,  cause:"fire",     lat:44.63,  lon:-63.59, loc:"Halifax, Canada"},
+  {id:71, name:"Los Angeles Central Library",            year:1986,  cause:"fire",     lat:34.05,  lon:-118.26,loc:"Los Angeles"},
+  {id:72, name:"Academy of Sciences Library, Leningrad", year:1988,  cause:"fire",     lat:59.94,  lon:30.30,  loc:"Leningrad"},
+  {id:73, name:"Central University Library of Bucharest",year:1989,  cause:"civil",    lat:44.43,  lon:26.10,  loc:"Bucharest"},
+  {id:74, name:"Oriental Institute, Sarajevo",           year:1992,  cause:"civil",    lat:43.86,  lon:18.41,  loc:"Sarajevo"},
+  {id:75, name:"National Library of Bosnia",             year:1992,  cause:"civil",    lat:43.85,  lon:18.42,  loc:"Sarajevo"},
+  {id:76, name:"Abkhazian Research Institute Library",   year:1992,  cause:"civil",    lat:43.00,  lon:41.02,  loc:"Sukhumi"},
+  {id:77, name:"Norwich Central Library",                year:1994,  cause:"fire",     lat:52.63,  lon:1.30,   loc:"Norwich, UK"},
+  {id:78, name:"City Library, Linkoping",                year:1996,  cause:"fire",     lat:58.41,  lon:15.62,  loc:"Linkoping, Sweden"},
+  {id:79, name:"Pol-i-Khomri Public Library",            year:1998,  cause:"religion", lat:35.95,  lon:68.71,  loc:"Afghanistan"},
+  {id:80, name:"Iraq National Library and Archive",      year:2003,  cause:"civil",    lat:33.34,  lon:44.39,  loc:"Baghdad"},
+  {id:81, name:"Libraries in 2004 Tsunami",              year:2004,  cause:"fire",     lat:3.32,   lon:95.85,  loc:"Indian Ocean region"},
+  {id:82, name:"Duchess Anna Amalia Library",            year:2004,  cause:"fire",     lat:50.98,  lon:11.33,  loc:"Weimar, Germany"},
+  {id:83, name:"Egyptian Scientific Institute",          year:2011,  cause:"civil",    lat:30.05,  lon:31.25,  loc:"Cairo"},
+  {id:84, name:"People's Library, OWS",                  year:2011,  cause:"govt",     lat:40.71,  lon:-74.01, loc:"New York"},
+  {id:85, name:"Ahmed Baba Institute, Timbuktu",         year:2013,  cause:"religion", lat:16.77,  lon:-3.00,  loc:"Timbuktu, Mali"},
+  {id:86, name:"Ratanda Public Library",                 year:2013,  cause:"civil",    lat:-26.48, lon:28.08,  loc:"South Africa"},
+  {id:87, name:"Fisheries & Oceans Canada Libraries",    year:2013,  cause:"govt",     lat:45.42,  lon:-75.70, loc:"Canada"},
+  {id:88, name:"Saeh Library, Tripoli",                  year:2014,  cause:"religion", lat:34.44,  lon:35.84,  loc:"Tripoli, Lebanon"},
+  {id:89, name:"National Archives of Bosnia (partial)",  year:2014,  cause:"civil",    lat:43.855, lon:18.405, loc:"Sarajevo"},
+  {id:90, name:"Mosul University Libraries",             year:2014,  cause:"religion", lat:36.34,  lon:43.13,  loc:"Mosul, Iraq"},
+  {id:91, name:"Libraries of Al Anbar",                  year:2014,  cause:"religion", lat:33.42,  lon:43.30,  loc:"Al Anbar, Iraq"},
+  {id:92, name:"Glasgow School of Art Library",          year:2014,  cause:"fire",     lat:55.87,  lon:-4.26,  loc:"Glasgow, Scotland"},
+  {id:93, name:"Mosul Public Library",                   year:2015,  cause:"religion", lat:36.33,  lon:43.12,  loc:"Mosul, Iraq"},
+  {id:94, name:"INION Library, Moscow",                  year:2015,  cause:"fire",     lat:55.67,  lon:37.56,  loc:"Moscow"},
+  {id:95, name:"Mzuzu University Library",               year:2015,  cause:"fire",     lat:-11.46, lon:34.02,  loc:"Mzuzu, Malawi"},
+  {id:96, name:"Howard College Law Library",             year:2016,  cause:"civil",    lat:-29.87, lon:30.98,  loc:"Durban, South Africa"},
+  {id:97, name:"National Museum of Brazil Library",      year:2018,  cause:"fire",     lat:-22.91, lon:-43.22, loc:"Rio de Janeiro"},
+  {id:98, name:"Jagger Library, Cape Town",              year:2021,  cause:"fire",     lat:-33.96, lon:18.46,  loc:"Cape Town"},
+  {id:99, name:"Azizia Madrasa Library",                 year:2023,  cause:"civil",    lat:25.18,  lon:85.52,  loc:"Bihar Sharif, India"},
+  {id:100,name:"Diana Tamari Sabbagh Library",           year:2023,  cause:"war",      lat:31.50,  lon:34.46,  loc:"Gaza City"},
+  {id:101,name:"Edward Said Public Library",             year:2023,  cause:"war",      lat:31.55,  lon:34.50,  loc:"Beit Lahia, Gaza"},
+  {id:102,name:"Gaza Libraries (2023-24)",               year:2023,  cause:"war",      lat:31.505, lon:34.47,  loc:"Gaza, Palestine"},
+  {id:103,name:"Mughal Imperial Library, Delhi",         year:1857,  cause:"war",      lat:28.65,  lon:77.23,  loc:"Delhi, India"},
+  {id:104,name:"Library of Banu Ammar (expanded)",       year:1109,  cause:"war",      lat:34.445, lon:35.845, loc:"Tripoli"},
+  {id:105,name:"Bibliotheca Corviniana (expanded)",      year:1526,  cause:"war",      lat:47.505, lon:19.045, loc:"Buda, Hungary"},
+  {id:106,name:"Mughal Imperial Library, Delhi (2)",     year:1857,  cause:"war",      lat:28.655, lon:77.235, loc:"Delhi, India"},
+  {id:107,name:"Occupy Wall Street Library",             year:2011,  cause:"govt",     lat:40.715, lon:-74.01, loc:"New York"},
+  {id:108,name:"Library of York (Alcuin context)",       year:782,   cause:"neglect",  lat:53.965, lon:-1.085, loc:"York, England"}
+];
+
+// Sort by year
+LIBRARIES.sort(function(a,b){return a.year - b.year;});
+
+var MIN_YEAR = -1761;
+var MAX_YEAR = 2024;
+var TOTAL_SPAN = MAX_YEAR - MIN_YEAR;
+
+// Equirectangular projection
+var SVG_W = 960, SVG_H = 500;
+function project(lat, lon) {
+  var x = (lon + 180) / 360 * SVG_W;
+  var y = (90 - lat) / 180 * SVG_H;
+  return { x: x, y: y };
+}
+
+// Draw simplified world map using Natural Earth-style paths
+var svgNS = 'http://www.w3.org/2000/svg';
+var countriesG = document.getElementById('countries');
+
+// Simple graticule
+function drawGraticule() {
+  for (var lon = -180; lon <= 180; lon += 30) {
+    var el = document.createElementNS(svgNS, 'line');
+    var x = (lon + 180) / 360 * SVG_W;
+    el.setAttribute('x1', x); el.setAttribute('y1', 0);
+    el.setAttribute('x2', x); el.setAttribute('y2', SVG_H);
+    el.setAttribute('class', 'graticule');
+    countriesG.appendChild(el);
+  }
+  for (var lat = -90; lat <= 90; lat += 30) {
+    var el2 = document.createElementNS(svgNS, 'line');
+    var y = (90 - lat) / 180 * SVG_H;
+    el2.setAttribute('x1', 0); el2.setAttribute('y1', y);
+    el2.setAttribute('x2', SVG_W); el2.setAttribute('y2', y);
+    el2.setAttribute('class', 'graticule');
+    countriesG.appendChild(el2);
+  }
+}
+drawGraticule();
+
+// Continent blobs (simplified polygons — rough shapes for atmosphere)
+var CONTINENTS = [
+  // North America
+  "M 140,60 L 200,55 L 230,70 L 260,65 L 270,80 L 265,100 L 255,115 L 240,130 L 235,150 L 220,160 L 205,175 L 195,180 L 180,170 L 165,165 L 155,145 L 145,130 L 130,120 L 118,105 L 115,90 L 125,72 Z",
+  // South America
+  "M 220,185 L 235,180 L 255,190 L 270,205 L 278,225 L 275,250 L 265,270 L 255,285 L 245,295 L 233,300 L 222,290 L 215,270 L 210,250 L 208,230 L 210,208 Z",
+  // Europe
+  "M 440,48 L 470,45 L 500,52 L 515,60 L 510,72 L 495,78 L 485,88 L 490,98 L 480,108 L 465,112 L 450,108 L 440,98 L 430,88 L 428,75 L 432,62 Z",
+  // Africa
+  "M 445,125 L 475,118 L 505,122 L 525,138 L 538,158 L 540,180 L 535,205 L 525,228 L 510,248 L 490,262 L 472,268 L 455,262 L 440,245 L 430,222 L 425,198 L 428,170 L 435,148 Z",
+  // Asia (big)
+  "M 510,50 L 600,42 L 680,48 L 740,52 L 790,58 L 830,62 L 850,75 L 840,92 L 810,98 L 780,105 L 750,112 L 720,120 L 690,132 L 660,138 L 630,142 L 600,148 L 570,145 L 545,138 L 525,125 L 515,112 L 510,98 L 505,80 Z",
+  // South/SE Asia
+  "M 570,145 L 610,148 L 640,158 L 660,170 L 655,185 L 640,195 L 620,200 L 600,198 L 580,190 L 568,175 Z",
+  // Australia
+  "M 720,270 L 758,262 L 790,268 L 810,282 L 815,300 L 808,318 L 790,330 L 765,335 L 742,328 L 725,315 L 718,298 Z",
+  // Greenland
+  "M 248,28 L 272,22 L 295,25 L 308,38 L 305,52 L 288,60 L 265,58 L 250,48 Z",
+  // Japan
+  "M 810,95 L 822,90 L 832,95 L 828,108 L 815,112 L 805,108 Z"
+];
+
+CONTINENTS.forEach(function(d) {
+  var path = document.createElementNS(svgNS, 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('class', 'land');
+  countriesG.appendChild(path);
+});
+
+// ANIMATION STATE
+var currentYear = MIN_YEAR;
+var isPlaying = false;
+var speed = 1; // years per frame at 60fps => adjust
+var animFrame = null;
+var lastTimestamp = null;
+var yearsPerSecond = 50; // base speed
+var placedIds = {};
+
+var dotsLayer = document.getElementById('dots-layer');
+var animLayer = document.getElementById('anim-layer');
+var yearDisplay = document.getElementById('year-display');
+var yearNow = document.getElementById('year-now');
+var cntTotal = document.getElementById('cnt-total');
+var cntCentury = document.getElementById('cnt-century');
+var cntYear = document.getElementById('cnt-year');
+var progressFill = document.getElementById('progress-fill');
+var scrubberEl = document.getElementById('scrubber');
+var flashLog = document.getElementById('flash-log');
+
+function yearToStr(y) {
+  return y < 0 ? (Math.abs(y) + ' BC') : (y + ' AD');
+}
+
+function getPct(y) {
+  return (y - MIN_YEAR) / TOTAL_SPAN * 100;
+}
+
+function placeLib(lib) {
+  if (placedIds[lib.id]) return;
+  placedIds[lib.id] = true;
+  var p = project(lib.lat, lib.lon);
+  var color = CAUSE_COLORS[lib.cause] || '#888';
+
+  // Persistent dot
+  var dot = document.createElementNS(svgNS, 'circle');
+  dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
+  dot.setAttribute('r', 3.5); dot.setAttribute('fill', color);
+  dot.setAttribute('fill-opacity', '0.75');
+  dot.setAttribute('class', 'lib-dot');
+  dot.setAttribute('tabindex', '0');
+  dot.setAttribute('role', 'img');
+  dot.setAttribute('aria-label', lib.name + ' — ' + yearToStr(lib.year));
+  dotsLayer.appendChild(dot);
+
+  // Burst ring animation
+  var ring = document.createElementNS(svgNS, 'circle');
+  ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y);
+  ring.setAttribute('r', '0'); ring.setAttribute('fill', 'none');
+  ring.setAttribute('stroke', color); ring.setAttribute('class', 'lib-ring');
+  animLayer.appendChild(ring);
+
+  // Flash fill
+  var flash = document.createElementNS(svgNS, 'circle');
+  flash.setAttribute('cx', p.x); flash.setAttribute('cy', p.y);
+  flash.setAttribute('r', '0'); flash.setAttribute('fill', color);
+  flash.setAttribute('class', 'lib-flash');
+  animLayer.appendChild(flash);
+
+  setTimeout(function() {
+    if (ring.parentNode) ring.parentNode.removeChild(ring);
+    if (flash.parentNode) flash.parentNode.removeChild(flash);
+  }, 1400);
+
+  // Flash log
+  if (speed <= 3) {
+    var entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.style.borderColor = color;
+    entry.textContent = yearToStr(lib.year) + ' — ' + lib.name;
+    flashLog.insertBefore(entry, flashLog.firstChild);
+    if (flashLog.children.length > 4) flashLog.removeChild(flashLog.lastChild);
+    setTimeout(function(){ if(entry.parentNode) entry.parentNode.removeChild(entry); }, 4000);
+  }
+}
+
+function updateStats() {
+  var total = 0, inCentury = 0, inYear = 0;
+  var currentCentury = Math.floor(currentYear / 100) * 100;
+  LIBRARIES.forEach(function(lib) {
+    if (lib.year <= currentYear) {
+      total++;
+      if (lib.year >= currentCentury && lib.year < currentCentury + 100) inCentury++;
+      if (lib.year === Math.round(currentYear)) inYear++;
+    }
+  });
+  cntTotal.textContent = total;
+  cntCentury.textContent = inCentury;
+  cntYear.textContent = inYear > 0 ? inYear : '—';
+}
+
+function updateHUD() {
+  var ys = yearToStr(Math.round(currentYear));
+  yearDisplay.textContent = ys;
+  yearNow.textContent = ys;
+  var pct = getPct(currentYear);
+  progressFill.style.width = pct + '%';
+  scrubberEl.style.left = pct + '%';
+  document.getElementById('progress-track').setAttribute('aria-valuenow', Math.round(pct));
+  // Glow intensity based on recency
+  var intensity = Math.min(0.18, 0.04 + (currentYear > 1900 ? 0.14 : 0));
+  yearDisplay.style.color = 'rgba(224,85,32,' + intensity + ')';
+}
+
+function stepTo(targetYear) {
+  LIBRARIES.forEach(function(lib) {
+    if (lib.year <= targetYear && !placedIds[lib.id]) {
+      placeLib(lib);
+    }
+  });
+  currentYear = targetYear;
+  updateHUD();
+  updateStats();
+}
+
+function animate(timestamp) {
+  if (!lastTimestamp) lastTimestamp = timestamp;
+  var delta = (timestamp - lastTimestamp) / 1000; // seconds
+  lastTimestamp = timestamp;
+  var advance = yearsPerSecond * speed * delta;
+  var nextYear = currentYear + advance;
+  if (nextYear >= MAX_YEAR) {
+    nextYear = MAX_YEAR;
+    stepTo(nextYear);
+    stopPlayback();
+    return;
+  }
+  stepTo(nextYear);
+  animFrame = requestAnimationFrame(animate);
+}
+
+function startPlayback() {
+  if (currentYear >= MAX_YEAR) resetAll();
+  isPlaying = true;
+  lastTimestamp = null;
+  document.getElementById('btn-play').textContent = '⏸';
+  document.getElementById('btn-play').setAttribute('aria-pressed', 'true');
+  document.getElementById('btn-play').setAttribute('aria-label', 'Pause animation');
+  animFrame = requestAnimationFrame(animate);
+}
+
+function stopPlayback() {
+  isPlaying = false;
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+  document.getElementById('btn-play').textContent = '▶';
+  document.getElementById('btn-play').setAttribute('aria-pressed', 'false');
+  document.getElementById('btn-play').setAttribute('aria-label', 'Play animation');
+}
+
+function resetAll() {
+  stopPlayback();
+  currentYear = MIN_YEAR;
+  placedIds = {};
+  while (dotsLayer.firstChild) dotsLayer.removeChild(dotsLayer.firstChild);
+  while (animLayer.firstChild) animLayer.removeChild(animLayer.firstChild);
+  while (flashLog.firstChild) flashLog.removeChild(flashLog.firstChild);
+  updateHUD();
+  updateStats();
+}
+
+// CONTROLS
+document.getElementById('btn-play').addEventListener('click', function() {
+  if (isPlaying) stopPlayback(); else startPlayback();
+});
+document.getElementById('btn-reset').addEventListener('click', resetAll);
+document.querySelectorAll('[data-speed]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    speed = parseFloat(btn.dataset.speed);
+    document.querySelectorAll('[data-speed]').forEach(function(b) {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+  });
+});
+
+// SCRUBBER
+var isDragging = false;
+function scrubTo(clientX) {
+  var track = document.getElementById('progress-track');
+  var rect = track.getBoundingClientRect();
+  var pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  var targetYear = MIN_YEAR + pct * TOTAL_SPAN;
+  // Place all libs up to this year
+  placedIds = {};
+  while (dotsLayer.firstChild) dotsLayer.removeChild(dotsLayer.firstChild);
+  while (animLayer.firstChild) animLayer.removeChild(animLayer.firstChild);
+  currentYear = MIN_YEAR;
+  LIBRARIES.forEach(function(lib) {
+    if (lib.year <= targetYear) placeLib(lib);
+  });
+  currentYear = targetYear;
+  updateHUD();
+  updateStats();
+}
+document.getElementById('progress-track').addEventListener('mousedown', function(e) {
+  isDragging = true; stopPlayback(); scrubTo(e.clientX);
+});
+document.getElementById('progress-track').addEventListener('touchstart', function(e) {
+  isDragging = true; stopPlayback(); scrubTo(e.touches[0].clientX);
+}, {passive:true});
+window.addEventListener('mousemove', function(e) { if (isDragging) scrubTo(e.clientX); });
+window.addEventListener('touchmove', function(e) { if (isDragging) scrubTo(e.touches[0].clientX); }, {passive:true});
+window.addEventListener('mouseup', function() { isDragging = false; });
+window.addEventListener('touchend', function() { isDragging = false; });
+
+// KEYBOARD on track
+document.getElementById('progress-track').addEventListener('keydown', function(e) {
+  var step = TOTAL_SPAN / 100;
+  if (e.key === 'ArrowRight') stepTo(Math.min(MAX_YEAR, currentYear + step));
+  if (e.key === 'ArrowLeft') stepTo(Math.max(MIN_YEAR, currentYear - step));
+});
+
+// SVG TOOLTIP
+document.getElementById('map-svg').addEventListener('mousemove', function(e) {
+  var target = e.target;
+  if (target.classList.contains('lib-dot')) {
+    // Find lib by position
+    var cx = parseFloat(target.getAttribute('cx'));
+    var cy = parseFloat(target.getAttribute('cy'));
+    var found = null;
+    LIBRARIES.forEach(function(lib) {
+      var p = project(lib.lat, lib.lon);
+      if (Math.abs(p.x - cx) < 1 && Math.abs(p.y - cy) < 1) found = lib;
+    });
+    if (found) {
+      var tt = document.getElementById('tooltip');
+      tt.style.display = 'block';
+      tt.style.left = (e.pageX + 14) + 'px';
+      tt.style.top  = (e.pageY - 30) + 'px';
+      document.getElementById('tt-name').textContent = found.name;
+      document.getElementById('tt-loc').textContent = found.loc + ' · ' + yearToStr(found.year);
+    }
+  } else {
+    document.getElementById('tooltip').style.display = 'none';
+  }
+});
+
+// ADD ERA TICK MARKS
+var eras = [
+  {year:-1000,label:'-1000'},{year:0,label:'0'},{year:500,label:'500'},
+  {year:1000,label:'1000'},{year:1500,label:'1500'},{year:1800,label:'1800'},
+  {year:1900,label:'1900'},{year:1950,label:'1950'},{year:2000,label:'2000'}
+];
+var track = document.getElementById('progress-track');
+eras.forEach(function(e) {
+  var pct = getPct(e.year);
+  var tick = document.createElement('div');
+  tick.className = 'era-tick';
+  tick.style.left = pct + '%';
+  track.appendChild(tick);
+  var lbl = document.createElement('div');
+  lbl.className = 'era-tick-label';
+  lbl.style.left = pct + '%';
+  lbl.textContent = e.label;
+  track.appendChild(lbl);
+});
+
+// INIT
+updateHUD();
+updateStats();
+</script>
+</body>
+</html>
