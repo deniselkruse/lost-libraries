@@ -69,7 +69,7 @@ The dataset extends the original 99-entry blog dataset with 9 additional entries
 
 All CDN dependencies are loaded from `cdnjs.cloudflare.com` and `fonts.googleapis.com`. No API keys required. No build step required.
 
-### Accessibility
+<!--### Accessibility
 
 All three files implement:
 - Skip navigation links
@@ -85,45 +85,7 @@ All three files implement:
 ### Browser Support
 
 Tested in current versions of Chrome, Firefox, Safari, and Edge. The timeline SVG animation uses `requestAnimationFrame` and CSS animations — both universally supported. The map uses Leaflet 1.9.4 which supports IE11+, though the dark tile filter may degrade on older browsers.
-
----
-
-## Local Development
-
-No build tools required. Open any file directly in a browser, or serve locally:
-
-```bash
-# Python
-python3 -m http.server 8000
-
-# Node
-npx serve .
-
-# VS Code
-# Install the "Live Server" extension, right-click index.html → Open with Live Server
-```
-
----
-
-## Deployment (GitHub Pages)
-
-```bash
-# 1. Initialize git
-git init
-git add .
-git commit -m "Initial commit: Lost Libraries visualization"
-
-# 2. Create a repo on github.com, then push
-git remote add origin https://github.com/deniselkruse/lost-libraries.git
-git branch -M main
-git push -u origin main
-```
-
-Then go to your repository → **Settings** → **Pages** → Source: **Deploy from branch** → Branch: `main` → Folder: `/ (root)` → **Save**.
-
-Your site will be live at `https://deniselkruse.github.io/lost-libraries/` within 1–2 minutes.
-
----
+--- -->
 
 ## Recommended Further Reading
 
