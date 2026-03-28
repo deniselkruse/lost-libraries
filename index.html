@@ -62,7 +62,7 @@
       left: 1rem;
       background: var(--focus);
       color: #000;
-      font-family: 'Courier Prime', monospace;
+      font-family: 'Roboto Flex', monospace;
       font-size: var(--fs-mono);
       font-weight: 700;
       padding: .6rem 1.2rem;
@@ -160,7 +160,6 @@
     }
 
     .hero-sub {
-      font-size: clamp(1.1rem, 3vw, 1.45rem);
       font-style: italic;
       color: var(--aged);
       max-width: 580px;
@@ -467,21 +466,6 @@
       transform: translateX(-50%);
       writing-mode: vertical-lr;
       white-space: nowrap
-    }
-
-    /* NEW BADGE */
-    .new-badge {
-      font-family: 'Courier Prime', monospace;
-      font-size: .6rem;
-      letter-spacing: .1em;
-      text-transform: uppercase;
-      background: rgba(224, 104, 40, .18);
-      color: var(--ember);
-      border: 1px solid rgba(224, 104, 40, .35);
-      padding: .1rem .45rem;
-      border-radius: 2px;
-      vertical-align: middle;
-      margin-left: .4rem
     }
 
     /* FILTERS */
@@ -849,7 +833,7 @@
 
   <header class="hero" role="banner">
     <div class="flame" aria-hidden="true"></div>
-    <p class="eyebrow f1">A Chronicle of Erasure &middot; 1761 BC &mdash; 2024 AD</p>
+    <p class="eyebrow f1">A Chronicle of Erasure <br> 1761 BC &mdash; 2024 AD</p>
     <h1 class="hero-title mt-2 mb-3 f2">The Lost<br><em>Libraries</em></h1>
     <p class="hero-sub f3">Every book that burns takes with it a world that will never be reconstructed. This is the
       record of what we chose to forget.</p>
@@ -911,11 +895,8 @@
       <div class="container-xl px-3 px-md-4">
         <div class="sec-bar reveal">
           <p class="sec-num mb-1">03 &mdash; The Catalogue</p>
-          <h2 class="sec-title" id="cat-h">Each one, irreplaceable <span class="new-badge"
-              aria-label="9 newly added entries">+9 new</span></h2>
-          <p class="sec-body mt-2">Filter by cause of destruction. Select any entry to read its full story. Entries
-            marked <span style="color:var(--ember)" aria-hidden="true">&#9679;</span> <span
-              class="visually-hidden">marked new</span> are beyond the original 99-entry dataset.</p>
+          <h2 class="sec-title" id="cat-h">Each one, irreplaceable</h2>
+          <p class="sec-body mt-2">Filter by cause of destruction. Select any entry to read its full story.</p>
         </div>
         <div class="d-flex flex-wrap gap-2 mt-3 mb-2 reveal" role="group" aria-label="Filter by cause" id="filters">
         </div>
@@ -944,9 +925,8 @@
   <footer class="closing" role="contentinfo">
     <div class="c-symbol" aria-hidden="true">&#8734;</div>
     <h2 class="c-title">What we cannot recover</h2>
-    <p class="c-body">The 108 libraries recorded here are only the ones we know about. For every library whose
-      destruction was witnessed, how many others vanished without a chronicler? The true count of erased knowledge is,
-      by definition, unknowable &mdash; and that may be the most devastating fact of all.</p>
+    <p class="c-body">The libraries recorded here are only the ones we know about. For every library whose
+      destruction was witnessed, how many others vanished without a chronicler? The true count of erased knowledge unknowable, and that may be the most devastating fact of all.</p>
   </footer>
 
   <div class="modal fade" id="libModal" tabindex="-1" aria-labelledby="libModalLabel" aria-modal="true" role="dialog">
@@ -1063,7 +1043,7 @@
     /* 077 */ { name: "Edward Said Public Library", location: "Beit Lahia, Palestine", year: 2023, cause: "war", perp: "Israeli military", desc: "The Edward Said Public Library in Beit Lahia was destroyed during the Gaza war. Named after the Palestinian-American intellectual, the library held collections serving the local community and preserving Palestinian cultural memory accumulated over generations." },
     /* 078 */ { name: "Royal Library of Portugal, Lisbon", location: "Lisbon, Portugal", year: 1755, cause: "fire", perp: "Great Lisbon Earthquake and fire", desc: "The catastrophic Lisbon earthquake of 1755 triggered a tsunami and fires that burned for six days. The Royal Library in the Palace of Ribeira, holding 70,000 volumes including the only surviving records of Vasco da Gama's original voyages, was completely destroyed. The historical records of the Age of Discovery were lost in an afternoon of geological violence." },
     /* 079 */ { name: "University of Tokyo Library", location: "Tokyo, Japan", year: 1923, cause: "fire", perp: "Great Kanto Earthquake and fire", desc: "The catastrophic Great Kanto Earthquake of 1923 and the firestorms that followed destroyed the University of Tokyo Library. The collection included the Max Muller Library of South Asian texts and the Nishimura collection of rare Japanese historical documents — irreplaceable primary sources for Asian studies." },
-    /* 080 */ { name: "Library of Celsus", location: "Ephesus, Asia Minor", year: 262, cause: "fire", perp: "Herulian invasion / earthquake", isNew: true, desc: "The third largest library of the ancient world, holding 12,000 scrolls. Built as a monument to the Roman senator Celsus, its magnificent facade still stands in modern Turkey. Destroyed in 262 AD during the Herulian sack of Ephesus, possibly preceded by an earthquake. The building survived as a shell for centuries after the knowledge inside was ash." },
+    /* 080 */ { name: "Library of Celsus", location: "Ephesus, Asia Minor", year: 262, cause: "fire", perp: "Herulian invasion / earthquake", desc: "The third largest library of the ancient world, holding 12,000 scrolls. Built as a monument to the Roman senator Celsus, its magnificent facade still stands in modern Turkey. Destroyed in 262 AD during the Herulian sack of Ephesus, possibly preceded by an earthquake. The building survived as a shell for centuries after the knowledge inside was ash." },
     /* 081 */ { name: "Swedish National Library, Tre Kronor", location: "Stockholm, Sweden", year: 1697, cause: "fire", perp: "Accidental fire", desc: "The Tre Kronor castle fire of 1697 destroyed the Swedish National Library and Royal Archives housed within it. Centuries of Swedish royal records, medieval manuscripts, and the accumulated archives of the Vasa dynasty were lost. The fire began in a chimney and spread so rapidly that little could be saved." },
     /* 082 */ { name: "University of Copenhagen Library", location: "Copenhagen, Denmark", year: 1728, cause: "fire", perp: "Copenhagen Fire of 1728", desc: "The great fire that devastated central Copenhagen in 1728 consumed the University Library, one of Scandinavia's most important scholarly collections. Thousands of volumes of Nordic history, theology, and natural philosophy — including irreplaceable manuscripts of Old Norse literature — were lost in the catastrophic blaze." },
     /* 083 */ { name: "Cotton Library, London", location: "London, UK", year: 1731, cause: "fire", perp: "Accidental fire at Ashburnham House", desc: "The Cotton Library, assembled by antiquary Robert Cotton and containing irreplaceable Anglo-Saxon manuscripts including Beowulf and two copies of Magna Carta, was severely damaged by fire at Ashburnham House in 1731. Around a quarter of the collection was destroyed or badly damaged. Many manuscripts crumbled to fragments that scholars spent centuries painstakingly reconstructing." },
@@ -1083,15 +1063,15 @@
     /* 097 */ { name: "Libraries Damaged in 2004 Indian Ocean Tsunami", location: "Indonesia, Malaysia, Maldives, Thailand, Sri Lanka", year: 2004, cause: "fire", perp: "2004 Indian Ocean earthquake and tsunami", desc: "The catastrophic 2004 Indian Ocean earthquake and tsunami caused widespread damage to libraries, archives, and museums across multiple countries. Local libraries, school collections, and municipal archives were swept away or inundated across coastal communities in Indonesia, Thailand, Sri Lanka, and the Maldives, destroying records of local history, culture, and community life." },
     /* 098 */ { name: "Duchess Anna Amalia Library", location: "Weimar, Germany", year: 2004, cause: "fire", perp: "Accidental electrical fault", isNew: true, desc: "Goethe's library — one of the most important repositories of German literary heritage, serving Goethe, Schiller, and Herder — was devastated by an accidental electrical fire in September 2004. Around 50,000 books were destroyed and 35,000 damaged. In a rare hopeful story, volunteers formed a human chain through the night passing burning books to safety. The library was restored and reopened in 2007." },
     /* 099 */ { name: "Dalhousie University Law Library", location: "Halifax, Nova Scotia, Canada", year: 1985, cause: "fire", perp: "Lightning strike (electrical)", desc: "A lightning strike in August 1985 caused a short circuit that started a fire at the Dalhousie University Law Library. The fire destroyed significant portions of the legal collection, including rare Canadian legal texts and historical case records. It remains one of the most significant accidental library losses in Canadian history." },
-    /* 100 - NEW */ { name: "Library of Pergamon", location: "Pergamon, Asia Minor", year: -133, cause: "war", perp: "Rome / Mark Antony", isNew: true, desc: "The second greatest library of antiquity after Alexandria, holding an estimated 200,000 scrolls. When the last king of Pergamon bequeathed his kingdom to Rome, the library's fate became entangled in power struggles. Mark Antony allegedly stripped its entire contents and gave them to Cleopatra as a gift — transferring one civilisation's memory to another as a romantic gesture." },
-    /* 101 - NEW */ { name: "Library of York (Eboracum)", location: "York, England", year: 867, cause: "war", perp: "Viking Great Heathen Army", isNew: true, desc: "York was the greatest centre of learning in 8th-century Europe, its library assembled by the scholar Alcuin — tutor to Charlemagne and a key architect of the Carolingian Renaissance. The Viking Great Heathen Army's sack in 867 AD effectively ended York's role as a European intellectual hub. Alcuin had already left for France; what remained was lost." },
-    /* 102 - NEW */ { name: "Royal Library of Lisbon (expanded)", location: "Lisbon, Portugal", year: 1755, cause: "fire", perp: "Great Lisbon Earthquake", isNew: true, desc: "Beyond the general destruction of the 1755 earthquake, the Royal Library in the Ribeira Palace specifically held 70,000 volumes including the only surviving logs and charts from Vasco da Gama's original voyages and early Portuguese imperial explorations. These records of the Age of Discovery — irreplaceable primary sources — were completely destroyed, a loss that historians still lament." },
-    /* 103 - NEW */ { name: "Mughal Imperial Library, Delhi", location: "Delhi, India", year: 1857, cause: "war", perp: "British forces (Indian Rebellion)", isNew: true, desc: "The Mughal court's library represented centuries of accumulated scholarship — Persian manuscripts, Sanskrit translations, illuminated Qurans, works of Mughal art and science. When British forces entered Delhi following the suppression of the 1857 rebellion, the library was looted or destroyed. The last great repository of Mughal intellectual culture was dispersed in an afternoon." },
-    /* 104 - NEW */ { name: "Library of Banu Ammar (expanded)", location: "Tripoli, Fatimid Caliphate", year: 1109, cause: "war", perp: "Crusaders under Baldwin I", isNew: true, desc: "The Dar al-Ilm of Tripoli was among the greatest libraries of the medieval world. Established by the Banu Ammar dynasty, it served as a centre of Islamic scholarship for over a century. Muslim chroniclers reported that as Crusaders looted the city, scholars wept watching manuscripts — some unique in all the world — fed to the flames over the course of several days." },
-    /* 105 - NEW */ { name: "Bibliotheca Corviniana (expanded)", location: "Buda, Hungary", year: 1526, cause: "war", perp: "Ottoman Turks", isNew: true, desc: "The humanist library of King Matthias Corvinus was the jewel of the Renaissance north of the Alps — over 2,000 illuminated manuscripts in Greek, Latin, and Hebrew, many unique copies commissioned by the king himself. At Mohacs in 1526 the Hungarian kingdom collapsed and the library was scattered. Some volumes ended up in Istanbul; scholars spent centuries tracking down survivors across European collections." },
-    /* 106 - NEW */ { name: "Gaza Libraries Combined (2023-24)", location: "Gaza, Palestine", year: 2023, cause: "war", perp: "Israeli military", isNew: true, desc: "Beyond the Diana Tamari Sabbagh Library and Edward Said Public Library, numerous smaller libraries, school collections, university archives, and community reading rooms across Gaza were destroyed during the 2023-2024 conflict. The collective destruction represents a systematic loss of Palestinian documentary heritage and the erasure of cultural memory spanning generations." },
-    /* 107 - NEW */ { name: "Occupy Wall Street Library (expanded)", location: "New York City, USA", year: 2011, cause: "govt", perp: "NYC Dept. of Sanitation", isNew: true, desc: "The People's Library was a grassroots collection that grew to over 5,500 catalogued volumes donated by supporters worldwide. When city authorities cleared the Occupy encampment at Zuccotti Park in November 2011, the library was seized without warning. Books were dumped in garbage trucks, later found damaged or destroyed at a city sanitation facility. A court later found the city liable for the destruction." },
-    /* 108 - NEW */ { name: "Library of York (additional context)", location: "York, England", year: 782, cause: "neglect", perp: "Loss on death of Alcuin / dispersal", isNew: true, desc: "Alcuin of York built what he called the finest library in Europe — a collection spanning theology, classical literature, grammar, and natural philosophy that he catalogued in a poem listing over 200 authors. When Alcuin left York in 782 AD to join Charlemagne's court, he took many of the most important volumes with him to seed the libraries of Frankish Europe. What remained at York was later destroyed by the Vikings. The library's influence survives in the libraries Alcuin built in France." }
+    /* 100 */ { name: "Library of Pergamon", location: "Pergamon, Asia Minor", year: -133, cause: "war", perp: "Rome / Mark Antony", desc: "The second greatest library of antiquity after Alexandria, holding an estimated 200,000 scrolls. When the last king of Pergamon bequeathed his kingdom to Rome, the library's fate became entangled in power struggles. Mark Antony allegedly stripped its entire contents and gave them to Cleopatra as a gift — transferring one civilisation's memory to another as a romantic gesture." },
+    /* 101 */ { name: "Library of York (Eboracum)", location: "York, England", year: 867, cause: "war", perp: "Viking Great Heathen Army", desc: "York was the greatest centre of learning in 8th-century Europe, its library assembled by the scholar Alcuin — tutor to Charlemagne and a key architect of the Carolingian Renaissance. The Viking Great Heathen Army's sack in 867 AD effectively ended York's role as a European intellectual hub. Alcuin had already left for France; what remained was lost." },
+    /* 102 */ { name: "Royal Library of Lisbon (expanded)", location: "Lisbon, Portugal", year: 1755, cause: "fire", perp: "Great Lisbon Earthquake", desc: "Beyond the general destruction of the 1755 earthquake, the Royal Library in the Ribeira Palace specifically held 70,000 volumes including the only surviving logs and charts from Vasco da Gama's original voyages and early Portuguese imperial explorations. These records of the Age of Discovery — irreplaceable primary sources — were completely destroyed, a loss that historians still lament." },
+    /* 103 */ { name: "Mughal Imperial Library, Delhi", location: "Delhi, India", year: 1857, cause: "war", perp: "British forces (Indian Rebellion)", desc: "The Mughal court's library represented centuries of accumulated scholarship — Persian manuscripts, Sanskrit translations, illuminated Qurans, works of Mughal art and science. When British forces entered Delhi following the suppression of the 1857 rebellion, the library was looted or destroyed. The last great repository of Mughal intellectual culture was dispersed in an afternoon." },
+    /* 104  */ { name: "Library of Banu Ammar (expanded)", location: "Tripoli, Fatimid Caliphate", year: 1109, cause: "war", perp: "Crusaders under Baldwin I",  desc: "The Dar al-Ilm of Tripoli was among the greatest libraries of the medieval world. Established by the Banu Ammar dynasty, it served as a centre of Islamic scholarship for over a century. Muslim chroniclers reported that as Crusaders looted the city, scholars wept watching manuscripts — some unique in all the world — fed to the flames over the course of several days." },
+    /* 105 */ { name: "Bibliotheca Corviniana (expanded)", location: "Buda, Hungary", year: 1526, cause: "war", perp: "Ottoman Turks", desc: "The humanist library of King Matthias Corvinus was the jewel of the Renaissance north of the Alps — over 2,000 illuminated manuscripts in Greek, Latin, and Hebrew, many unique copies commissioned by the king himself. At Mohacs in 1526 the Hungarian kingdom collapsed and the library was scattered. Some volumes ended up in Istanbul; scholars spent centuries tracking down survivors across European collections." },
+    /* 106 */ { name: "Gaza Libraries Combined (2023-24)", location: "Gaza, Palestine", year: 2023, cause: "war", perp: "Israeli military",  desc: "Beyond the Diana Tamari Sabbagh Library and Edward Said Public Library, numerous smaller libraries, school collections, university archives, and community reading rooms across Gaza were destroyed during the 2023-2024 conflict. The collective destruction represents a systematic loss of Palestinian documentary heritage and the erasure of cultural memory spanning generations." },
+    /* 107 */ { name: "Occupy Wall Street Library (expanded)", location: "New York City, USA", year: 2011, cause: "govt", perp: "NYC Dept. of Sanitation", desc: "The People's Library was a grassroots collection that grew to over 5,500 catalogued volumes donated by supporters worldwide. When city authorities cleared the Occupy encampment at Zuccotti Park in November 2011, the library was seized without warning. Books were dumped in garbage trucks, later found damaged or destroyed at a city sanitation facility. A court later found the city liable for the destruction." },
+    /* 108 */ { name: "Library of York (additional context)", location: "York, England", year: 782, cause: "neglect", perp: "Loss on death of Alcuin / dispersal", desc: "Alcuin of York built what he called the finest library in Europe — a collection spanning theology, classical literature, grammar, and natural philosophy that he catalogued in a poem listing over 200 authors. When Alcuin left York in 782 AD to join Charlemagne's court, he took many of the most important volumes with him to seed the libraries of Frankish Europe. What remained at York was later destroyed by the Vikings. The library's influence survives in the libraries Alcuin built in France." }
     ];
 
  var RECS = [
@@ -1178,9 +1158,9 @@
         var card = document.createElement('button');
         card.className = 'lib-card';
         card.setAttribute('role', 'listitem');
-        card.setAttribute('aria-label', lib.name + ', ' + lib.location + ', ' + yr + (lib.isNew ? ', newly added' : '') + '. ' + c.label + '. Press Enter for details.');
+        card.setAttribute('aria-label', lib.name + ', ' + lib.location + ', ' + yr + '. ' + c.label + '. Press Enter for details.');
         card.style.setProperty('--lc', c.color);
-        card.innerHTML = '<div class="lib-name">' + lib.name + (lib.isNew ? '<span class="new-badge" aria-hidden="true">new</span>' : '') + '</div><div class="lib-meta">' + lib.location + ' &middot; ' + yr + '</div><span class="lib-dot" style="background:' + c.color + '" aria-hidden="true"></span><span class="lib-cause">' + c.label + '</span>';
+        card.innerHTML = '<div class="lib-name">' + lib.name + '</div><div class="lib-meta">' + lib.location + ' &middot; ' + yr + '</div><span class="lib-dot" style="background:' + c.color + '" aria-hidden="true"></span><span class="lib-cause">' + c.label + '</span>';
         card.onclick = function () { openModal(lib); };
         lgrid.appendChild(card);
       });
