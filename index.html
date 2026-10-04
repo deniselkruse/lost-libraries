@@ -76,14 +76,14 @@
     .chart-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:.5rem;scrollbar-width:thin;scrollbar-color:var(--ash) transparent}
     .chart-wrap::-webkit-scrollbar{height:4px}
     .chart-wrap::-webkit-scrollbar-thumb{background:var(--ash);border-radius:2px}
-    .chart{display:flex;align-items:flex-end;gap:5px;height:180px;min-width:700px;padding-bottom:2.5rem;position:relative}
+    .chart{display:flex;align-items:flex-end;gap:5px;height:230px;min-width:620px;padding-bottom:3.1rem;position:relative}
     .cbar-wrap{flex:1;min-width:24px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
-    .cbar{width:100%;min-height:3px;border-radius:2px 2px 0 0;transition:opacity .2s;display:flex;flex-direction:column-reverse;overflow:hidden;background:var(--ember)}
+    .cbar{width:100%;min-height:9px;border-radius:2px 2px 0 0;transition:opacity .2s;display:flex;flex-direction:column-reverse;overflow:hidden;background:var(--ember)}
     .cbar i{display:block;width:100%;min-height:1px}
     .cbar:hover{filter:brightness(1.25)}
     
-    .cbar-count{font-family:'Courier Prime',monospace;font-size:.58rem;color:var(--aged);position:absolute;top:-1.2rem;left:50%;transform:translateX(-50%);white-space:nowrap}
-    .cbar-label{font-family:'Courier Prime',monospace;font-size:.45rem;color:var(--smoke);position:absolute;bottom:-2rem;left:50%;transform:translateX(-50%);writing-mode:vertical-lr;white-space:nowrap}
+    .cbar-count{font-family:'Courier Prime',monospace;font-size:.68rem;color:var(--aged);position:absolute;top:-1.2rem;left:50%;transform:translateX(-50%);white-space:nowrap}
+    .cbar-label{font-family:'Courier Prime',monospace;font-size:.6rem;color:var(--smoke);position:absolute;bottom:-2rem;left:50%;transform:translateX(-50%);writing-mode:vertical-lr;white-space:nowrap}
 
     /* NEW BADGE */
 
@@ -226,6 +226,22 @@
       .sec-body,.c-body{max-width:68ch}
     }
   
+    /* ---------- TIMELINE CALL TO ACTION (section 02) ---------- */
+    .tl-cta{
+      margin-top:1.4rem;padding:1.25rem;
+      border:1px solid rgba(201,185,154,.14);border-left:3px solid var(--ember);
+      background:rgba(255,255,255,.025);
+      display:flex;gap:1.1rem;align-items:center;flex-wrap:wrap;
+    }
+    .tl-cta-text{flex:1;min-width:13rem}
+    .tl-cta-text b{display:block;font-family:'Courier Prime',monospace;
+      font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.18em;text-transform:uppercase;
+      color:var(--gold);font-weight:400;margin-bottom:.3rem}
+    .tl-cta-text span{display:block;font-size:clamp(1.0625rem,3.6vw,1.1rem);
+      color:var(--aged);line-height:1.6}
+    @media(max-width:560px){.tl-cta{flex-direction:column;align-items:stretch}
+      .tl-cta .map-open{justify-content:center}}
+
     /* ---------- MAP PREVIEW (section 03) ---------- */
     .map-card{
       position:relative;border:1px solid rgba(201,185,154,.14);
@@ -278,6 +294,7 @@
       .map-cta{flex-direction:column;align-items:stretch;gap:.8rem}
       .map-open{justify-content:center}
     }
+  
   </style>
 </head>
 <body>
@@ -331,15 +348,12 @@
         <div class="visually-hidden" id="chartTable"></div>
       </div>
 
-      <div class="map-card reveal mt-4">
-        <div class="tl-strip" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
-        <div class="map-cta">
-          <span class="map-cta-text">
-            <b>Animated timeline</b>
-            <span>Watch the record fill in year by year, 1761 BC to 2026. The last century arrives as a burst.</span>
-          </span>
-          <a class="map-open" href="timeline.html">Play the timeline &rarr;</a>
+      <div class="tl-cta reveal">
+        <div class="tl-cta-text">
+          <b>Animated timeline</b>
+          <span>Watch the record fill in year by year, 1761&nbsp;BC to 2026, as the running toll climbs to 114.</span>
         </div>
+        <a class="map-open" href="timeline.html">Play the timeline &rarr;</a>
       </div>
     </div>
   </section>
@@ -650,7 +664,7 @@ LIBRARIES.forEach(function(d){
   (comp[b]=comp[b]||{})[d.cause]=((comp[b]||{})[d.cause]||0)+1;
 });
 ckeys.forEach(function(yr){
-  var n=cdata[yr], p=(n/cmax2*100).toFixed(2);
+  var n=cdata[yr], p=(Math.sqrt(n/cmax2)*100).toFixed(2);
   var lbl=yr<0?(Math.abs(yr)+'BC'):(yr===0?'1AD':yr+'');
   var seg='';
   CAUSE_ORDER.forEach(function(k){
