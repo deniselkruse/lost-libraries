@@ -98,7 +98,7 @@ Tested in current versions of Chrome, Firefox, Safari, and Edge. The timeline SV
 
 ## License
 
-Data is compiled from public sources (see Primary Sources above). Code is MIT licensed — free to use, adapt, and redistribute with attribution.
+Data is compiled from public sources (see Primary Sources above).
 
 ---
 
