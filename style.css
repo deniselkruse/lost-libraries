@@ -1,0 +1,196 @@
+/* ============================================================
+   THE LOST LIBRARIES — shared stylesheet
+   Linked by index.html, map.html and timeline.html.
+
+   This file holds only what all three pages share: the design
+   tokens, the type scale, and the accessibility base. Anything
+   specific to one page (the catalogue grid, the map HUD, the
+   timeline controls) stays in that page's own <style> block.
+
+   Palette: Paper & Ash.
+   ============================================================ */
+
+/* ---------- DESIGN TOKENS ---------- */
+:root {
+  /* surfaces and text */
+  --ink:        #f4f1ea;   /* page background */
+  --parchment:  #120f0c;   /* primary text   */
+  --parch:      #120f0c;   /* alias: map/timeline use this name */
+  --aged:       #2a231c;   /* secondary text */
+  --smoke:      #3d342a;   /* muted text     */
+  --ash:        #c3bbae;   /* hairlines, scrollbars — never text */
+  --panel:      #fbf8f2;   /* modals, side panels */
+  --sea:        #e7e0d2;   /* map water  */
+  --land:       #ded5c4;   /* map land   */
+  --coast:      #a89a82;   /* map outlines */
+
+  /* accents */
+  --ember:      #8f3410;   /* primary accent */
+  --gold:       #5f4310;   /* secondary accent, labels */
+  --focus:      #7a3a10;   /* focus ring */
+
+  /* cause colours — these must match the CAUSES object in each
+     page's JavaScript. All pass WCAG AA on --ink. */
+  --c-war:      #a8401a;
+  --c-religion: #5b4a9e;
+  --c-govt:     #7a5a1e;
+  --c-fire:     #9c5416;
+  --c-neglect:  #1e6b55;
+
+  /* type: minimums, not suggestions. Nothing renders below these. */
+  --fs-body:  clamp(1.1875rem, 4.2vw, 1.25rem);
+  --fs-small: clamp(1.0625rem, 3.6vw, 1.1rem);
+  --fs-mono:  clamp(0.95rem,   3.2vw, 1rem);
+
+  /* keep content clear of notches and home indicators */
+  padding-top:    env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+/* ---------- RESET ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Bootstrap holds the root at a flat 16px on every screen. Phones are
+   held closer to the eye but have far less width, so lift the root a
+   little — this scales every rem-based size in one move. */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  scroll-padding-top: 1rem;
+}
+@media (max-width: 575.98px) { html { font-size: 17px; } }
+@media (min-width: 1600px)   { html { font-size: 17px; } }
+
+body {
+  background: var(--ink);
+  color: var(--parchment);
+  font-family: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  overflow-x: hidden;
+  margin: 0;
+}
+
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--parchment);
+  line-height: 1.1;
+  margin: 0;
+}
+
+.mono {
+  font-family: 'Courier Prime', 'Courier New', monospace;
+  font-size: var(--fs-mono);
+}
+
+/* ---------- ACCESSIBILITY BASE ---------- */
+
+/* Skip link: visible only when focused. */
+.skip {
+  position: absolute;
+  top: -100px; left: 1rem;
+  background: var(--focus); color: #fff;
+  font-family: 'Courier Prime', monospace;
+  font-size: var(--fs-mono); font-weight: 700;
+  padding: .6rem 1.2rem;
+  z-index: 9999; text-decoration: none;
+  border-radius: 0 0 4px 4px;
+  transition: top .2s;
+}
+.skip:focus { top: 0; }
+
+/* One consistent, high-visibility focus ring everywhere. */
+:focus-visible,
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible,
+input:focus-visible, select:focus-visible, .btn-close:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+:focus:not(:focus-visible) { outline: none; }
+.btn-close:focus { box-shadow: none; }
+
+/* Screen-reader-only, for pages not loading Bootstrap. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* Scroll-reveal. The .visible class is added by each page's observer.
+   Threshold must be 0 — a percentage threshold is unsatisfiable for any
+   element taller than the viewport, and such an element never reveals. */
+.reveal {
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .75s ease, transform .75s ease;
+}
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ---------- SCROLLBARS ---------- */
+::-webkit-scrollbar { width: 5px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--ash); border-radius: 3px; }
+
+/* ---------- USER PREFERENCES ---------- */
+
+/* Motion. Content must never depend on an animation to be visible. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* Contrast. These DARKEN the palette — the page background is light, so
+   lightening here would reduce contrast for the people asking for more. */
+@media (prefers-contrast: more) {
+  :root {
+    --smoke: #241d16;
+    --aged:  #15100b;
+    --ember: #6e2408;
+  }
+}
+
+/* Windows High Contrast / forced colours. */
+@media (forced-colors: active) {
+  .lib-card, .cause-card, .rec-panel, .map-card, .tl-cta {
+    border: 1px solid ButtonText;
+  }
+  .fbtn[aria-pressed="true"], .filter-btn[aria-pressed="true"] {
+    border: 2px solid Highlight; color: Highlight;
+  }
+}
+
+/* ---------- SHARED COMPONENTS ---------- */
+
+/* Touch targets: 44px minimum, per WCAG 2.5.5. */
+.fbtn, .filter-btn, .zbtn, .zb, .ctrl-btn, .map-open {
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The call-to-action button used on every page. */
+.map-open {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(1rem, 3.4vw, 1.05rem);
+  letter-spacing: .1em; text-transform: uppercase;
+  padding: .75rem 1.3rem; min-height: 48px;
+  border: 1px solid var(--ember); color: var(--ember);
+  background: rgba(143, 52, 16, .10);
+  text-decoration: none; border-radius: 2px;
+  transition: background .2s, color .2s;
+  white-space: nowrap;
+}
+.map-open:hover, .map-open:focus-visible {
+  background: var(--ember); color: #fdfbf6;
+}
+
+/* Hairline rule between sections. */
+.rule {
+  border: none; height: 1px; margin: 0;
+  background: linear-gradient(90deg, transparent, var(--ash) 40%, transparent);
+}
