@@ -58,12 +58,34 @@
       font-family:'Playfair Display',serif;
       font-size:clamp(3rem,8vw,7rem);
       font-weight:900;
-      color:rgba(224,85,32,0.08);
+      color:rgba(224,85,32,0.34);
+      text-shadow:0 0 40px rgba(224,85,32,.25);
       pointer-events:none;
       white-space:nowrap;
       transition:color 0.3s;
       z-index:1;
+      display:flex;flex-direction:column;align-items:center;line-height:.9;
     }
+
+    #yd-lbl{
+      font-family:'Courier Prime',monospace;
+      font-size:clamp(.62rem,2vw,.8rem);
+      letter-spacing:.3em;text-transform:uppercase;
+      color:rgba(237,228,212,.45);
+      margin-top:.9rem;white-space:nowrap;
+    }
+
+    /* ON-MAP LABELS */
+    .lib-label{
+      font-family:'Crimson Pro',Georgia,serif;
+      fill:#f2e9d8;paint-order:stroke;
+      stroke:rgba(8,6,10,.85);stroke-linejoin:round;
+      pointer-events:none;
+      animation:lblIn .35s ease-out, lblOut .7s 1.9s ease-in forwards;
+    }
+    @keyframes lblIn{from{opacity:0}to{opacity:1}}
+    @keyframes lblOut{to{opacity:0}}
+    @media(prefers-reduced-motion:reduce){.lib-label{animation:none;opacity:1}}
 
     /* TOP HUD */
     #hud{
@@ -173,6 +195,18 @@
     .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
     .leg-lbl{font-family:'Courier Prime',monospace;font-size:0.55rem;color:var(--aged)}
 
+    #zoomctl{position:absolute;right:1rem;top:50%;transform:translateY(-50%);z-index:12;
+      display:flex;flex-direction:column;gap:.4rem}
+    .zbtn{width:46px;height:46px;border:1px solid rgba(201,185,154,.3);
+      background:rgba(8,6,10,.92);color:var(--aged);font-size:1.3rem;line-height:1;
+      cursor:pointer;border-radius:3px;display:flex;align-items:center;justify-content:center;
+      font-family:'Courier Prime',monospace;
+      -webkit-tap-highlight-color:transparent;touch-action:manipulation}
+    .zbtn:hover,.zbtn:active{border-color:var(--ember);color:var(--ember);background:rgba(224,85,32,.16)}
+    .zbtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+    .zbtn.sm{font-size:.56rem;letter-spacing:.06em}
+    @media(max-width:600px){#zoomctl{right:.6rem;gap:.3rem}.zbtn{width:42px;height:42px}}
+
     /* TOOLTIP */
     #tooltip{
       position:absolute;z-index:20;pointer-events:none;
@@ -229,7 +263,7 @@
   </svg>
 </div>
 
-<div id="year-display" aria-hidden="true">1761 BC</div>
+<div id="year-display" aria-hidden="true"><b id="yd-num">0</b><span id="yd-lbl">libraries destroyed</span></div>
 
 <div id="hud">
   <div id="hud-title">
@@ -253,6 +287,13 @@
     <div id="year-now" aria-live="polite" aria-atomic="true">1761 BC</div>
     <div id="year-label">Current year</div>
   </div>
+</div>
+
+<div id="zoomctl" role="group" aria-label="Map zoom">
+  <button class="zbtn" id="z-in"    aria-label="Zoom in">+</button>
+  <button class="zbtn" id="z-out"   aria-label="Zoom out">&minus;</button>
+  <button class="zbtn sm" id="z-fit" aria-label="Fit to records">FIT</button>
+  <button class="zbtn sm" id="z-all" aria-label="Show whole world">WORLD</button>
 </div>
 
 <div id="flash-log" aria-live="polite" aria-label="Recently destroyed libraries"></div>
@@ -413,7 +454,23 @@ var TOTAL_SPAN = MAX_YEAR - MIN_YEAR;
 
 // Equirectangular projection
 var SVG_W = 2000, SVG_H = 1000;
-var DOT_R = 9;               /* markers are drawn in these units, not pixels */
+/* Markers are drawn in SVG units, so a fixed radius shrinks as you zoom out.
+   Scale it with the viewBox instead: constant size on screen at any zoom. */
+var DOT_K = 0.018;
+function viewW(){
+  var svg=document.getElementById('map-svg');
+  var vb=(svg&&svg.getAttribute('viewBox')||'0 0 2000 1000').split(' ').map(Number);
+  return vb[2]||2000;
+}
+function dotR(){ return viewW()*DOT_K; }
+function rescaleDots(){
+  var r=dotR(), kids=dotsLayer?dotsLayer.children:null;
+  if(!kids) return;
+  for(var i=0;i<kids.length;i++){
+    kids[i].setAttribute('r', r);
+    kids[i].setAttribute('stroke-width', r*0.28);
+  }
+}
 
 /* The old view letterboxed the whole 2:1 world into a tall phone, leaving
    the map at a quarter of the screen height. Fit to where the data actually
@@ -432,19 +489,35 @@ function fitView(){
   x0-=padX; x1+=padX; y0-=padY; y1+=padY;
 
   var bw = x1-x0, bh = y1-y0, w, hgt;
-  if (aspect < 0.85){
-    /* portrait: fill the height around the dense band, pan is not needed
-       because the HUD leaves a tall clear strip in the middle */
-    hgt = bh * 1.12;
-    w   = hgt * aspect;
-  } else {
-    w = bw; hgt = bw/aspect;
-    if (hgt < bh){ hgt = bh; w = bh*aspect; }
-  }
+  /* Fit the whole data range at every aspect. Dots hold their screen size,
+     so zooming out costs nothing in legibility. */
+  w = bw; hgt = bw/aspect;
+  if (hgt < bh){ hgt = bh; w = bh*aspect; }
   var cx = (x0+x1)/2, cy = (y0+y1)/2;
   svg.setAttribute('viewBox', (cx-w/2)+' '+(cy-hgt/2)+' '+w+' '+hgt);
+  rescaleDots();
 }
 window.addEventListener('resize', fitView);
+
+/* Zoom: scale the viewBox about its own centre. */
+function zoomBy(f){
+  var svg=document.getElementById('map-svg');
+  var vb=(svg.getAttribute('viewBox')||'0 0 2000 1000').split(' ').map(Number);
+  var cx=vb[0]+vb[2]/2, cy=vb[1]+vb[3]/2;
+  var w=vb[2]/f, h=vb[3]/f;
+  if (w < 120 || w > 5200) return;          /* sane limits */
+  svg.setAttribute('viewBox',(cx-w/2)+' '+(cy-h/2)+' '+w+' '+h);
+  rescaleDots();
+}
+function fitWorld(){
+  var svg=document.getElementById('map-svg');
+  var r=svg.getBoundingClientRect();
+  var aspect=(r.width&&r.height)?r.width/r.height:2;
+  var w=SVG_W, h=SVG_W/aspect;
+  if (h < SVG_H){ h=SVG_H; w=SVG_H*aspect; }
+  svg.setAttribute('viewBox',((SVG_W-w)/2)+' '+((SVG_H-h)/2)+' '+w+' '+h);
+  rescaleDots();
+}
 function project(lat, lon) {
   var x = (lon + 180) / 360 * SVG_W;
   var y = (90 - lat) / 180 * SVG_H;
@@ -549,9 +622,10 @@ function placeLib(lib) {
   // Persistent dot
   var dot = document.createElementNS(svgNS, 'circle');
   dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
-  dot.setAttribute('r', DOT_R); dot.setAttribute('fill', color);
+  var _r = dotR();
+  dot.setAttribute('r', _r); dot.setAttribute('fill', color);
   dot.setAttribute('stroke', 'rgba(255,255,255,.45)');
-  dot.setAttribute('stroke-width', DOT_R*0.28);
+  dot.setAttribute('stroke-width', _r*0.28);
   dot.setAttribute('fill-opacity', '0.95');
   dot.setAttribute('class', 'lib-dot');
   dot.setAttribute('tabindex', '0');
@@ -573,10 +647,31 @@ function placeLib(lib) {
   flash.setAttribute('class', 'lib-flash');
   animLayer.appendChild(flash);
 
+  /* Name the library on the map as it ignites. Font is sized from the
+     current viewBox so it stays readable at any zoom level. */
+  var label = null;
+  if (speed <= 8 && animLayer.childNodes.length < 14) {
+    var vb = (document.getElementById('map-svg').getAttribute('viewBox')||'0 0 2000 1000').split(' ').map(Number);
+    var fs = Math.max(9, vb[2] * 0.032);
+    label = document.createElementNS(svgNS, 'text');
+    label.setAttribute('x', p.x + _r * 1.9);
+    label.setAttribute('y', p.y + fs * 0.34);
+    label.setAttribute('class', 'lib-label');
+    label.setAttribute('font-size', fs);
+    label.setAttribute('stroke-width', fs * 0.18);
+    if (p.x > vb[0] + vb[2] * 0.62) {           /* flip near the right edge */
+      label.setAttribute('x', p.x - _r * 1.9);
+      label.setAttribute('text-anchor', 'end');
+    }
+    label.textContent = lib.name;
+    animLayer.appendChild(label);
+  }
+
   setTimeout(function() {
     if (ring.parentNode) ring.parentNode.removeChild(ring);
     if (flash.parentNode) flash.parentNode.removeChild(flash);
-  }, 1400);
+    if (label && label.parentNode) label.parentNode.removeChild(label);
+  }, 2700);
 
   // Flash log
   if (speed <= 3) {
@@ -601,20 +696,21 @@ function updateStats() {
     }
   });
   cntTotal.textContent = total;
+  var ydn = document.getElementById('yd-num');
+  if (ydn) ydn.textContent = total;
   cntCentury.textContent = inCentury;
   cntYear.textContent = inYear > 0 ? inYear : '—';
 }
 
 function updateHUD() {
   var ys = yearToStr(Math.round(currentYear));
-  yearDisplay.textContent = ys;
-  yearNow.textContent = ys;
+  yearNow.textContent = ys;   /* the year lives in the HUD, not the centre */
   var pct = getPct(currentYear);
   progressFill.style.width = pct + '%';
   scrubberEl.style.left = pct + '%';
   document.getElementById('progress-track').setAttribute('aria-valuenow', Math.round(pct));
   // Glow intensity based on recency
-  var intensity = Math.min(0.18, 0.04 + (currentYear > 1900 ? 0.14 : 0));
+  var intensity = Math.min(0.52, 0.30 + (currentYear > 1900 ? 0.22 : 0));
   yearDisplay.style.color = 'rgba(224,85,32,' + intensity + ')';
 }
 
@@ -774,6 +870,11 @@ eras.forEach(function(e) {
 });
 
 // INIT
+document.getElementById('z-in').onclick  = function(){ zoomBy(1.5); };
+document.getElementById('z-out').onclick = function(){ zoomBy(1/1.5); };
+document.getElementById('z-fit').onclick = fitView;
+document.getElementById('z-all').onclick = fitWorld;
+
 fitView();
 updateHUD();
 updateStats();
