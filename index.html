@@ -119,6 +119,9 @@
     .m-perp-sec{margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.1)}
     .m-perp-lbl{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--ember);display:block;margin-bottom:.25rem}
     .m-perp-val{font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--smoke)}
+.resc{color:var(--c-neglect);font-size:.8em;vertical-align:.1em}
+    .fbtn-rescued{border-color:var(--c-neglect);color:var(--c-neglect)}
+    .fbtn-rescued:hover,.fbtn-rescued[aria-pressed=true]{border-color:var(--c-neglect);color:var(--c-neglect);background:rgba(30,107,85,.10)}
     .m-src-sec{margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.1)}
     #m-src a,#m-src span{display:block;font-size:clamp(1rem,3.4vw,1.05rem);line-height:1.5;
       margin-bottom:.55rem;color:var(--smoke);border-left:2px solid rgba(18,15,12,.15);
@@ -431,7 +434,9 @@
 <footer class="closing" role="contentinfo">
   <div class="c-symbol" aria-hidden="true">&#8734;</div>
   <h2 class="c-title">What we cannot recover</h2>
-  <p class="c-body">The libraries recorded here are only the ones we know about. For every library whose destruction was witnessed, how many others vanished without a chronicler? The true count is, by definition, unknowable. And this record is not closed: entries dated 2025 and 2026 were added while it was being compiled.</p>
+  <p class="c-body">The libraries recorded here are only the ones we know about. For every library whose destruction was witnessed, how many others vanished without a chronicler? The true count is, by definition, unknowable.</p>
+  <p class="c-body mt-4">But the record holds something else. A Persian astronomer carrying manuscripts out of Alamut ahead of the Mongols. Citizens in Sarajevo forming a chain under sniper fire, one of them killed doing it. Volunteers in Weimar passing burning books hand to hand through the night. Librarians in Timbuktu moving thirty thousand manuscripts out in trunks and rice sacks before the militias arrived, and letting the world believe for years that they had lost them. In eight of these records, people decided that books were worth the risk.</p>
+  <p class="c-body mt-4">Erasure does not require fire. A book no one can reach is functionally lost, and the quieter methods &mdash; a collection removed, defunded, left to rot, or quietly not replaced &mdash; have historically come first. That is the part worth watching, because unlike ash, it is still reversible.</p>
 </footer>
 
 <div class="modal fade" id="libModal" tabindex="-1" aria-labelledby="m-name" aria-describedby="m-desc">
@@ -575,6 +580,13 @@ function mkBtn(key,lbl){
 }
 frow.appendChild(mkBtn('all','All'));
 Object.keys(CAUSES).forEach(function(k){ if(CAUSES[k].count) frow.appendChild(mkBtn(k,CAUSES[k].label)); });
+/* Not a cause — a counter-current. These are the records where people
+   carried, hid or smuggled part of the collection out. */
+if (typeof LIB_RESCUED !== 'undefined' && LIB_RESCUED) {
+  var rb = mkBtn('rescued', 'Partly Rescued');
+  rb.classList.add('fbtn-rescued');
+  frow.appendChild(rb);
+}
 
 // LIBRARY GRID
 var lgrid=document.getElementById('lib-grid');
@@ -584,16 +596,17 @@ function render(filter){
   lgrid.innerHTML='';
   var shown=0;
   LIBRARIES.forEach(function(lib){
-    if(filter!=='all'&&lib.cause!==filter)return;
+    if(filter==='rescued'){ if(!lib.rescued) return; }
+    else if(filter!=='all' && lib.cause!==filter) return;
     shown++;
     var c=CAUSES[lib.cause];
     var yr=lib.year<0?(Math.abs(lib.year)+' BC'):(lib.year+' AD');
     var card=document.createElement('button');
     card.className='lib-card';
     card.setAttribute('role','listitem');
-    card.setAttribute('aria-label',lib.name+', '+lib.location+', '+yr+'. '+c.label+'. Press Enter for details.');
+    card.setAttribute('aria-label',lib.name+', '+lib.location+', '+yr+'. '+c.label+(lib.rescued?'. Part of the collection was saved':'')+'. Press Enter for details.');
     card.style.setProperty('--lc',c.color);
-    card.innerHTML='<div class="lib-name">'+lib.name+'</div><div class="lib-meta">'+lib.location+' &middot; '+yr+'</div><span class="lib-dot" style="background:'+c.color+'" aria-hidden="true"></span><span class="lib-cause">'+c.label+'</span>';
+    card.innerHTML='<div class="lib-name">'+lib.name+(lib.rescued?' <span class="resc" title="Part of the collection was saved">\u25C8</span>':'')+'</div><div class="lib-meta">'+lib.location+' &middot; '+yr+'</div><span class="lib-dot" style="background:'+c.color+'" aria-hidden="true"></span><span class="lib-cause">'+c.label+'</span>';
     card.onclick=function(){openModal(lib);};
     lgrid.appendChild(card);
   });
