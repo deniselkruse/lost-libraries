@@ -8,11 +8,11 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:ital,wght@0,300;0,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
   <style>
     :root {
-      --ink:#08060a; --parch:#ede4d4; --aged:#c0a880;
-      --ember:#e05520; --gold:#d09820; --ash:#4a3e5a;
-      --smoke:#8a7a9a; --panel:#10080f;
-      --war:#d03820; --religion:#6848c8; --govt:#c88020;
-      --fire:#c87020; --civil:#5848a8; --neglect:#308060;
+      --ink:#f4f1ea; --parch:#120f0c; --aged:#2a231c;
+      --ember:#8f3410; --gold:#5f4310; --ash:#c3bbae;
+      --smoke:#3d342a; --panel:#fbf8f2;
+      --war:#a8401a; --religion:#5b4a9e; --govt:#7a5a1e;
+      --fire:#9c5416; --civil:#4a3f8a; --neglect:#1e6b55;
     }
     *{margin:0;padding:0;box-sizing:border-box}
     html,body{height:100%;overflow:hidden;background:var(--ink)}
@@ -23,8 +23,8 @@
     #map-svg{flex:1;display:block;width:100%}
 
     /* GRATICULE + LAND */
-    .land{fill:#221c20;stroke:#453848;stroke-width:1.4}
-    .graticule{fill:none;stroke:rgba(201,185,154,0.05);stroke-width:1.4}
+    .land{fill:#ded5c4;stroke:#a89a82;stroke-width:1.4}
+    .graticule{fill:none;stroke:rgba(18,15,12,0.10);stroke-width:1.4}
     .border{fill:none;stroke:#2a2030;stroke-width:0.4}
 
     /* PARTICLES */
@@ -59,7 +59,7 @@
       font-size:clamp(3rem,8vw,7rem);
       font-weight:900;
       color:rgba(224,85,32,0.34);
-      text-shadow:0 0 40px rgba(224,85,32,.25);
+      text-shadow:0 0 40px rgba(168,64,26,.18);
       pointer-events:none;
       white-space:nowrap;
       transition:color 0.3s;
@@ -71,15 +71,15 @@
       font-family:'Courier Prime',monospace;
       font-size:clamp(.62rem,2vw,.8rem);
       letter-spacing:.3em;text-transform:uppercase;
-      color:rgba(237,228,212,.45);
+      color:rgba(18,15,12,.5);
       margin-top:.9rem;white-space:nowrap;
     }
 
     /* ON-MAP LABELS */
     .lib-label{
       font-family:'Crimson Pro',Georgia,serif;
-      fill:#f2e9d8;paint-order:stroke;
-      stroke:rgba(8,6,10,.85);stroke-linejoin:round;
+      fill:#120f0c;paint-order:stroke;
+      stroke:rgba(251,248,242,.9);stroke-linejoin:round;
       pointer-events:none;
       animation:lblIn .35s ease-out, lblOut .7s 1.9s ease-in forwards;
     }
@@ -90,7 +90,7 @@
     /* TOP HUD */
     #hud{
       position:absolute;top:0;left:0;right:0;z-index:10;
-      background:linear-gradient(180deg,rgba(8,6,10,0.96) 0%,rgba(8,6,10,0.8) 70%,transparent 100%);
+      background:linear-gradient(180deg,rgba(244,241,234,0.96) 0%,rgba(244,241,234,0.85) 70%,transparent 100%);
       padding:1rem 1.5rem 3rem;
       display:flex;align-items:flex-start;gap:1.5rem;flex-wrap:wrap;
     }
@@ -113,7 +113,7 @@
       font-family:'Courier Prime',monospace;
       font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;
       padding:0.4rem 1rem;border:1px solid rgba(201,185,154,0.25);
-      background:rgba(8,6,10,0.8);color:var(--smoke);
+      background:rgba(244,241,234,0.85);color:var(--smoke);
       cursor:pointer;border-radius:2px;transition:all 0.2s;
       min-width:44px;min-height:36px;
     }
@@ -140,7 +140,7 @@
     /* BOTTOM HUD */
     #bottom{
       position:absolute;bottom:0;left:0;right:0;z-index:10;
-      background:linear-gradient(0deg,rgba(8,6,10,0.97) 0%,rgba(8,6,10,0.8) 60%,transparent 100%);
+      background:linear-gradient(0deg,rgba(244,241,234,0.97) 0%,rgba(244,241,234,0.85) 60%,transparent 100%);
       padding:3rem 1.5rem 1rem;
     }
 
@@ -197,12 +197,12 @@
 
     #zoomctl{position:absolute;right:1rem;top:50%;transform:translateY(-50%);z-index:12;
       display:flex;flex-direction:column;gap:.4rem}
-    .zbtn{width:46px;height:46px;border:1px solid rgba(201,185,154,.3);
-      background:rgba(8,6,10,.92);color:var(--aged);font-size:1.3rem;line-height:1;
+    .zbtn{width:46px;height:46px;border:1px solid rgba(18,15,12,.3);
+      background:rgba(244,241,234,.94);color:var(--aged);font-size:1.3rem;line-height:1;
       cursor:pointer;border-radius:3px;display:flex;align-items:center;justify-content:center;
       font-family:'Courier Prime',monospace;
       -webkit-tap-highlight-color:transparent;touch-action:manipulation}
-    .zbtn:hover,.zbtn:active{border-color:var(--ember);color:var(--ember);background:rgba(224,85,32,.16)}
+    .zbtn:hover,.zbtn:active{border-color:var(--ember);color:var(--ember);background:rgba(168,64,26,.12)}
     .zbtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
     .zbtn.sm{font-size:.56rem;letter-spacing:.06em}
     @media(max-width:600px){#zoomctl{right:.6rem;gap:.3rem}.zbtn{width:42px;height:42px}}
@@ -210,7 +210,7 @@
     /* TOOLTIP */
     #tooltip{
       position:absolute;z-index:20;pointer-events:none;
-      background:rgba(10,7,14,0.94);border:1px solid rgba(201,185,154,0.2);
+      background:rgba(251,248,242,0.97);border:1px solid rgba(201,185,154,0.2);
       padding:0.5rem 0.8rem;max-width:220px;display:none;
     }
     .tt-name{font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--parch);margin-bottom:0.15rem}
@@ -224,7 +224,7 @@
     }
     .log-entry{
       font-family:'Courier Prime',monospace;font-size:0.6rem;
-      color:var(--parch);background:rgba(8,6,10,0.85);
+      color:var(--parch);background:rgba(244,241,234,0.9);
       border-left:2px solid var(--ember);padding:0.2rem 0.5rem;
       animation:logIn 0.3s ease forwards, logOut 0.5s 3s ease forwards;
       white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
@@ -311,12 +311,12 @@
     <div class="sstat"><div class="sstat-n" id="cnt-century">0</div><div class="sstat-l">This Century</div></div>
     <div class="sstat"><div class="sstat-n" id="cnt-year">—</div><div class="sstat-l">This Year</div></div>
     <div id="legend">
-      <div class="leg-item"><div class="leg-dot" style="background:#d03820"></div><div class="leg-lbl">War</div></div>
-      <div class="leg-item"><div class="leg-dot" style="background:#6848c8"></div><div class="leg-lbl">Religion</div></div>
-      <div class="leg-item"><div class="leg-dot" style="background:#c88020"></div><div class="leg-lbl">State</div></div>
-      <div class="leg-item"><div class="leg-dot" style="background:#c87020"></div><div class="leg-lbl">Fire</div></div>
-      <div class="leg-item"><div class="leg-dot" style="background:#5848a8"></div><div class="leg-lbl">Civil</div></div>
-      <div class="leg-item"><div class="leg-dot" style="background:#308060"></div><div class="leg-lbl">Neglect</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#a8401a"></div><div class="leg-lbl">War</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#5b4a9e"></div><div class="leg-lbl">Religion</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#7a5a1e"></div><div class="leg-lbl">State</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#9c5416"></div><div class="leg-lbl">Fire</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#4a3f8a"></div><div class="leg-lbl">Civil</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#1e6b55"></div><div class="leg-lbl">Neglect</div></div>
     </div>
   </div>
 </div>
@@ -324,8 +324,8 @@
 <script>
 'use strict';
 var CAUSE_COLORS = {
-  war:'#d03820', religion:'#6848c8', govt:'#c88020',
-  fire:'#c87020', civil:'#5848a8', neglect:'#308060'
+  war:'#a8401a', religion:'#5b4a9e', govt:'#7a5a1e',
+  fire:'#9c5416', civil:'#4a3f8a', neglect:'#1e6b55'
 };
 
 var LIBRARIES = [
@@ -710,7 +710,7 @@ function updateHUD() {
   scrubberEl.style.left = pct + '%';
   document.getElementById('progress-track').setAttribute('aria-valuenow', Math.round(pct));
   // Glow intensity based on recency
-  var intensity = Math.min(0.52, 0.30 + (currentYear > 1900 ? 0.22 : 0));
+  var intensity = Math.min(0.46, 0.26 + (currentYear > 1900 ? 0.22 : 0));
   yearDisplay.style.color = 'rgba(224,85,32,' + intensity + ')';
 }
 
