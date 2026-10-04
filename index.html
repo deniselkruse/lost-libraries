@@ -78,8 +78,10 @@
     .chart-wrap::-webkit-scrollbar-thumb{background:var(--ash);border-radius:2px}
     .chart{display:flex;align-items:flex-end;gap:5px;height:180px;min-width:700px;padding-bottom:2.5rem;position:relative}
     .cbar-wrap{flex:1;min-width:24px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
-    .cbar{width:100%;background:var(--ember);opacity:.6;min-height:3px;border-radius:2px 2px 0 0;transition:opacity .2s}
-    .cbar:hover{opacity:1}
+    .cbar{width:100%;min-height:3px;border-radius:2px 2px 0 0;transition:opacity .2s;display:flex;flex-direction:column-reverse;overflow:hidden;background:var(--ember)}
+    .cbar i{display:block;width:100%;min-height:1px}
+    .cbar:hover{filter:brightness(1.25)}
+    
     .cbar-count{font-family:'Courier Prime',monospace;font-size:.58rem;color:var(--aged);position:absolute;top:-1.2rem;left:50%;transform:translateX(-50%);white-space:nowrap}
     .cbar-label{font-family:'Courier Prime',monospace;font-size:.45rem;color:var(--smoke);position:absolute;bottom:-2rem;left:50%;transform:translateX(-50%);writing-mode:vertical-lr;white-space:nowrap}
 
@@ -301,7 +303,7 @@
       <div class="sec-bar reveal">
         <p class="sec-num mb-1">01 &mdash; Anatomy of Destruction</p>
         <h2 class="sec-title" id="causes-h">How knowledge dies</h2>
-        <p class="sec-body mt-2">Across nearly 3,800 years of recorded history, knowledge has been extinguished in remarkably consistent ways. War dominates &mdash; but religious purges and state censorship tell an equally dark story about the deliberate erasure of ideas.</p>
+        <p class="sec-body mt-2">Across nearly 3,800 years, knowledge has been extinguished in remarkably consistent ways. War accounts for more than a third of these records. But the pattern is not only one of malice: accidental fire alone has taken as many libraries as religious purges and state censorship combined.</p>
       </div>
       <div class="row g-3 mt-1" id="cause-grid" role="list" aria-label="Causes of library destruction"></div>
     </div>
@@ -321,12 +323,23 @@
       <div class="sec-bar reveal">
         <p class="sec-num mb-1">02 &mdash; Distribution Across Time</p>
         <h2 class="sec-title" id="timeline-h">The rhythm of erasure</h2>
-        <p class="sec-body mt-2">From ancient Mesopotamia to Gaza, Sudan and Ukraine today, no era has been free of the impulse to destroy what others preserved. The 20th century stands apart &mdash; industrialized warfare made cultural obliteration faster and more total than ever before.</p>
+        <p class="sec-body mt-2">From ancient Mesopotamia to Gaza, Sudan and Ukraine today, no era has been free of the impulse to destroy what others preserved. The 20th century holds the most records of any century. The 21st is already within one of matching it, and it is not yet half over.</p>
       </div>
       <p class="chart-hint mt-3 mb-1" aria-hidden="true">&#8592; Scroll to see full timeline</p>
-      <div class="chart-wrap reveal" role="img" aria-label="Bar chart showing library destructions by century from 1800 BC to 2000 AD. The 20th century shows the highest concentration.">
+      <div class="chart-wrap reveal" role="img" aria-label="Stacked bar chart of library destructions by century, 1800 BC to the 2020s, segmented by cause. Full figures follow in a table.">
         <div class="chart" id="chart"></div>
         <div class="visually-hidden" id="chartTable"></div>
+      </div>
+
+      <div class="map-card reveal mt-4">
+        <div class="tl-strip" aria-hidden="true"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+        <div class="map-cta">
+          <span class="map-cta-text">
+            <b>Animated timeline</b>
+            <span>Watch the record fill in year by year, 1761 BC to 2026. The last century arrives as a burst.</span>
+          </span>
+          <a class="map-open" href="timeline.html">Play the timeline &rarr;</a>
+        </div>
       </div>
     </div>
   </section>
@@ -611,20 +624,44 @@ var chartEl=document.getElementById('chart');
 /* Screen-reader equivalent: the chart is decorative without this. */
 (function(){
   var t=document.getElementById('chartTable'); if(!t) return;
+  var comp2={};
+  LIBRARIES.forEach(function(d){
+    var b=Math.floor(d.year/100)*100;
+    (comp2[b]=comp2[b]||{})[d.cause]=((comp2[b]||{})[d.cause]||0)+1;
+  });
   var rows=ckeys.map(function(y){
     var lbl=y<0?(Math.abs(y)+' BC'):(y+' AD');
-    return '<tr><th scope="row">'+lbl+'</th><td>'+cdata[y]+'</td></tr>';
+    var parts=Object.keys(comp2[y]||{}).map(function(k){
+      return comp2[y][k]+' '+CAUSES[k].label.toLowerCase();
+    }).join(', ');
+    return '<tr><th scope="row">'+lbl+'</th><td>'+cdata[y]+'</td><td>'+parts+'</td></tr>';
   }).join('');
-  t.innerHTML='<table><caption>Library destructions by century</caption>'+
-    '<thead><tr><th scope="col">Century</th><th scope="col">Records</th></tr></thead>'+
-    '<tbody>'+rows+'</tbody></table>';
+  t.innerHTML='<table><caption>Library destructions by century, with cause breakdown</caption>'+
+    '<thead><tr><th scope="col">Century</th><th scope="col">Records</th>'+
+    '<th scope="col">Causes</th></tr></thead><tbody>'+rows+'</tbody></table>';
 })();
+/* Stacked by cause: the shape shows volume, the colours show what changed.
+   War and religion carry the early centuries; fire only appears once
+   libraries get big enough and lamplit enough to burn by accident. */
+var CAUSE_ORDER=['war','religion','govt','civil','fire','neglect'];
+var comp={};
+LIBRARIES.forEach(function(d){
+  var b=Math.floor(d.year/100)*100;
+  (comp[b]=comp[b]||{})[d.cause]=((comp[b]||{})[d.cause]||0)+1;
+});
 ckeys.forEach(function(yr){
-  var n=cdata[yr],p=(n/cmax2*100).toFixed(1);
+  var n=cdata[yr], p=(n/cmax2*100).toFixed(2);
   var lbl=yr<0?(Math.abs(yr)+'BC'):(yr===0?'1AD':yr+'');
+  var seg='';
+  CAUSE_ORDER.forEach(function(k){
+    var v=(comp[yr]||{})[k]; if(!v) return;
+    seg+='<i style="flex:'+v+';background:'+CAUSES[k].color+'"></i>';
+  });
   var w=document.createElement('div');
   w.className='cbar-wrap';
-  w.innerHTML='<span class="cbar-count" aria-hidden="true">'+n+'</span><div class="cbar" style="height:0" data-h="'+p+'%" title="'+lbl+': '+n+' destruction'+(n>1?'s':'')+'"></div><span class="cbar-label" aria-hidden="true">'+lbl+'</span>';
+  w.innerHTML='<span class="cbar-count" aria-hidden="true">'+n+'</span>'+
+    '<div class="cbar" style="height:0" data-h="'+p+'%" title="'+lbl+': '+n+' record'+(n>1?'s':'')+'">'+seg+'</div>'+
+    '<span class="cbar-label" aria-hidden="true">'+lbl+'</span>';
   chartEl.appendChild(w);
 });
 
