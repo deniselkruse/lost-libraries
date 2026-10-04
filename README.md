@@ -1,105 +1,110 @@
 # The Lost Libraries
-### A Visual Chronicle of Erased Knowledge — 1761 BC to 2024 AD
+### A Visual Chronicle of Erased Knowledge — 1761 BC to 2026 AD
 
-An interactive data visualization project documenting 108 libraries destroyed across 3,785 years of human history. Originally inspired by [Sudhanshu Sharma's Medium article](https://medium.com/@sudhanshu.harsh/the-lost-libraries-visualizing-damage-done-to-99-libraries-throughout-history-e3355f85e10b) visualizing 99 libraries — this project expands the dataset, adds geographic coordinates, and builds upon interactive experiences.
+An interactive record of **114 libraries destroyed across 3,787 years**, from the palace archives of Bronze Age Mari to libraries burning in Gaza, Sudan and Ukraine today.
+
+Originally inspired by [Sudhanshu Sharma's Medium article](https://medium.com/@sudhanshu.harsh/the-lost-libraries-visualizing-damage-done-to-99-libraries-throughout-history-e3355f85e10b) on 99 libraries. This project re-verified that dataset, merged duplicate records, corrected several factual errors, added geographic coordinates, and extended it to cover three ongoing conflicts.
 
 ---
 
-## Live Demo
+## Live site
 
 > `https://deniselkruse.github.io/lost-libraries/`
 
 ---
 
-## The Three Files
+## Files
 
-| File | Description |
-|------|-------------|
-| `index.html` | Main catalogue — filterable grid of all 108 libraries with cause breakdowns, century chart, and detail modals |
-| `map.html` | Geographic atlas — interactive Leaflet map with cause filters, era slider, and detail sidebar |
-| `timeline.html` | Animated timeline — year-by-year sweep from 1761 BC to 2024 AD, each library igniting on the map at its year of destruction |
+| File | What it is |
+|------|-----------|
+| `index.html` | Main page — causes, a stacked century chart, a map preview, the full catalogue, further reading |
+| `map.html` | Interactive atlas — pan, pinch-zoom, filter by cause, filter by era, detail panel |
+| `timeline.html` | Animated sweep — 1761 BC to 2026, each library igniting on the map at its year |
 
----
-
-## Dataset
-
-The dataset extends the original 99-entry blog dataset with 9 additional entries:
-
-| # | Addition | Year | Cause |
-|---|----------|------|-------|
-| 100 | Library of Pergamon | 133 BC | War |
-| 101 | Library of York (Eboracum) | 867 AD | War |
-| 102 | Royal Library of Lisbon | 1755 | Fire (earthquake) |
-| 103 | Mughal Imperial Library, Delhi | 1857 | War |
-| 104 | Library of Banu Ammar, Tripoli | 1109 | War |
-| 105 | Bibliotheca Corviniana, Hungary | 1526 | War |
-| 106 | Gaza Libraries | 2023–24 | War |
-| 107 | Occupy Wall Street People's Library | 2011 | Government |
-| 108 | Library of York (Alcuin dispersal) | 782 | Neglect |
-
-### Cause Categories
-
-| Cause | Count | Description |
-|-------|-------|-------------|
-| War & Conquest | 46 | Military campaigns, sieges, foreign invasions |
-| Religious Purge | 20 | Books deemed heretical or ideologically dangerous |
-| State Censorship | 16 | Deliberate erasure ordered by governments |
-| Accidental Fire | 18 | Earthquakes, electrical faults, accidental flames |
-| Civil Conflict | 16 | Revolutions, uprisings, civil wars |
-| Neglect & Decay | 2 | Gradual dispersal and abandonment |
-
-### Primary Sources
-
-- [Wikipedia — List of Destroyed Libraries](https://en.wikipedia.org/wiki/List_of_destroyed_libraries)
-- Polastron, Lucien X. *Books on Fire: The Destruction of Libraries Throughout History.* Inner Traditions, 2007.
-- Ovenden, Richard. *Burning the Books.* John Murray, 2020.
-- UNESCO. *Lost Memory — Libraries and Archives Destroyed in the Twentieth Century.*
+All three are self-contained. No build step, no API keys, no tile server.
 
 ---
 
-## Technical Details
+## The dataset
 
-### Dependencies
+**114 records.** Distribution by cause:
 
-| File | External Dependencies |
-|------|-----------------------|
-| `index.html` | Bootstrap 5.3 (CDN), Google Fonts |
-| `map.html` | Leaflet 1.9.4 (CDN), Bootstrap 5.3 (CDN), Google Fonts |
-| `timeline.html` | Google Fonts only — fully self-contained SVG map |
+| Cause | Records | Share |
+|-------|--------:|------:|
+| Armed conflict | 66 | 58% |
+| Accidental fire | 24 | 21% |
+| Religious purge | 13 | 11% |
+| State censorship | 11 | 10% |
 
-All CDN dependencies are loaded from `cdnjs.cloudflare.com` and `fonts.googleapis.com`. No API keys required. No build step required.
+Armed conflict covers foreign invasion and civil war together, since the two were not meaningfully separable in the records. Accidental fire has claimed as many libraries as religious purges and state censorship combined.
 
-<!--### Accessibility
+The 20th century holds the most records (35). The 21st is already at 34 and is not yet half over.
 
-All three files implement:
-- Skip navigation links
-- ARIA landmarks, roles, and live regions
-- `aria-pressed` state on all toggle buttons
-- `aria-label` on all interactive map elements
-- Minimum 44×44px touch targets (WCAG 2.5.5)
-- Minimum font sizes: 14px mono, 15px small, 17px body
-- `prefers-reduced-motion` support — all animations disabled for users who need it
-- `forced-colors` / Windows High Contrast mode support
-- WCAG AA contrast ratios throughout
+### Corrections made to the source data
 
-### Browser Support
+- **Five duplicate records merged.** The original set reached its total partly by counting the same library twice (Lisbon, Banu Ammar, Corviniana, the OWS People's Library, and York). Their detail was folded into the surviving record.
+- **Timbuktu corrected.** The entry implied 20,000+ manuscripts were destroyed. Roughly 2,000 of some 30,000 burned; residents had already smuggled the rest to safety. The rescue is the story.
+- **Legends labelled as legends.** The Tigris "running black with ink" and a horse crossing the river on books are traditional accounts, not documented fact, and are now presented as such.
+- **Unsourced precision removed.** Claims like "set science back two centuries" were editorial and have been replaced with verifiable detail.
+- **Inflated medieval figures flagged.** Banu Ammar's "three million volumes" is a chronicler's claim, not a count.
 
-Tested in current versions of Chrome, Firefox, Safari, and Edge. The timeline SVG animation uses `requestAnimationFrame` and CSS animations — both universally supported. The map uses Leaflet 1.9.4 which supports IE11+, though the dark tile filter may degrade on older browsers.
---- -->
+### Records added for ongoing conflicts
 
-## Recommended Further Reading
+**Gaza** — Islamic University library (1.5m volumes), Great Omari Mosque library, Central Archives of Gaza City, EBAF archives. Reporting puts the wider total at more than 87 libraries and archives damaged or destroyed.
 
-- **Polastron, Lucien X.** *Books on Fire: The Destruction of Libraries Throughout History.* Inner Traditions, 2007. — The most comprehensive single-volume treatment of this subject.
-- **Ovenden, Richard.** *Burning the Books.* John Murray, 2020. — Shortlisted for the Baillie Gifford Prize; written by the director of the Bodleian Library.
-- **Knuth, Rebecca.** *Libricide: The Regime-Sponsored Destruction of Books and Libraries in the Twentieth Century.* Praeger, 2003.
-- **Battles, Matthew.** *Library: An Unquiet History.* W.W. Norton, 2003.
+**Ukraine** — Kharkiv, Mariupol and Kherson individually, plus a regional record. UNESCO has verified 24 libraries and 5 archives among 563 damaged cultural sites.
+
+**Sudan** — the Mohamed Omer Bashir Centre library, the National Records Office and National Library, and the Sudan University College of Forestry library.
+
+### Sources
+
+- [Wikipedia: List of destroyed libraries](https://en.wikipedia.org/wiki/List_of_destroyed_libraries)
+- [UNESCO: Damaged cultural sites in Ukraine](https://www.unesco.org/en/ukraine-war/damaged-cultural-sites)
+- [Wikipedia: Destruction of cultural heritage during the Gaza war](https://en.wikipedia.org/wiki/Destruction_of_cultural_heritage_during_the_Gaza_war)
+- [Wikipedia: Destruction of cultural heritage during the Sudanese civil war](https://en.wikipedia.org/wiki/Destruction_of_cultural_heritage_during_the_Sudanese_civil_war)
+- Polastron, *Books on Fire* (2007); Ovenden, *Burning the Books* (2020); Knuth, *Libricide* (2003); Battles, *Library: An Unquiet History* (2003)
+
+---
+
+## Technical notes
+
+**Dependencies.** `index.html` uses Bootstrap 5.3.8 and Google Fonts from CDN. `map.html` and `timeline.html` use Google Fonts only — their geography is inline SVG drawn from Natural Earth coastlines, so they work with no network at all.
+
+**Why not map tiles.** Earlier versions used a raster tile server and then a CDN-hosted geometry script. Both were blocked by sandboxed viewers, leaving markers floating on an empty background. The coastlines are now written into the files as SVG paths.
+
+**Accessibility**
+- Skip link, landmark roles, labelled sections
+- `aria-pressed` on every filter; `aria-live` on result counts
+- The century chart has a full data table equivalent, not just a label
+- All interactive targets at least 44×44px
+- Body text 20px on mobile, nothing below 16px
+- Contrast: body 17.2:1, secondary 12.1:1, muted 7.5:1, accent 5.8:1
+- `prefers-reduced-motion`, `prefers-contrast`, and forced-colors support
+- Safe-area insets for notched devices
+
+**Mobile.** Pinch-zoom, drag-pan and double-tap zoom on the map, verified at iPhone, iPad and desktop viewports. Tall screens open the map zoomed into the dense region rather than showing a letterboxed world.
 
 ---
 
-## License
+## Local development
 
-Data is compiled from public sources (see Primary Sources above).
+```bash
+python3 -m http.server 8000     # then open http://localhost:8000
+```
+
+Or use the Live Server extension in VS Code.
+
+## Deploying
+
+```bash
+git add .
+git commit -m "Update Lost Libraries"
+git push
+```
+
+GitHub Pages redeploys automatically from `main`.
 
 ---
+
 
 *"Every book that burns takes with it a world that will never be reconstructed."*
