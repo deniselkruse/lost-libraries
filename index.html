@@ -4,28 +4,21 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>The Lost Libraries — Monuments to Erased Knowledge</title>
-  <meta name="description" content="An interactive chronicle of 108 libraries destroyed across 3,700 years of history.">
+  <meta name="description" content="An interactive chronicle of 114 libraries destroyed across 3,787 years, from Bronze Age Mari to Gaza, Sudan and Ukraine today.">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet">
+  <!-- Shared tokens, type scale and accessibility base. Loads after
+       Bootstrap so our variables win, and before the page block below. -->
+  <link rel="stylesheet" href="styles.css">
+
   <style>
-    :root {
-      --ink:#f4f1ea; --ink-soft:#181310; --parchment:#120f0c;
-      --aged:#2a231c; --ember:#8f3410; --gold:#5f4310;
-      --ash:#c3bbae; --smoke:#3d342a; --focus:#7a3a10;
-      --fs-body:clamp(1.0625rem,2vw,1.2rem);
-      --fs-small:clamp(0.9375rem,1.8vw,1rem);
-      --fs-mono:clamp(0.875rem,1.6vw,0.85rem);
-    }
-    *,*::before,*::after{box-sizing:border-box}
-    html{scroll-behavior:smooth}
-    body{background:var(--ink);color:var(--parchment);font-family:'Crimson Pro',Georgia,serif;font-size:var(--fs-body);line-height:1.75;overflow-x:hidden}
+    /* ============================================================
+       index.html only. Anything shared with map.html or timeline.html
+       belongs in styles.css instead.
+       ============================================================ */
+
+    
     #prog{position:fixed;top:0;left:0;height:3px;width:0;background:var(--ember);z-index:1000;transition:width .1s linear}
-    .skip{position:absolute;top:-100px;left:1rem;background:var(--focus);color:#000;font-family:'Courier Prime',monospace;font-size:var(--fs-mono);font-weight:700;padding:.6rem 1.2rem;z-index:9999;text-decoration:none;border-radius:0 0 4px 4px;transition:top .2s}
-    .skip:focus{top:0}
-    :focus-visible{outline:3px solid var(--focus);outline-offset:3px}
-    :focus:not(:focus-visible){outline:none}
-    h1,h2,h3,h4{font-family:'Playfair Display',Georgia,serif;color:var(--parchment);line-height:1.1}
-    .mono{font-family:'Courier Prime','Courier New',monospace;font-size:var(--fs-mono)}
     .eyebrow{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,1rem);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
     .sec-num{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.22em;text-transform:uppercase;color:var(--ember)}
 
@@ -54,7 +47,6 @@
 
     /* LAYOUT */
     .sec{padding-top:clamp(3rem,8vw,5.5rem);padding-bottom:clamp(3rem,8vw,5.5rem)}
-    .rule{border:none;height:1px;background:linear-gradient(90deg,transparent,var(--ash) 40%,transparent);margin:0}
     .sec-bar{border-left:4px solid var(--ember);padding-left:1.25rem;margin-bottom:2rem}
     .sec-title{font-size:clamp(1.9rem,5vw,3rem);font-weight:700}
     .sec-body{font-size:clamp(1.1875rem,4.2vw,1.25rem);color:var(--aged);line-height:1.85;max-width:660px}
@@ -89,8 +81,6 @@
     
     .cbar-count{font-family:'Courier Prime',monospace;font-size:.68rem;color:var(--aged);position:absolute;top:-1.2rem;left:50%;transform:translateX(-50%);white-space:nowrap}
     .cbar-label{font-family:'Courier Prime',monospace;font-size:.6rem;color:var(--smoke);position:absolute;bottom:-2rem;left:50%;transform:translateX(-50%);writing-mode:vertical-lr;white-space:nowrap}
-
-    /* NEW BADGE */
 
     /* FILTERS */
     .fbtn{font-family:'Courier Prime',monospace;font-size:clamp(1rem,3.4vw,1.05rem);letter-spacing:.1em;text-transform:uppercase;padding:.5rem 1.05rem;border:1px solid rgba(18,15,12,.25);background:transparent;color:var(--smoke);cursor:pointer;border-radius:2px;transition:all .2s ease;-webkit-tap-highlight-color:transparent;touch-action:manipulation;white-space:nowrap;min-height:44px}
@@ -137,12 +127,6 @@
     .c-body{max-width:600px;margin:0 auto;font-size:clamp(1.1875rem,4.2vw,1.25rem);color:var(--smoke);line-height:1.95}
 
     /* REVEAL */
-    .reveal{opacity:0;transform:translateY(16px);transition:opacity .75s ease,transform .75s ease}
-    .reveal.visible{opacity:1;transform:translateY(0)}
-
-    ::-webkit-scrollbar{width:5px}
-    ::-webkit-scrollbar-track{background:var(--ink)}
-    ::-webkit-scrollbar-thumb{background:var(--ash);border-radius:3px}
 
     @media(max-width:575px){
       .hero{padding:4rem 1rem 3.5rem}
@@ -152,31 +136,18 @@
       .modal-header,.modal-body{padding:1rem}
       .sec{padding-top:2.75rem;padding-bottom:2.75rem}
     }
-    @media(prefers-reduced-motion:reduce){
-      *,*::before,*::after{animation-duration:.01ms!important;transition-duration:.01ms!important}
-      .reveal{opacity:1;transform:none}
-      html{scroll-behavior:auto}
-    }
-    @media(forced-colors:active){
-      .cause-card,.lib-card,.rec-panel{border:1px solid ButtonText}
-      .fbtn[aria-pressed=true]{border:2px solid Highlight;color:Highlight}
-    }
+    
+    
   
     /* ============================================================
        RESPONSIVE + ACCESSIBILITY LAYER
        ============================================================ */
 
     /* Notched / rounded phones: keep content clear of the system bars. */
-    :root{
-      padding-top:env(safe-area-inset-top,0px);
-      padding-bottom:env(safe-area-inset-bottom,0px);
-    }
-    html{scroll-padding-top:1rem;font-size:16px}
+    
     /* Bootstrap keeps the root at a flat 16px on every screen. Phones are
        held closer to the eye but have far less width, so lift the root a
        little - this scales every rem-based size in one move. */
-    @media (max-width:575.98px){ html{font-size:17px} }
-    @media (min-width:1600px){ html{font-size:17px} }
 
     /* Skip-link target must not land under anything. */
     #main{scroll-margin-top:1rem}
@@ -190,24 +161,16 @@
       --bs-secondary-color:var(--smoke);
       --bs-link-color:var(--ember);
       --bs-link-hover-color:var(--gold);
-      --bs-focus-ring-color:rgba(255,208,64,.45);
+      --bs-focus-ring-color:rgba(143,52,16,.45);
     }
 
     /* One consistent, high-visibility focus ring everywhere. */
-    a:focus-visible,button:focus-visible,[tabindex]:focus-visible,
-    input:focus-visible,select:focus-visible,.btn-close:focus-visible{
-      outline:3px solid var(--focus);
-      outline-offset:3px;
-      border-radius:2px;
-    }
-    .btn-close:focus{box-shadow:none}
+    
 
     /* Cards are buttons: give them room to be tapped comfortably. */
-    .lib-card{min-height:76px}
 
     /* Users who ask for more contrast get it. */
     @media (prefers-contrast:more){
-      :root{--smoke:#241d16;--aged:#15100b;--ember:#6e2408}
       .lib-card,.cause-card{border:1px solid var(--aged)}
       .fbtn{border-color:var(--aged)}
     }
@@ -279,17 +242,7 @@
       font-size:clamp(1rem,3.4vw,1.05rem);color:var(--aged);
       line-height:1.5;display:block;
     }
-    .map-open{
-      display:inline-flex;align-items:center;gap:.5rem;
-      font-family:'Courier Prime',monospace;
-      font-size:clamp(1rem,3.4vw,1.05rem);letter-spacing:.1em;text-transform:uppercase;
-      padding:.75rem 1.3rem;min-height:48px;
-      border:1px solid var(--ember);color:var(--ember);
-      background:rgba(168,64,26,.10);text-decoration:none;border-radius:2px;
-      transition:background .2s,color .2s;white-space:nowrap;
-      -webkit-tap-highlight-color:transparent;touch-action:manipulation;
-    }
-    .map-open:hover,.map-open:focus-visible{background:var(--ember);color:#fdfbf6}
+    
     .map-legend{
       display:flex;flex-wrap:wrap;gap:.5rem 1.1rem;margin-top:1rem;
     }
@@ -306,6 +259,8 @@
   
   </style>
 </head>
+
+
 <body>
 <div id="prog" role="progressbar" aria-label="Reading progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
 <a href="#main" class="skip">Skip to main content</a>
