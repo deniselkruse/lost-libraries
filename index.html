@@ -435,8 +435,8 @@
   <div class="c-symbol" aria-hidden="true">&#8734;</div>
   <h2 class="c-title">What we cannot recover</h2>
   <p class="c-body">The libraries recorded here are only the ones we know about. For every library whose destruction was witnessed, how many others vanished without a chronicler? The true count is, by definition, unknowable.</p>
-  <p class="c-body mt-4">But the record holds something else. A Persian astronomer carrying manuscripts out of Alamut ahead of the Mongols. Citizens in Sarajevo forming a chain under sniper fire, one of them killed doing it. Volunteers in Weimar passing burning books hand to hand through the night. Librarians in Timbuktu moving thirty thousand manuscripts out in trunks and rice sacks before the militias arrived, and letting the world believe for years that they had lost them. In eight of these records, people decided that books were worth the risk.</p>
-  <p class="c-body mt-4">Erasure does not require fire. A book no one can reach is functionally lost, and the quieter methods &mdash; a collection removed, defunded, left to rot, or quietly not replaced &mdash; have historically come first. That is the part worth watching, because unlike ash, it is still reversible.</p>
+  <p class="c-body mt-4">But the record holds something else. A Persian astronomer carrying manuscripts out of Alamut ahead of the Mongols. Citizens in Sarajevo forming a chain under sniper fire, one of them killed doing it. Volunteers in Weimar passing burning books hand to hand through the night. Librarians in Timbuktu moving thirty thousand manuscripts out in trunks and rice sacks before the militias arrived, and letting the world believe for years that they had lost them.</p>
+  <p class="c-body mt-4">This record only has 118 entries because destruction leaves evidence; a defunded library doesn't have a perpetrator. Eight times in this record, somebody picked up what they could carry.</p>
 </footer>
 
 <div class="modal fade" id="libModal" tabindex="-1" aria-labelledby="m-name" aria-describedby="m-desc">
@@ -592,23 +592,37 @@ if (typeof LIB_RESCUED !== 'undefined' && LIB_RESCUED) {
 var lgrid=document.getElementById('lib-grid');
 var noRes=document.getElementById('no-res');
 var countEl=document.getElementById('count');
+/* Cards are built once and then shown or hidden. Rebuilding the grid on
+   every filter click threw away 118 elements, invalidated any held
+   reference, and reset the scroll position. */
+function buildCard(lib){
+  var c=CAUSES[lib.cause];
+  var yr=lib.year<0?(Math.abs(lib.year)+' BC'):(lib.year+' AD');
+  var card=document.createElement('button');
+  card.className='lib-card';
+  card.setAttribute('role','listitem');
+  card.setAttribute('aria-label',lib.name+', '+lib.location+', '+yr+'. '+c.label+(lib.rescued?'. Part of the collection was saved':'')+'. Press Enter for details.');
+  card.style.setProperty('--lc',c.color);
+  card.innerHTML='<div class="lib-name">'+lib.name+(lib.rescued?' <span class="resc" title="Part of the collection was saved">\u25C8</span>':'')+'</div><div class="lib-meta">'+lib.location+' &middot; '+yr+'</div><span class="lib-dot" style="background:'+c.color+'" aria-hidden="true"></span><span class="lib-cause">'+c.label+'</span>';
+  card.onclick=function(){openModal(lib);};
+  lib._card=card;              /* stable handle: share.js uses this */
+  return card;
+}
+
+function matches(lib,filter){
+  if(filter==='rescued') return !!lib.rescued;
+  return filter==='all' || lib.cause===filter;
+}
+
 function render(filter){
-  lgrid.innerHTML='';
   var shown=0;
   LIBRARIES.forEach(function(lib){
-    if(filter==='rescued'){ if(!lib.rescued) return; }
-    else if(filter!=='all' && lib.cause!==filter) return;
-    shown++;
-    var c=CAUSES[lib.cause];
-    var yr=lib.year<0?(Math.abs(lib.year)+' BC'):(lib.year+' AD');
-    var card=document.createElement('button');
-    card.className='lib-card';
-    card.setAttribute('role','listitem');
-    card.setAttribute('aria-label',lib.name+', '+lib.location+', '+yr+'. '+c.label+(lib.rescued?'. Part of the collection was saved':'')+'. Press Enter for details.');
-    card.style.setProperty('--lc',c.color);
-    card.innerHTML='<div class="lib-name">'+lib.name+(lib.rescued?' <span class="resc" title="Part of the collection was saved">\u25C8</span>':'')+'</div><div class="lib-meta">'+lib.location+' &middot; '+yr+'</div><span class="lib-dot" style="background:'+c.color+'" aria-hidden="true"></span><span class="lib-cause">'+c.label+'</span>';
-    card.onclick=function(){openModal(lib);};
-    lgrid.appendChild(card);
+    if(!lib._card) lgrid.appendChild(buildCard(lib));
+    var ok=matches(lib,filter);
+    lib._card.style.display = ok ? '' : 'none';
+    /* hidden cards must also leave the tab order and the a11y tree */
+    if(ok){ lib._card.removeAttribute('hidden'); shown++; }
+    else  { lib._card.setAttribute('hidden',''); }
   });
   noRes.style.display=shown===0?'block':'none';
   lgrid.style.display=shown===0?'none':'';
@@ -710,5 +724,8 @@ setTimeout(function(){
   });
 }, 1200);
 </script>
+<!-- Shareable records: per-entry URLs, copy link, scroll to card.
+     Loads last because it wraps openModal() rather than replacing it. -->
+<script src="share.js"></script>
 </body>
 </html>
