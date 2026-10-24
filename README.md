@@ -1,7 +1,7 @@
 # The Lost Libraries
 ### A Visual Chronicle of Erased Knowledge — 1761 BC to 2026 AD
 
-An interactive record of **114 libraries destroyed across 3,787 years**, from the palace archives of Bronze Age Mari to libraries burning in Gaza, Sudan and Ukraine today.
+An interactive record of **118 libraries destroyed across 3,787 years**, from the palace archives of Bronze Age Mari to libraries burning in Gaza, Sudan and Ukraine today.
 
 Originally inspired by [Sudhanshu Sharma's Medium article](https://medium.com/@sudhanshu.harsh/the-lost-libraries-visualizing-damage-done-to-99-libraries-throughout-history-e3355f85e10b) on 99 libraries. This project re-verified that dataset, merged duplicate records, corrected several factual errors, added geographic coordinates, and extended it to cover three ongoing conflicts.
 
@@ -17,7 +17,12 @@ Originally inspired by [Sudhanshu Sharma's Medium article](https://medium.com/@s
 
 | File | What it is |
 |------|-----------|
-| `index.html` | Main page — causes, a stacked century chart, a map preview, the full catalogue, further reading |
+| `data.js` | The dataset: 118 records with coordinates and citations, shared by all three pages |
+| `quotes.js` | Pull-quote text |
+| `quests.js` | Side quests — the long-form stories. Add one by copying the shape at the top of the file |
+| `share.js` | Per-record links: `#library-name` opens that card, plus a copy-link button |
+| `style.css` | Shared design tokens and accessibility base |
+| `index.html` | Main page — causes, a stacked century chart, a map preview, the full catalogue, side quests, further reading |
 | `map.html` | Interactive atlas — pan, pinch-zoom, filter by cause, filter by era, detail panel |
 | `timeline.html` | Animated sweep — 1761 BC to 2026, each library igniting on the map at its year |
 
@@ -27,16 +32,16 @@ All three are self-contained. No build step, no API keys, no tile server.
 
 ## The dataset
 
-**114 records.** Distribution by cause:
+**118 records.** Distribution by cause:
 
 | Cause | Records | Share |
 |-------|--------:|------:|
-| Armed conflict | 66 | 58% |
-| Accidental fire | 24 | 21% |
+| Armed conflict | 67 | 57% |
+| Accidental fire | 26 | 22% |
 | Religious purge | 13 | 11% |
-| State censorship | 11 | 10% |
+| State censorship | 12 | 10% |
 
-Armed conflict covers foreign invasion and civil war together, since the two were not meaningfully separable in the records. Accidental fire has claimed as many libraries as religious purges and state censorship combined.
+Armed conflict covers foreign invasion and civil war together, since the two were not meaningfully separable in the records. Accidental fire has now claimed more libraries than religious purges and state censorship combined.
 
 The 20th century holds the most records (35). The 21st is already at 34 and is not yet half over.
 
