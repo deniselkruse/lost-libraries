@@ -105,6 +105,44 @@
     .rec-label{font-family:'Playfair Display',serif;font-size:clamp(1.1875rem,4.2vw,1.2rem);color:var(--parchment);margin-bottom:.2rem}
     .rec-desc{font-size:clamp(1.0625rem,3.6vw,1.05rem);color:var(--smoke);line-height:1.65}
 
+    /* SIDE QUESTS
+       Built from quests.js. The expander is a native <details>, so it
+       opens with the keyboard, prints open, and works with the script
+       disabled once the markup is in place. */
+    /* Compact closed state: the whole header IS the summary, so a closed
+       quest is a kicker and a title and nothing else. Twenty-two open
+       standfirsts made this section eleven phone screens tall on its own;
+       the standfirst now lives inside, as the first thing you read. */
+    .quest{background:rgba(18,15,12,.025);border:1px solid rgba(18,15,12,.15);border-left:4px solid var(--gold);margin-bottom:.9rem}
+    .q-det{margin:0}
+    .q-sum{display:block;position:relative;cursor:pointer;list-style:none;
+      padding:clamp(1rem,3.5vw,1.3rem) clamp(1.1rem,4vw,1.6rem) clamp(1rem,3.5vw,1.3rem) 2.6rem;
+      min-height:44px;transition:background .2s}
+    .q-sum::-webkit-details-marker{display:none}
+    .q-sum::before{content:'\25B8';position:absolute;left:1.1rem;top:calc(clamp(1rem,3.5vw,1.3rem) + .15em);
+      color:var(--ember);transition:transform .25s;display:inline-block}
+    .q-det[open]>.q-sum::before{transform:rotate(90deg)}
+    .q-sum:hover{background:rgba(18,15,12,.04)}
+    .q-kicker{display:block;font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 .35rem}
+    .q-title{display:block;font-family:'Playfair Display',serif;font-size:clamp(1.3rem,4.6vw,1.75rem);line-height:1.2;margin:0;color:var(--parchment)}
+    .q-stand{font-size:clamp(1.0625rem,3.6vw,1.15rem);color:var(--aged);line-height:1.8;margin:0 0 1.4rem;max-width:62ch;font-style:italic}
+    .q-body{padding:0 clamp(1.1rem,4vw,1.6rem) clamp(1.4rem,4vw,1.9rem) 2.6rem}
+    .q-body p{font-size:clamp(1.1875rem,4.2vw,1.2rem);color:var(--aged);line-height:1.9;max-width:66ch}
+    .q-chain{margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.12)}
+    .q-lbl{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--ember);display:block;margin-bottom:.9rem}
+    .q-chain ol{list-style:none;margin:0;padding:0}
+    .q-chain li{display:grid;grid-template-columns:8rem 1fr;gap:.2rem 1rem;padding:.55rem 0;border-bottom:1px dotted rgba(18,15,12,.14)}
+    .q-when{font-family:'Courier Prime',monospace;font-size:clamp(1rem,3.4vw,1rem);color:var(--ember);letter-spacing:.03em}
+    .q-what{font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--smoke);line-height:1.6}
+    /* .map-open is white-space:nowrap by design. A record name is too
+       long for that on a phone, and the page's overflow-x:hidden would
+       simply clip it, so this one wraps. */
+    .q-rec{margin-top:1.6rem;white-space:normal;text-align:left;max-width:100%}
+    .q-note{font-size:clamp(1rem,3.4vw,1.05rem);color:var(--smoke);font-style:italic;margin:.7rem 0 0;max-width:62ch}
+    .q-src{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.12)}
+    .q-src a{display:block;font-size:clamp(1rem,3.4vw,1.05rem);line-height:1.5;margin-bottom:.55rem;color:var(--ember);border-left:2px solid rgba(18,15,12,.15);padding-left:.7rem;text-decoration:underline;text-underline-offset:2px}
+    .q-src a:hover,.q-src a:focus-visible{color:var(--gold)}
+
     /* MODAL */
     .modal-content{background:#fbf8f2;border:1px solid rgba(18,15,12,.2);border-radius:0;color:var(--parchment)}
     .modal-header{border-bottom:1px solid rgba(18,15,12,.1);padding:1.25rem 1.5rem 1rem;align-items:flex-start}
@@ -122,6 +160,33 @@
 .resc{color:var(--c-neglect);font-size:.8em;vertical-align:.1em}
     .fbtn-rescued{border-color:var(--c-neglect);color:var(--c-neglect)}
     .fbtn-rescued:hover,.fbtn-rescued[aria-pressed=true]{border-color:var(--c-neglect);color:var(--c-neglect);background:rgba(30,107,85,.10)}
+    /* SIDE QUEST MARKERS
+       The manicule is U+261E followed by VS15, which forces the text
+       form on platforms that would otherwise draw an emoji hand. */
+    .manic{color:var(--ember);font-size:.92em;vertical-align:.04em;margin-left:.1rem}
+    .fbtn-quest{border-color:var(--gold);color:var(--gold)}
+    .fbtn-quest:hover,.fbtn-quest[aria-pressed=true]{border-color:var(--gold);color:var(--gold);background:rgba(95,67,16,.10)}
+
+    /* The callout inside a record. The hairline draws itself downward
+       once, then the text and button settle under it. .play is removed
+       and re-added on every open so it replays. */
+    .m-quest{position:relative;margin-top:1.25rem;padding:1.25rem 0 .25rem 1.1rem;border-top:1px solid rgba(18,15,12,.1)}
+    .m-quest::before{content:'';position:absolute;left:0;top:1.25rem;bottom:.25rem;width:2px;background:var(--ember);transform-origin:top}
+    .m-quest.play::before{animation:threadDraw .6s cubic-bezier(.22,1,.36,1) .1s backwards}
+    @keyframes threadDraw{from{transform:scaleY(0)}to{transform:scaleY(1)}}
+    .m-quest-lbl{display:block;font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--ember);margin-bottom:.35rem}
+    .m-quest-title{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(1.1875rem,4.2vw,1.25rem);color:var(--aged);line-height:1.35;margin:0 0 .9rem}
+    .m-quest.play .m-quest-lbl,.m-quest.play .m-quest-title,.m-quest.play .m-quest-btn{animation:qFade .45s ease .4s backwards}
+    @keyframes qFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+    .m-quest-btn{font-family:'Courier Prime',monospace;font-size:clamp(1rem,3.4vw,1.05rem);letter-spacing:.1em;text-transform:uppercase;padding:.6rem 1.1rem;min-height:44px;border:1px solid var(--ember);color:var(--ember);background:transparent;border-radius:2px;cursor:pointer;transition:background .2s,color .2s;touch-action:manipulation}
+    .m-quest-btn:hover,.m-quest-btn:focus-visible{background:var(--ember);color:#fdfbf6}
+
+    /* Arriving at a quest from a record. Deliberately the same wash as
+       .lib-card-found in share.js, so a link reads the same whichever
+       direction you travelled it in. */
+    .quest-found{animation:questFound 2.6s ease-out 1}
+    @keyframes questFound{0%{background:rgba(143,52,16,.14)}70%{background:rgba(143,52,16,.08)}100%{background:rgba(18,15,12,.025)}}
+
     .m-src-sec{margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.1)}
     #m-src a,#m-src span{display:block;font-size:clamp(1rem,3.4vw,1.05rem);line-height:1.5;
       margin-bottom:.55rem;color:var(--smoke);border-left:2px solid rgba(18,15,12,.15);
@@ -143,6 +208,7 @@
       .lib-grid{grid-template-columns:1fr}
       .chart-hint{display:block}
       .modal-header,.modal-body{padding:1rem}
+      .q-chain li{grid-template-columns:1fr}
       .sec{padding-top:2.75rem;padding-bottom:2.75rem}
     }
     
@@ -411,10 +477,24 @@
 
   <hr class="rule">
 
+  <!-- Side quests. Content lives in quests.js; this is only the frame. -->
+  <section aria-labelledby="quest-h" class="sec" id="sec-quests">
+    <div class="container-xl px-3 px-md-4">
+      <div class="sec-bar reveal">
+        <p class="sec-num mb-1">05 &mdash; Side Quests</p>
+        <h2 class="sec-title" id="quest-h">The long way round</h2>
+        <p class="sec-body mt-2">A catalogue entry stops at the fire. These follow one object, or one person, the rest of the way.</p>
+      </div>
+      <div id="quest-list" class="mt-1"></div>
+    </div>
+  </section>
+
+  <hr class="rule">
+
   <section aria-labelledby="rec-h" class="sec">
     <div class="container-xl px-3 px-md-4">
       <div class="sec-bar reveal">
-        <p class="sec-num mb-1">05 &mdash; Further Reading</p>
+        <p class="sec-num mb-1">06 &mdash; Further Reading</p>
         <h2 class="sec-title" id="rec-h">The longer story</h2>
         <p class="sec-body mt-2">Four books that treat this subject with the seriousness it deserves.</p>
       </div>
@@ -467,6 +547,7 @@
 
 <script src="data.js"></script>
 <script src="quotes.js"></script>
+<script src="quests.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
 <script>
 'use strict';
@@ -562,6 +643,18 @@ ckeys.forEach(function(yr){
   chartEl.appendChild(w);
 });
 
+/* SIDE QUEST LOOKUP
+   Quests name a record; the catalogue needs the reverse. Built before
+   the filter row and the cards, because both read from it. */
+var QUEST_FOR={};
+if(typeof SIDEQUESTS!=='undefined' && SIDEQUESTS){
+  for(var sq=0;sq<SIDEQUESTS.length;sq++){
+    if(SIDEQUESTS[sq] && SIDEQUESTS[sq].record) QUEST_FOR[SIDEQUESTS[sq].record]=SIDEQUESTS[sq];
+  }
+}
+function questFor(lib){ return (lib && QUEST_FOR[lib.name]) ? QUEST_FOR[lib.name] : null; }
+function anyQuests(){ for(var k in QUEST_FOR){ if(QUEST_FOR.hasOwnProperty(k)) return true; } return false; }
+
 // FILTERS
 var frow=document.getElementById('filters');
 var activeKey='all';
@@ -587,6 +680,12 @@ if (typeof LIB_RESCUED !== 'undefined' && LIB_RESCUED) {
   rb.classList.add('fbtn-rescued');
   frow.appendChild(rb);
 }
+/* Also not a cause: the records with a long-form story attached. */
+if (anyQuests()) {
+  var qbtn = mkBtn('quest', 'Side Quest Available');
+  qbtn.classList.add('fbtn-quest');
+  frow.appendChild(qbtn);
+}
 
 // LIBRARY GRID
 var lgrid=document.getElementById('lib-grid');
@@ -601,9 +700,9 @@ function buildCard(lib){
   var card=document.createElement('button');
   card.className='lib-card';
   card.setAttribute('role','listitem');
-  card.setAttribute('aria-label',lib.name+', '+lib.location+', '+yr+'. '+c.label+(lib.rescued?'. Part of the collection was saved':'')+'. Press Enter for details.');
+  card.setAttribute('aria-label',lib.name+', '+lib.location+', '+yr+'. '+c.label+(lib.rescued?'. Part of the collection was saved':'')+(questFor(lib)?'. Side quest available':'')+'. Press Enter for details.');
   card.style.setProperty('--lc',c.color);
-  card.innerHTML='<div class="lib-name">'+lib.name+(lib.rescued?' <span class="resc" title="Part of the collection was saved">\u25C8</span>':'')+'</div><div class="lib-meta">'+lib.location+' &middot; '+yr+'</div><span class="lib-dot" style="background:'+c.color+'" aria-hidden="true"></span><span class="lib-cause">'+c.label+'</span>';
+  card.innerHTML='<div class="lib-name">'+lib.name+(lib.rescued?' <span class="resc" title="Part of the collection was saved">\u25C8</span>':'')+(questFor(lib)?' <span class="manic" title="Side quest available" aria-hidden="true">\u261E\uFE0E</span>':'')+'</div><div class="lib-meta">'+lib.location+' &middot; '+yr+'</div><span class="lib-dot" style="background:'+c.color+'" aria-hidden="true"></span><span class="lib-cause">'+c.label+'</span>';
   card.onclick=function(){openModal(lib);};
   lib._card=card;              /* stable handle: share.js uses this */
   return card;
@@ -611,6 +710,7 @@ function buildCard(lib){
 
 function matches(lib,filter){
   if(filter==='rescued') return !!lib.rescued;
+  if(filter==='quest') return !!questFor(lib);
   return filter==='all' || lib.cause===filter;
 }
 
@@ -642,6 +742,32 @@ function openModal(lib){
   document.getElementById('m-perp').textContent=lib.perp;
   /* Citations come from data.js. Entries resting on a single chronicler or a
      disputed figure say so in the record text itself. */
+  /* Side quest callout. Built once, then shown, filled and replayed —
+     records without a quest hide it rather than leaving a stub. */
+  var qsec=document.getElementById('m-quest');
+  if(!qsec){
+    qsec=document.createElement('div');
+    qsec.id='m-quest'; qsec.className='m-quest';
+    qsec.innerHTML='<span class="m-quest-lbl"><span class="manic" aria-hidden="true">☞︎</span> Side quest available</span><p class="m-quest-title"></p>';
+    var qb2=document.createElement('button');
+    qb2.type='button'; qb2.className='m-quest-btn'; qb2.textContent='Read it';
+    qsec.appendChild(qb2);
+    var anchor=document.querySelector('.m-src-sec');
+    if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(qsec,anchor);
+  }
+  var qq=questFor(lib);
+  if(qq){
+    qsec.style.display='';
+    qsec.querySelector('.m-quest-title').textContent=qq.title;
+    qsec.querySelector('.m-quest-btn').onclick=function(){
+      if(typeof window.openQuestById==='function') window.openQuestById(qq.id);
+    };
+    /* restart the draw: remove, force reflow, re-add */
+    qsec.classList.remove('play'); void qsec.offsetWidth; qsec.classList.add('play');
+  } else {
+    qsec.style.display='none';
+  }
+
   var srcEl=document.getElementById('m-src');
   if(srcEl){
     var srcs=(typeof sourcesFor==='function')?sourcesFor(lib):[];
@@ -674,6 +800,167 @@ RECS.forEach(function(r){
   p.innerHTML='<div class="d-flex gap-3 align-items-start"><div class="rec-icon" aria-hidden="true">'+r.icon+'</div><div><div class="rec-label">'+r.label+'</div><p class="rec-desc mb-0">'+r.desc+'</p></div></div>';
   col.appendChild(p);rgrid.appendChild(col);
 });
+
+/* SIDE QUESTS
+   Content comes from quests.js. Text is set with textContent, not
+   innerHTML, so an apostrophe or an ampersand in a quest can't break
+   the page. If quests.js is missing or its array is empty the whole
+   section is removed rather than left as an empty heading. */
+(function(){
+  var host=document.getElementById('quest-list');
+  var sec=document.getElementById('sec-quests');
+  if(!host) return;
+  var list=(typeof SIDEQUESTS!=='undefined' && SIDEQUESTS && SIDEQUESTS.length) ? SIDEQUESTS : null;
+  if(!list){ if(sec) sec.style.display='none'; return; }
+
+  function mk(tag,cls,text){
+    var n=document.createElement(tag);
+    if(cls) n.className=cls;
+    if(text!==undefined && text!==null) n.textContent=text;
+    return n;
+  }
+  /* Quests name a record by its exact `name` in data.js. A name that
+     matches nothing just means no button, not a broken quest. */
+  function libByName(name){
+    if(typeof LIBRARIES==='undefined' || !name) return null;
+    for(var i=0;i<LIBRARIES.length;i++){ if(LIBRARIES[i].name===name) return LIBRARIES[i]; }
+    return null;
+  }
+
+  for(var qi=0;qi<list.length;qi++){
+    var q=list[qi];
+    if(!q || !q.title) continue;
+
+    var art=mk('article','quest reveal');
+    if(q.id) art.id='quest-'+q.id;
+
+    var body=(q.body&&q.body.length)?q.body:[];
+    var steps=(q.steps&&q.steps.length)?q.steps:[];
+    var srcs=(q.src&&q.src.length)?q.src:[];
+    var lib=libByName(q.record);
+
+    /* Nothing to open: render the header flat rather than an empty toggle. */
+    if(!body.length && !steps.length && !srcs.length && !lib){
+      var flat=mk('div','q-sum');
+      if(q.kicker) flat.appendChild(mk('span','q-kicker',q.kicker));
+      flat.appendChild(mk('h3','q-title',q.title));
+      flat.style.paddingLeft='clamp(1.1rem,4vw,1.6rem)';
+      art.appendChild(flat);
+      host.appendChild(art);
+      continue;
+    }
+
+    /* The header is the summary. Closed, a quest is a kicker and a title;
+       the standfirst is the first thing inside. */
+    var det=mk('details','q-det');
+    var sum=mk('summary','q-sum');
+    if(q.kicker) sum.appendChild(mk('span','q-kicker',q.kicker));
+    sum.appendChild(mk('h3','q-title',q.title));
+    det.appendChild(sum);
+    var inner=mk('div','q-body');
+
+    if(q.stand) inner.appendChild(mk('p','q-stand',q.stand));
+    for(var bi=0;bi<body.length;bi++) inner.appendChild(mk('p',null,body[bi]));
+
+    if(steps.length){
+      var chain=mk('div','q-chain');
+      chain.appendChild(mk('span','q-lbl',q.stepsLabel||'Chain of custody'));
+      var ol=document.createElement('ol');
+      for(var si=0;si<steps.length;si++){
+        var li=document.createElement('li');
+        li.appendChild(mk('span','q-when',steps[si].when||''));
+        li.appendChild(mk('span','q-what',steps[si].what||''));
+        ol.appendChild(li);
+      }
+      chain.appendChild(ol);
+      inner.appendChild(chain);
+    }
+
+    if(lib){
+      (function(rec){
+        var b=mk('button','map-open q-rec','In the catalogue: '+rec.name);
+        b.type='button';
+        b.onclick=function(){
+          /* share.js replaces window.openModal, so resolve it at click
+             time rather than holding a copy of the original. */
+          var open=(typeof window.openModal==='function')?window.openModal:openModal;
+          open(rec);
+        };
+        inner.appendChild(b);
+      })(lib);
+      if(q.note) inner.appendChild(mk('p','q-note',q.note));
+    }
+
+    if(srcs.length){
+      var sb=mk('div','q-src');
+      sb.appendChild(mk('span','q-lbl','Sources'));
+      for(var xi=0;xi<srcs.length;xi++){
+        var s=srcs[xi];
+        if(!s||!s.label) continue;
+        if(s.url){
+          var a=mk('a',null,s.label);
+          a.href=s.url; a.target='_blank'; a.rel='noopener';
+          sb.appendChild(a);
+        } else {
+          sb.appendChild(mk('p','q-what',s.label));
+        }
+      }
+      inner.appendChild(sb);
+    }
+
+    det.appendChild(inner);
+    art.appendChild(det);
+    host.appendChild(art);
+  }
+
+  /* Travel from a record to its quest: close the modal, open the quest,
+     put it in the URL, and flash it with the same wash share.js uses on
+     a card, so the link looks the same in both directions. */
+  window.openQuestById=function(id){
+    var art=document.getElementById('quest-'+id);
+    if(!art) return;
+    try{ if(typeof libModal!=='undefined'&&libModal) libModal.hide(); }catch(e){}
+    setTimeout(function(){
+      var d=art.querySelector('.q-det');
+      if(d) d.open=true;
+      art.classList.add('visible');
+      if(history.replaceState) history.replaceState(null,'','#quest-'+id);
+      else location.hash='quest-'+id;
+      /* Jump, don't glide. Opening the quest adds several thousand
+         pixels to the page; a smooth scroll aimed before that growth
+         overshoots to the bottom and then crawls back for two seconds.
+         One frame later the layout has settled, and an instant arrival
+         plus the flash reads better than the slide anyway. */
+      requestAnimationFrame(function(){
+        var de=document.documentElement;
+        var y=art.getBoundingClientRect().top+(window.pageYOffset||de.scrollTop)-8;
+        /* html{scroll-behavior:smooth} applies to scrollTo as well, and
+           behavior:'auto' defers to it rather than overriding it. Turn
+           it off for this one jump, then put it back. */
+        var prev=de.style.scrollBehavior;
+        de.style.scrollBehavior='auto';
+        window.scrollTo(0,y);
+        setTimeout(function(){ de.style.scrollBehavior=prev; },0);
+        art.classList.remove('quest-found'); void art.offsetWidth; art.classList.add('quest-found');
+        setTimeout(function(){ art.classList.remove('quest-found'); },2800);
+      });
+    },260);
+  };
+
+  /* #quest-<id> opens that quest and scrolls to it. */
+  function openFromHash(){
+    var h=location.hash||'';
+    if(h.indexOf('#quest-')!==0) return;
+    var art=document.getElementById(h.slice(1));
+    if(!art) return;
+    var d=art.querySelector('.q-det');
+    if(d) d.open=true;
+    art.classList.add('visible');
+    art.scrollIntoView({block:'start'});
+  }
+  window.addEventListener('hashchange',openFromHash);
+  setTimeout(openFromHash,300);
+})();
 
 // COUNTERS
 function animCount(el,target,suf,dur){
