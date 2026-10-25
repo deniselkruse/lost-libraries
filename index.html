@@ -4,6 +4,12 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>The Lost Libraries — Monuments to Erased Knowledge</title>
+  <!-- Favicon. SVG for everything modern, PNG for the rest, and a
+       180px version for an iOS home-screen bookmark. -->
+  <link rel="icon" href="favicon.svg" type="image/svg+xml">
+  <link rel="alternate icon" href="favicon-32.png" sizes="32x32" type="image/png">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png">
+  <meta name="theme-color" content="#f4f1ea">
   <meta name="description" content="An interactive chronicle of 114 libraries destroyed across 3,787 years, from Bronze Age Mari to Gaza, Sudan and Ukraine today.">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet">
@@ -106,27 +112,21 @@
     .rec-desc{font-size:clamp(1.0625rem,3.6vw,1.05rem);color:var(--smoke);line-height:1.65}
 
     /* SIDE QUESTS
-       Built from quests.js. The expander is a native <details>, so it
-       opens with the keyboard, prints open, and works with the script
-       disabled once the markup is in place. */
-    /* Compact closed state: the whole header IS the summary, so a closed
-       quest is a kicker and a title and nothing else. Twenty-two open
-       standfirsts made this section eleven phone screens tall on its own;
-       the standfirst now lives inside, as the first thing you read. */
-    .quest{background:rgba(18,15,12,.025);border:1px solid rgba(18,15,12,.15);border-left:4px solid var(--gold);margin-bottom:.9rem}
-    .q-det{margin:0}
-    .q-sum{display:block;position:relative;cursor:pointer;list-style:none;
+       Built from quests.js. A quest card behaves like a catalogue card:
+       it is a button, it opens a scrollable modal, and it has its own
+       shareable URL (#quest-<id>). */
+    .quest{display:block;width:100%;text-align:left;background:rgba(18,15,12,.025);
+      border:1px solid rgba(18,15,12,.15);border-left:4px solid var(--gold);
+      margin-bottom:.9rem;cursor:pointer;position:relative;
       padding:clamp(1rem,3.5vw,1.3rem) clamp(1.1rem,4vw,1.6rem) clamp(1rem,3.5vw,1.3rem) 2.6rem;
-      min-height:44px;transition:background .2s}
-    .q-sum::-webkit-details-marker{display:none}
-    .q-sum::before{content:'\25B8';position:absolute;left:1.1rem;top:calc(clamp(1rem,3.5vw,1.3rem) + .15em);
-      color:var(--ember);transition:transform .25s;display:inline-block}
-    .q-det[open]>.q-sum::before{transform:rotate(90deg)}
-    .q-sum:hover{background:rgba(18,15,12,.04)}
+      min-height:44px;transition:background .2s,border-color .2s;touch-action:manipulation;
+      -webkit-tap-highlight-color:transparent}
+    .quest::before{content:'\25B8';position:absolute;left:1.1rem;top:calc(clamp(1rem,3.5vw,1.3rem) + .15em);color:var(--ember)}
+    .quest:hover{background:rgba(18,15,12,.055);border-color:rgba(18,15,12,.3)}
     .q-kicker{display:block;font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 .35rem}
     .q-title{display:block;font-family:'Playfair Display',serif;font-size:clamp(1.3rem,4.6vw,1.75rem);line-height:1.2;margin:0;color:var(--parchment)}
+    .q-sub{display:block;font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--smoke);line-height:1.5;margin-top:.4rem;max-width:62ch}
     .q-stand{font-size:clamp(1.0625rem,3.6vw,1.15rem);color:var(--aged);line-height:1.8;margin:0 0 1.4rem;max-width:62ch;font-style:italic}
-    .q-body{padding:0 clamp(1.1rem,4vw,1.6rem) clamp(1.4rem,4vw,1.9rem) 2.6rem}
     .q-body p{font-size:clamp(1.1875rem,4.2vw,1.2rem);color:var(--aged);line-height:1.9;max-width:66ch}
     .q-chain{margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.12)}
     .q-lbl{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--ember);display:block;margin-bottom:.9rem}
@@ -142,6 +142,16 @@
     .q-src{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.12)}
     .q-src a{display:block;font-size:clamp(1rem,3.4vw,1.05rem);line-height:1.5;margin-bottom:.55rem;color:var(--ember);border-left:2px solid rgba(18,15,12,.15);padding-left:.7rem;text-decoration:underline;text-underline-offset:2px}
     .q-src a:hover,.q-src a:focus-visible{color:var(--gold)}
+    .q-src p{font-size:clamp(1rem,3.4vw,1.05rem);line-height:1.5;margin:0 0 .55rem;color:var(--smoke);border-left:2px solid rgba(18,15,12,.15);padding-left:.7rem}
+    /* The quest modal's header: the same furniture as a record's. */
+    .qm-kicker{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.5rem}
+    .qm-title{font-family:'Playfair Display',serif;font-size:clamp(1.5rem,5vw,2.1rem);color:var(--parchment);line-height:1.15;margin:0 0 .4rem}
+    .qm-sub{font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--smoke);line-height:1.5;margin:0}
+    .qm-share{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.1)}
+    .qm-share-btn{font-family:'Courier Prime',monospace;font-size:clamp(1rem,3.4vw,1.05rem);letter-spacing:.1em;text-transform:uppercase;padding:.6rem 1.1rem;min-height:44px;border:1px solid var(--ember);color:var(--ember);background:transparent;border-radius:2px;cursor:pointer;transition:background .2s,color .2s;touch-action:manipulation}
+    .qm-share-btn:hover,.qm-share-btn:focus-visible{background:var(--ember);color:#fdfbf6}
+    .qm-note{font-family:'Courier Prime',monospace;font-size:clamp(.9rem,3vw,.9rem);color:var(--smoke)}
+    @media(max-width:420px){.qm-share{flex-direction:column;align-items:stretch}.qm-share-btn{width:100%}}
 
     /* MODAL */
     .modal-content{background:#fbf8f2;border:1px solid rgba(18,15,12,.2);border-radius:0;color:var(--parchment)}
@@ -489,6 +499,13 @@
     </div>
   </section>
 
+  <div class="container-xl px-3 px-md-4">
+    <div class="pq reveal my-5" data-quote="quests">
+      <blockquote></blockquote>
+      <cite></cite>
+    </div>
+  </div>
+
   <hr class="rule">
 
   <section aria-labelledby="rec-h" class="sec">
@@ -518,6 +535,30 @@
   <p class="c-body mt-4">But the record holds something else. A Persian astronomer carrying manuscripts out of Alamut ahead of the Mongols. Citizens in Sarajevo forming a chain under sniper fire, one of them killed doing it. Volunteers in Weimar passing burning books hand to hand through the night. Librarians in Timbuktu moving thirty thousand manuscripts out in trunks and rice sacks before the militias arrived, and letting the world believe for years that they had lost them.</p>
   <p class="c-body mt-4">This record only has 118 entries because destruction leaves evidence; a defunded library doesn't have a perpetrator. Eight times in this record, somebody picked up what they could carry.</p>
 </footer>
+
+<!-- Side quest reader. Scrollable, like the record modal, and its own
+     URL: #quest-<id> opens it directly. Filled from quests.js. -->
+<div class="modal fade" id="questModal" tabindex="-1" aria-labelledby="qm-title">
+  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
+    <div class="modal-content">
+      <div class="modal-header">
+        <div>
+          <span class="qm-kicker" id="qm-kicker"></span>
+          <h3 class="qm-title" id="qm-title"></h3>
+          <p class="qm-sub" id="qm-sub"></p>
+        </div>
+        <button type="button" class="btn-close ms-auto flex-shrink-0" data-bs-dismiss="modal" aria-label="Close side quest"></button>
+      </div>
+      <div class="modal-body">
+        <div class="q-body" id="qm-body"></div>
+        <div class="qm-share">
+          <button type="button" class="qm-share-btn" id="qm-copy">Copy link</button>
+          <span class="qm-note" id="qm-copy-note" role="status" aria-live="polite"></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 
 <div class="modal fade" id="libModal" tabindex="-1" aria-labelledby="m-name" aria-describedby="m-desc">
   <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
@@ -802,16 +843,24 @@ RECS.forEach(function(r){
 });
 
 /* SIDE QUESTS
-   Content comes from quests.js. Text is set with textContent, not
-   innerHTML, so an apostrophe or an ampersand in a quest can't break
-   the page. If quests.js is missing or its array is empty the whole
-   section is removed rather than left as an empty heading. */
+   Content comes from quests.js. A quest behaves like a catalogue record:
+   the card is a button, the reading happens in a scrollable modal, and
+   every quest has its own URL (#quest-<id>) that opens it directly.
+   Text is set with textContent, not innerHTML, so an apostrophe or an
+   ampersand in a quest can't break the page. If quests.js is missing or
+   its array is empty the whole section is hidden rather than left as an
+   empty heading. */
 (function(){
   var host=document.getElementById('quest-list');
   var sec=document.getElementById('sec-quests');
   if(!host) return;
-  var list=(typeof SIDEQUESTS!=='undefined' && SIDEQUESTS && SIDEQUESTS.length) ? SIDEQUESTS : null;
+  var list=(typeof SIDEQUESTS!=='undefined' && SIDEQUESTS && SIDEQUESTS.length) ? SIDEQUESTS.slice() : null;
   if(!list){ if(sec) sec.style.display='none'; return; }
+
+  var modalEl = document.getElementById('questModal');
+  var qModal  = (modalEl && typeof bootstrap!=='undefined') ? new bootstrap.Modal(modalEl) : null;
+  var qBody   = document.getElementById('qm-body');
+  var byId    = {};
 
   function mk(tag,cls,text){
     var n=document.createElement(tag);
@@ -826,42 +875,40 @@ RECS.forEach(function(r){
     for(var i=0;i<LIBRARIES.length;i++){ if(LIBRARIES[i].name===name) return LIBRARIES[i]; }
     return null;
   }
+  function yr(y){
+    if(typeof y!=='number' || isNaN(y)) return '';
+    if(typeof yearLabel==='function') return yearLabel(y);
+    return y<0 ? (Math.abs(y)+' BC') : (y+' AD');
+  }
+  function headline(q){
+    var y=yr(q.year);
+    if(q.kicker && y) return q.kicker+' · '+y;
+    return q.kicker||y||'';
+  }
 
-  for(var qi=0;qi<list.length;qi++){
-    var q=list[qi];
-    if(!q || !q.title) continue;
+  /* Chronological, by the anchor year each quest carries — the year of
+     the event it is about, not of the record it hangs off. A quest with
+     no year sorts to the end rather than to zero. */
+  list.sort(function(a,b){
+    var ay=(a && typeof a.year==='number') ? a.year : Infinity;
+    var by=(b && typeof b.year==='number') ? b.year : Infinity;
+    return ay-by;
+  });
 
-    var art=mk('article','quest reveal');
-    if(q.id) art.id='quest-'+q.id;
+  /* ---------- fill and open the reader ---------- */
 
+  function fill(q){
+    document.getElementById('qm-kicker').textContent=headline(q);
+    document.getElementById('qm-title').textContent=q.title||'';
+    document.getElementById('qm-sub').textContent=q.sub||'';
+    if(!qBody) return;
+    qBody.innerHTML='';
+
+    if(q.stand) qBody.appendChild(mk('p','q-stand',q.stand));
     var body=(q.body&&q.body.length)?q.body:[];
+    for(var bi=0;bi<body.length;bi++) qBody.appendChild(mk('p',null,body[bi]));
+
     var steps=(q.steps&&q.steps.length)?q.steps:[];
-    var srcs=(q.src&&q.src.length)?q.src:[];
-    var lib=libByName(q.record);
-
-    /* Nothing to open: render the header flat rather than an empty toggle. */
-    if(!body.length && !steps.length && !srcs.length && !lib){
-      var flat=mk('div','q-sum');
-      if(q.kicker) flat.appendChild(mk('span','q-kicker',q.kicker));
-      flat.appendChild(mk('h3','q-title',q.title));
-      flat.style.paddingLeft='clamp(1.1rem,4vw,1.6rem)';
-      art.appendChild(flat);
-      host.appendChild(art);
-      continue;
-    }
-
-    /* The header is the summary. Closed, a quest is a kicker and a title;
-       the standfirst is the first thing inside. */
-    var det=mk('details','q-det');
-    var sum=mk('summary','q-sum');
-    if(q.kicker) sum.appendChild(mk('span','q-kicker',q.kicker));
-    sum.appendChild(mk('h3','q-title',q.title));
-    det.appendChild(sum);
-    var inner=mk('div','q-body');
-
-    if(q.stand) inner.appendChild(mk('p','q-stand',q.stand));
-    for(var bi=0;bi<body.length;bi++) inner.appendChild(mk('p',null,body[bi]));
-
     if(steps.length){
       var chain=mk('div','q-chain');
       chain.appendChild(mk('span','q-lbl',q.stepsLabel||'Chain of custody'));
@@ -873,24 +920,26 @@ RECS.forEach(function(r){
         ol.appendChild(li);
       }
       chain.appendChild(ol);
-      inner.appendChild(chain);
+      qBody.appendChild(chain);
     }
 
+    var lib=libByName(q.record);
     if(lib){
-      (function(rec){
-        var b=mk('button','map-open q-rec','In the catalogue: '+rec.name);
-        b.type='button';
-        b.onclick=function(){
-          /* share.js replaces window.openModal, so resolve it at click
-             time rather than holding a copy of the original. */
+      var b=mk('button','map-open q-rec','In the catalogue: '+lib.name);
+      b.type='button';
+      b.onclick=function(){
+        /* One modal at a time: close this one, then open the record. */
+        if(qModal) qModal.hide();
+        setTimeout(function(){
           var open=(typeof window.openModal==='function')?window.openModal:openModal;
-          open(rec);
-        };
-        inner.appendChild(b);
-      })(lib);
-      if(q.note) inner.appendChild(mk('p','q-note',q.note));
+          open(lib);
+        },260);
+      };
+      qBody.appendChild(b);
+      if(q.note) qBody.appendChild(mk('p','q-note',q.note));
     }
 
+    var srcs=(q.src&&q.src.length)?q.src:[];
     if(srcs.length){
       var sb=mk('div','q-src');
       sb.appendChild(mk('span','q-lbl','Sources'));
@@ -902,64 +951,127 @@ RECS.forEach(function(r){
           a.href=s.url; a.target='_blank'; a.rel='noopener';
           sb.appendChild(a);
         } else {
-          sb.appendChild(mk('p','q-what',s.label));
+          sb.appendChild(mk('p',null,s.label));   /* book, no link */
         }
       }
-      inner.appendChild(sb);
+      qBody.appendChild(sb);
     }
-
-    det.appendChild(inner);
-    art.appendChild(det);
-    host.appendChild(art);
   }
 
-  /* Travel from a record to its quest: close the modal, open the quest,
-     put it in the URL, and flash it with the same wash share.js uses on
-     a card, so the link looks the same in both directions. */
-  window.openQuestById=function(id){
-    var art=document.getElementById('quest-'+id);
-    if(!art) return;
-    try{ if(typeof libModal!=='undefined'&&libModal) libModal.hide(); }catch(e){}
-    setTimeout(function(){
-      var d=art.querySelector('.q-det');
-      if(d) d.open=true;
-      art.classList.add('visible');
-      if(history.replaceState) history.replaceState(null,'','#quest-'+id);
-      else location.hash='quest-'+id;
-      /* Jump, don't glide. Opening the quest adds several thousand
-         pixels to the page; a smooth scroll aimed before that growth
-         overshoots to the bottom and then crawls back for two seconds.
-         One frame later the layout has settled, and an instant arrival
-         plus the flash reads better than the slide anyway. */
-      requestAnimationFrame(function(){
-        var de=document.documentElement;
-        var y=art.getBoundingClientRect().top+(window.pageYOffset||de.scrollTop)-8;
-        /* html{scroll-behavior:smooth} applies to scrollTo as well, and
-           behavior:'auto' defers to it rather than overriding it. Turn
-           it off for this one jump, then put it back. */
-        var prev=de.style.scrollBehavior;
-        de.style.scrollBehavior='auto';
-        window.scrollTo(0,y);
-        setTimeout(function(){ de.style.scrollBehavior=prev; },0);
-        art.classList.remove('quest-found'); void art.offsetWidth; art.classList.add('quest-found');
-        setTimeout(function(){ art.classList.remove('quest-found'); },2800);
-      });
-    },260);
-  };
+  var current=null;
 
-  /* #quest-<id> opens that quest and scrolls to it. */
+  /* Leave the card the reader came from in view, so closing the modal
+     puts them back where they were rather than at the top of the list. */
+  function parkOnCard(q){
+    var card=q._card;
+    if(!card) return;
+    card.classList.add('visible');
+    var de=document.documentElement;
+    var y=card.getBoundingClientRect().top+(window.pageYOffset||de.scrollTop)-120;
+    if(y<0) y=0;
+    var prev=de.style.scrollBehavior;
+    de.style.scrollBehavior='auto';          /* the page is scroll-behavior:smooth */
+    window.scrollTo(0,y);
+    setTimeout(function(){ de.style.scrollBehavior=prev; },0);
+  }
+
+  function openQuest(id){
+    var q=byId[id];
+    if(!q) return;
+    current=id;
+    fill(q);
+    parkOnCard(q);
+    if(history.replaceState) history.replaceState(null,'','#quest-'+id);
+    else location.hash='quest-'+id;
+    if(qModal) qModal.show();
+  }
+
+  /* ---------- the cards ---------- */
+
+  for(var qi=0;qi<list.length;qi++){
+    (function(q){
+      if(!q || !q.title) return;
+      if(q.id) byId[q.id]=q;
+
+      var card=mk('button','quest reveal');
+      card.type='button';
+      if(q.id) card.id='quest-'+q.id;
+      card.setAttribute('aria-label',q.title+(q.sub?'. '+q.sub:'')+'. Press Enter to read.');
+
+      var h=headline(q);
+      if(h) card.appendChild(mk('span','q-kicker',h));
+      card.appendChild(mk('h3','q-title',q.title));
+      if(q.sub) card.appendChild(mk('span','q-sub',q.sub));
+
+      card.onclick=function(){ if(q.id) openQuest(q.id); };
+      q._card=card;
+      host.appendChild(card);
+    })(list[qi]);
+  }
+
+  /* ---------- the link ---------- */
+
+  var copyBtn=document.getElementById('qm-copy');
+  var copyNote=document.getElementById('qm-copy-note');
+  function linkFor(id){
+    return location.origin+location.pathname+location.search+'#quest-'+id;
+  }
+  function flash(msg){
+    if(!copyNote) return;
+    copyNote.textContent=msg;
+    setTimeout(function(){ copyNote.textContent=''; },2600);
+  }
+  function fallbackCopy(url){
+    /* execCommand is deprecated but still the only option without a
+       secure context, which a file:// or http:// page does not have. */
+    var ta=document.createElement('textarea');
+    ta.value=url; ta.setAttribute('readonly','');
+    ta.style.position='fixed'; ta.style.top='-1000px';
+    document.body.appendChild(ta); ta.select();
+    try{ document.execCommand('copy'); flash('Link copied'); }
+    catch(e){ flash(url); }
+    document.body.removeChild(ta);
+  }
+  if(copyBtn){
+    copyBtn.addEventListener('click',function(){
+      if(!current) return;
+      var url=linkFor(current);
+      if(navigator.clipboard && window.isSecureContext){
+        navigator.clipboard.writeText(url).then(
+          function(){ flash('Link copied'); },
+          function(){ fallbackCopy(url); }
+        );
+      } else { fallbackCopy(url); }
+    });
+  }
+
+  /* Closing clears the fragment, so a refresh doesn't reopen it. */
+  if(modalEl){
+    modalEl.addEventListener('hidden.bs.modal',function(){
+      if(copyNote) copyNote.textContent='';
+      if(history.replaceState && (location.hash||'').indexOf('#quest-')===0){
+        history.replaceState(null,'',location.pathname+location.search);
+      }
+      current=null;
+    });
+  }
+
+  /* ---------- arriving by link, or from a record ---------- */
+
   function openFromHash(){
     var h=location.hash||'';
     if(h.indexOf('#quest-')!==0) return;
-    var art=document.getElementById(h.slice(1));
-    if(!art) return;
-    var d=art.querySelector('.q-det');
-    if(d) d.open=true;
-    art.classList.add('visible');
-    art.scrollIntoView({block:'start'});
+    openQuest(h.slice(7));
   }
   window.addEventListener('hashchange',openFromHash);
-  setTimeout(openFromHash,300);
+  setTimeout(openFromHash,350);
+
+  /* Called by the callout inside a catalogue record. */
+  window.openQuestById=function(id){
+    if(!byId[id]) return;
+    try{ if(typeof libModal!=='undefined'&&libModal) libModal.hide(); }catch(e){}
+    setTimeout(function(){ openQuest(id); },260);
+  };
 })();
 
 // COUNTERS
