@@ -78,8 +78,25 @@ html {
 @media (max-width: 575.98px) { html { font-size: 17px; } }
 @media (min-width: 1600px)   { html { font-size: 17px; } }
 
+/* ---------- PARCHMENT ----------
+   Four things, all drawn in CSS so there is no image to load: a fine
+   grain from an SVG turbulence tile, and three very large soft mottles
+   in slightly different warm tones. The mottles repeat, but at 900 to
+   1400px across and only a few per cent of contrast, the repeat is not
+   findable by eye. Everything is a background layer on body, not a fixed
+   overlay — iOS Safari handles background-attachment:fixed badly, and an
+   overlay on top would sit over the text. */
 body {
-  background: var(--ink);
+  background-color: var(--ink);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.14'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 60% 50% at 18% 12%, rgba(205,189,158,.22), rgba(205,189,158,0) 70%),
+    radial-gradient(ellipse 55% 45% at 82% 38%, rgba(222,211,186,.26), rgba(222,211,186,0) 72%),
+    radial-gradient(ellipse 65% 55% at 48% 78%, rgba(198,182,152,.18), rgba(198,182,152,0) 70%);
+  background-size: 180px 180px, 1400px 1100px, 1150px 950px, 1250px 1300px;
+  background-position: 0 0, 0 0, 380px 220px, 140px 640px;
+  background-repeat: repeat;
+  background-attachment: scroll;
   color: var(--parchment);
   font-family: 'Crimson Pro', Georgia, 'Times New Roman', serif;
   font-size: var(--fs-body);
@@ -199,6 +216,9 @@ input:focus-visible, select:focus-visible, .btn-close:focus-visible {
     --aged:  #15100b;
     --ember: #6e2408;
   }
+  /* Someone who has asked for more contrast does not want grain and
+     mottling sitting under the text. Flat background instead. */
+  body { background-image: none; }
 }
 
 /* Windows High Contrast / forced colours. */
