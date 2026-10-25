@@ -19,12 +19,13 @@ Originally inspired by [Sudhanshu Sharma's Medium article](https://medium.com/@s
 |------|-----------|
 | `data.js` | The dataset: 118 records with coordinates and citations, shared by all three pages |
 | `quotes.js` | Pull-quote text |
-| `quests.js` | Side quests — the long-form stories. Add one by copying the shape at the top of the file |
+| `quests.js` | Side quests — the long-form stories, in chronological order by their `year` field. Add one by copying the shape at the top of the file |
 | `share.js` | Per-record links: `#library-name` opens that card, plus a copy-link button |
 | `style.css` | Shared design tokens and accessibility base |
 | `index.html` | Main page — causes, a stacked century chart, a map preview, the full catalogue, side quests, further reading |
 | `map.html` | Interactive atlas — pan, pinch-zoom, filter by cause, filter by era, detail panel |
 | `timeline.html` | Animated sweep — 1761 BC to 2026, each library igniting on the map at its year |
+| `favicon.svg` | Site icon |
 
 All three are self-contained. No build step, no API keys, no tile server.
 
