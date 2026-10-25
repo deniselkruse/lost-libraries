@@ -5,9 +5,26 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
   <title>The Lost Libraries — Monuments to Erased Knowledge</title>
   <!-- Favicon. One SVG; every browser in current use reads it. -->
+
+  <!-- Social preview. Without these a shared link — including the
+       per-record and per-quest links — unfurls as a bare URL. -->
+  <meta property="og:type" content="website">
+  <meta property="og:url" content="https://deniselkruse.github.io/lost-libraries/">
+  <meta property="og:site_name" content="The Lost Libraries">
+  <meta property="og:title" content="The Lost Libraries">
+  <meta property="og:description" content="The libraries we know were destroyed, and the people who carried what they could out of them. An interactive record, with sources.">
+  <meta property="og:image" content="https://deniselkruse.github.io/lost-libraries/social-preview.png">
+  <meta property="og:image:width" content="1200">
+  <meta property="og:image:height" content="630">
+  <meta property="og:image:alt" content="The Lost Libraries — 118 libraries, 3,787 years, 78 per cent deliberate acts.">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="The Lost Libraries">
+  <meta name="twitter:description" content="The libraries we know were destroyed, and the people who carried what they could out of them.">
+  <meta name="twitter:image" content="https://deniselkruse.github.io/lost-libraries/social-preview.png">
+  <link rel="canonical" href="https://deniselkruse.github.io/lost-libraries/">
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#f4f1ea">
-  <meta name="description" content="An interactive chronicle of 114 libraries destroyed across 3,787 years, from Bronze Age Mari to Gaza, Sudan and Ukraine today.">
+  <meta name="description" content="An interactive chronicle of 118 libraries destroyed across 3,787 years, from Bronze Age Mari to Gaza, Sudan and Ukraine today.">
   <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet">
   <!-- Shared tokens, type scale and accessibility base. Loads after
@@ -122,12 +139,17 @@
     .quest{display:block;width:100%;height:100%;text-align:left;background:rgba(18,15,12,.025);
       border:1px solid rgba(18,15,12,.15);border-left:4px solid var(--gold);
       cursor:pointer;position:relative;
-      padding:clamp(1rem,3.5vw,1.3rem) clamp(1.1rem,4vw,1.6rem) clamp(1rem,3.5vw,1.3rem) 2.6rem;
+      padding:clamp(1rem,3.5vw,1.3rem) clamp(1.1rem,4vw,1.6rem) calc(clamp(1rem,3.5vw,1.3rem) + .9rem);
       min-height:44px;transition:background .2s,border-color .2s;touch-action:manipulation;
       -webkit-tap-highlight-color:transparent}
-    .quest::before{content:'\25B8';position:absolute;left:1.1rem;top:calc(clamp(1rem,3.5vw,1.3rem) + .15em);color:var(--ember)}
+    /* The marker sits in the bottom-right corner, out of the text flow.
+       It used to be a left gutter, which cost every line 2.6rem of width
+       and forced the kickers to wrap onto a second line. */
+    .quest::after{content:'\25B8';position:absolute;right:clamp(1.1rem,4vw,1.6rem);bottom:.55rem;
+      color:var(--ember);opacity:.55;transition:opacity .2s,transform .2s}
+    .quest:hover::after,.quest:focus-visible::after{opacity:1;transform:translateX(3px)}
     .quest:hover{background:rgba(18,15,12,.055);border-color:rgba(18,15,12,.3)}
-    .q-kicker{display:block;font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);margin:0 0 .35rem}
+    .q-kicker{display:block;font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 .35rem}
     .q-title{display:block;font-family:'Playfair Display',serif;font-size:clamp(1.3rem,4.6vw,1.75rem);line-height:1.2;margin:0;color:var(--parchment)}
     .q-sub{display:block;font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--smoke);line-height:1.5;margin-top:.4rem;max-width:62ch}
     .q-stand{font-size:clamp(1.0625rem,3.6vw,1.15rem);color:var(--aged);line-height:1.8;margin:0 0 1.4rem;max-width:62ch;font-style:italic}
@@ -146,6 +168,22 @@
     .q-src{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.12)}
     .q-src a{display:block;font-size:clamp(1rem,3.4vw,1.05rem);line-height:1.5;margin-bottom:.55rem;color:var(--ember);border-left:2px solid rgba(18,15,12,.15);padding-left:.7rem;text-decoration:underline;text-underline-offset:2px}
     .q-src a:hover,.q-src a:focus-visible{color:var(--gold)}
+
+    /* METHOD */
+    .method{margin-top:2.5rem;border:1px solid rgba(18,15,12,.15);border-left:4px solid var(--gold);background:rgba(18,15,12,.025)}
+    .method>summary{display:block;list-style:none;cursor:pointer;min-height:44px;
+      padding:1rem clamp(1.1rem,4vw,1.5rem);font-family:'Courier Prime',monospace;
+      font-size:clamp(1rem,3.4vw,1.05rem);letter-spacing:.14em;text-transform:uppercase;color:var(--ember)}
+    .method>summary::-webkit-details-marker{display:none}
+    .method>summary::before{content:'\25B8 ';color:var(--ember);display:inline-block;transition:transform .2s}
+    .method[open]>summary::before{transform:rotate(90deg)}
+    .method>summary:hover{color:var(--gold)}
+    .method-body{padding:0 clamp(1.1rem,4vw,1.5rem)1.5rem}
+    .method-body p{font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--aged);line-height:1.8;max-width:70ch}
+    .method-body strong{color:var(--parchment)}
+    .method-body a{color:var(--ember);text-underline-offset:2px}
+    /* Flag on a record that has no source beyond the starting survey. */
+    .m-thin{margin-top:.9rem;font-size:clamp(1rem,3.4vw,1.02rem);font-style:italic;color:var(--smoke);line-height:1.5}
     .q-src p{font-size:clamp(1rem,3.4vw,1.05rem);line-height:1.5;margin:0 0 .55rem;color:var(--smoke);border-left:2px solid rgba(18,15,12,.15);padding-left:.7rem}
     /* The quest modal's header: the same furniture as a record's. */
     .qm-kicker{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.5rem}
@@ -488,6 +526,26 @@
       <p id="count" class="mono mb-2 reveal" style="color:var(--smoke)" aria-live="polite"></p>
       <div id="lib-grid" class="lib-grid reveal" role="list" aria-label="Destroyed libraries catalogue"></div>
       <p id="no-res" class="mt-4 text-center" style="color:var(--smoke);display:none;font-size:var(--fs-body)" aria-live="polite">No libraries match this filter.</p>
+
+      <!-- Method. Closed by default; the argument of the closing section
+           is that this record is incomplete by construction, so the page
+           had better say how it was built. -->
+      <details class="method reveal">
+        <summary>How this record was made</summary>
+        <div class="method-body">
+          <p><strong>What counts.</strong> An entry needs a named collection, a place and a date: a library, archive or manuscript collection destroyed, damaged past recovery, or dispersed. Private and institutional collections are both included where the loss was documented at the time or reconstructed from sources since.</p>
+
+          <p><strong>Why 118.</strong> The dataset began as a published list of 99. Five duplicate records were merged, several factual errors corrected, and entries added that turned up while checking sources. The number will change again. It is a count of what has been written down, not a measurement of what was lost.</p>
+
+          <p><strong>What it over-counts, and what it misses.</strong> A destruction with a date, a perpetrator and a witness is far more likely to be recorded than a library that was quietly defunded over twenty years. So this record leans heavily towards fire and war and barely sees neglect at all &mdash; which is the opposite of how most collections are actually lost. The sources are also mostly in English, which over-represents Europe and North America and the events European and American institutions chose to write about. The oldest entries rest on chroniclers with reasons of their own; where a figure is disputed, the record says so in the entry.</p>
+
+          <p><strong>Sources.</strong> Every entry carries its own, listed in its card. 102 of the 118 cite at least one named source beyond the survey this dataset started from. The remaining 16 rest on that survey alone and are marked as such when you open them.</p>
+
+          <p><strong>Currency.</strong> Current to October 2026. Several entries describe conflicts that are still going, and those records will go out of date rather than stay still.</p>
+
+          <p><strong>Origin.</strong> The starting dataset came from <a href="https://medium.com/@sudhanshu.harsh/the-lost-libraries-visualizing-damage-done-to-99-libraries-throughout-history-e3355f85e10b" target="_blank" rel="noopener">Sudhanshu Harsh&rsquo;s article on 99 destroyed libraries</a>. This version re-verified it, corrected it, added coordinates, sources and the long-form entries, and carried it to 118.</p>
+        </div>
+      </details>
     </div>
   </section>
 
@@ -593,6 +651,7 @@
         <div class="m-src-sec">
           <span class="m-perp-lbl">Sources</span>
           <div id="m-src"></div>
+          <p class="m-thin" id="m-thin" style="display:none">This entry rests on the survey this dataset began from, with no second source behind it yet. Treat it as provenance rather than verification.</p>
         </div>
       </div>
     </div>
@@ -832,6 +891,14 @@ function openModal(lib){
         ? '<a href="'+s.url+'" target="_blank" rel="noopener">'+label+'</a>'
         : '<span>'+label+'</span>';
     }).join('');
+  }
+  /* Say so when an entry has nothing behind it but the starting survey.
+     Sixteen records are in that position; quietly listing one citation
+     would imply a verification that hasn't happened. */
+  var thin=document.getElementById('m-thin');
+  if(thin){
+    var only = lib.src && lib.src.length===1 && lib.src[0]==='list';
+    thin.style.display = only ? '' : 'none';
   }
   libModalEl.setAttribute('aria-label','Details: '+lib.name);
   libModal.show();
