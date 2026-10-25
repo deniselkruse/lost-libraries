@@ -362,6 +362,16 @@
 </header>
 
 <main id="main">
+
+  <!-- Cold open: one quote before any data. Renders nothing until
+       quotes.js has a `handler` key, so it costs nothing while it waits. -->
+  <div class="container-xl px-3 px-md-4">
+    <div class="pq reveal mt-5 mb-4" data-quote="handler">
+      <blockquote></blockquote>
+      <cite></cite>
+    </div>
+  </div>
+
   <section aria-labelledby="causes-h" class="sec">
     <div class="container-xl px-3 px-md-4">
       <div class="sec-bar reveal">
