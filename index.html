@@ -1,1213 +1,272 @@
-<!DOCTYPE html>
-<html lang="en" data-bs-theme="light">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
-  <title>The Lost Libraries — Monuments to Erased Knowledge</title>
-  <!-- Favicon. One SVG; every browser in current use reads it. -->
-
-  <!-- Social preview. Without these a shared link — including the
-       per-record and per-quest links — unfurls as a bare URL. -->
-  <meta property="og:type" content="website">
-  <meta property="og:url" content="https://deniselkruse.github.io/lost-libraries/">
-  <meta property="og:site_name" content="The Lost Libraries">
-  <meta property="og:title" content="The Lost Libraries">
-  <meta property="og:description" content="The libraries we know were destroyed, and the people who carried what they could out of them. An interactive record, with sources.">
-  <meta property="og:image" content="https://deniselkruse.github.io/lost-libraries/social-preview.png">
-  <meta property="og:image:width" content="1200">
-  <meta property="og:image:height" content="630">
-  <meta property="og:image:alt" content="The Lost Libraries — 118 libraries, 3,787 years, 78 per cent deliberate acts.">
-  <meta name="twitter:card" content="summary_large_image">
-  <meta name="twitter:title" content="The Lost Libraries">
-  <meta name="twitter:description" content="The libraries we know were destroyed, and the people who carried what they could out of them.">
-  <meta name="twitter:image" content="https://deniselkruse.github.io/lost-libraries/social-preview.png">
-  <link rel="canonical" href="https://deniselkruse.github.io/lost-libraries/">
-  <link rel="icon" href="favicon.svg" type="image/svg+xml">
-  <meta name="theme-color" content="#f4f1ea">
-  <meta name="description" content="An interactive chronicle of 118 libraries destroyed across 3,787 years, from Bronze Age Mari to Gaza, Sudan and Ukraine today.">
-  <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400;1,700&family=Crimson+Pro:ital,wght@0,300;0,400;0,600;1,300;1,400&family=Courier+Prime:ital@0;1&display=swap" rel="stylesheet">
-  <!-- Shared tokens, type scale and accessibility base. Loads after
-       Bootstrap so our variables win, and before the page block below. -->
-  <link rel="stylesheet" href="style.css">
-
-  <style>
-    /* ============================================================
-       index.html only. Anything shared with map.html or timeline.html
-       belongs in styles.css instead.
-       ============================================================ */
-
-    
-    #prog{position:fixed;top:0;left:0;height:3px;width:0;background:var(--ember);z-index:1000;transition:width .1s linear}
-    .eyebrow{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,1rem);letter-spacing:.22em;text-transform:uppercase;color:var(--gold)}
-    .sec-num{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.22em;text-transform:uppercase;color:var(--ember)}
-
-    /* HERO */
-    /* The hero used to carry an 80px ruled grid, which read as graph
-       paper. It now just lifts the centre so the title sits in a pool of
-       light; the parchment texture underneath comes from style.css. */
-    .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:4.5rem 1.25rem 3rem;position:relative;background:radial-gradient(ellipse at 50% 55%,rgba(255,253,248,.85) 0%,rgba(255,253,248,0) 68%);overflow:hidden}
-    .flame{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:min(700px,110vw);height:260px;background:radial-gradient(ellipse at 50% 100%,rgba(168,64,26,.10) 0%,transparent 70%);pointer-events:none}
-    .hero-title{font-size:clamp(3rem,11vw,8rem);font-weight:900;line-height:.92}
-    .hero-title em{font-style:italic;color:var(--ember)}
-    .hero-sub{font-size:clamp(1.25rem,4.6vw,1.5rem);font-style:italic;color:var(--aged);max-width:580px;line-height:1.75}
-    .stat-num{font-family:'Playfair Display',serif;font-size:clamp(2.6rem,7vw,3.8rem);font-weight:700;color:var(--ember);line-height:1;display:block}
-    .stat-lbl{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.9rem);letter-spacing:.16em;text-transform:uppercase;color:var(--smoke);margin-top:.25rem}
-    .scroll-hint{
-      position:static;margin-top:2.75rem;
-      font-family:'Courier Prime',monospace;
-      font-size:clamp(.95rem,3.2vw,.9rem);letter-spacing:.2em;
-      text-transform:uppercase;color:var(--smoke);
-    }
-    @keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:translateY(0)}}
-    @keyframes pulse{0%,100%{opacity:.45}50%{opacity:1}}
-    .f1{opacity:0;animation:fadeUp .9s .15s ease forwards}
-    .f2{opacity:0;animation:fadeUp .9s .4s ease forwards}
-    .f3{opacity:0;animation:fadeUp .9s .65s ease forwards}
-    .f4{opacity:0;animation:fadeUp .9s .9s ease forwards}
-    .pulse{animation:pulse 2.4s 2s infinite}
-
-    /* LAYOUT */
-    .sec{padding-top:clamp(3rem,8vw,5.5rem);padding-bottom:clamp(3rem,8vw,5.5rem)}
-    .sec-bar{border-left:4px solid var(--ember);padding-left:1.25rem;margin-bottom:2rem}
-    .sec-title{font-size:clamp(1.9rem,5vw,3rem);font-weight:700}
-    .sec-body{font-size:clamp(1.1875rem,4.2vw,1.25rem);color:var(--aged);line-height:1.85;max-width:660px}
-
-    /* CAUSE CARDS */
-    .cause-card{background:rgba(18,15,12,.03);border:1px solid rgba(18,15,12,.12);padding:1.5rem;height:100%;position:relative;overflow:hidden;transition:border-color .3s,background .3s}
-    .cause-card:hover{border-color:rgba(18,15,12,.3);background:rgba(18,15,12,.055)}
-    .cause-card::after{content:'';position:absolute;bottom:0;left:0;right:0;height:3px;background:var(--cc,var(--ember));transform:scaleX(0);transform-origin:left;transition:transform .45s ease}
-    .cause-card:hover::after{transform:scaleX(1)}
-    .cause-name{font-family:'Playfair Display',serif;font-size:clamp(1.25rem,4.4vw,1.4rem);color:var(--parchment);line-height:1.2}
-    .cause-count{font-family:'Courier Prime',monospace;font-size:clamp(2rem,5vw,2.4rem);font-weight:700;line-height:1}
-    .cause-bar-track{height:4px;background:rgba(18,15,12,.08);border-radius:2px;overflow:hidden;margin:.75rem 0}
-    .cause-bar-fill{height:100%;width:0;border-radius:2px;transition:width 1.3s ease}
-    .cause-desc{font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--smoke);line-height:1.65}
-
-    /* PULL QUOTE */
-    .pq{border-left:4px solid var(--ember);padding:1.5rem 1.5rem 1.5rem 2.25rem;position:relative}
-    .pq::before{content:'\201C';font-family:'Playfair Display',serif;font-size:clamp(5rem,12vw,9rem);color:rgba(168,64,26,.13);position:absolute;top:-.6rem;left:.1rem;line-height:1;pointer-events:none}
-    .pq blockquote{font-family:'Playfair Display',serif;font-size:clamp(1.25rem,3.5vw,2rem);font-style:italic;color:var(--parchment);line-height:1.55;position:relative;z-index:1;margin:0}
-    .pq cite{display:block;font-family:'Courier Prime',monospace;font-style:normal;font-size:clamp(1rem,3.4vw,1.05rem);letter-spacing:.15em;color:var(--smoke);margin-top:1rem;text-transform:uppercase}
-
-    /* CHART */
-    .chart-hint{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.9rem);color:var(--smoke);letter-spacing:.1em;display:none;margin-bottom:.5rem}
-    .chart-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch;padding-bottom:.5rem;scrollbar-width:thin;scrollbar-color:var(--ash) transparent}
-    .chart-wrap::-webkit-scrollbar{height:4px}
-    .chart-wrap::-webkit-scrollbar-thumb{background:var(--ash);border-radius:2px}
-    .chart{display:flex;align-items:flex-end;gap:5px;height:230px;min-width:620px;padding-bottom:3.1rem;position:relative}
-    .cbar-wrap{flex:1;min-width:24px;display:flex;flex-direction:column;align-items:center;justify-content:flex-end;height:100%;position:relative}
-    .cbar{width:100%;min-height:9px;border-radius:2px 2px 0 0;transition:opacity .2s;display:flex;flex-direction:column-reverse;overflow:hidden;background:var(--ember)}
-    .cbar i{display:block;width:100%;min-height:1px}
-    .cbar:hover{filter:brightness(1.25)}
-    
-    .cbar-count{font-family:'Courier Prime',monospace;font-size:.68rem;color:var(--aged);position:absolute;top:-1.2rem;left:50%;transform:translateX(-50%);white-space:nowrap}
-    .cbar-label{font-family:'Courier Prime',monospace;font-size:.6rem;color:var(--smoke);position:absolute;bottom:-2rem;left:50%;transform:translateX(-50%);writing-mode:vertical-lr;white-space:nowrap}
-
-    /* FILTERS */
-    .fbtn{font-family:'Courier Prime',monospace;font-size:clamp(1rem,3.4vw,1.05rem);letter-spacing:.1em;text-transform:uppercase;padding:.5rem 1.05rem;border:1px solid rgba(18,15,12,.25);background:transparent;color:var(--smoke);cursor:pointer;border-radius:2px;transition:all .2s ease;-webkit-tap-highlight-color:transparent;touch-action:manipulation;white-space:nowrap;min-height:44px}
-    .fbtn:hover,.fbtn[aria-pressed=true]{border-color:var(--ember);color:var(--ember);background:rgba(168,64,26,.10)}
-    .fbtn:focus-visible{outline:3px solid var(--focus);outline-offset:2px}
-
-    /* LIBRARY GRID */
-    .lib-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(min(100%,270px),1fr));gap:1px;background:rgba(18,15,12,.08);border:1px solid rgba(18,15,12,.08)}
-    .lib-card{background:var(--ink);padding:1.25rem;cursor:pointer;position:relative;text-align:left;border:none;width:100%;-webkit-tap-highlight-color:transparent;touch-action:manipulation;min-height:44px;transition:background .2s}
-    .lib-card::before{content:'';position:absolute;top:0;left:0;width:4px;height:0;background:var(--lc,var(--ember));transition:height .3s ease}
-    .lib-card:hover,.lib-card:focus-visible{background:rgba(18,15,12,.045)}
-    .lib-card:hover::before,.lib-card:focus-visible::before{height:100%}
-    .lib-card:focus-visible{outline:3px solid var(--focus);outline-offset:-3px;z-index:2}
-    .lib-name{font-family:'Playfair Display',serif;font-size:clamp(1.1875rem,4.4vw,1.25rem);color:var(--parchment);line-height:1.25;margin-bottom:.3rem}
-    .lib-meta{font-family:'Courier Prime',monospace;font-size:clamp(1rem,3.4vw,1rem);color:var(--smoke);letter-spacing:.04em;margin-bottom:.5rem}
-    .lib-dot{display:inline-block;width:7px;height:7px;border-radius:50%;vertical-align:middle;margin-right:5px;flex-shrink:0}
-    .lib-cause{font-size:clamp(1.0625rem,3.6vw,1.05rem);color:var(--smoke);vertical-align:middle}
-
-    /* REC PANEL */
-    .rec-panel{background:rgba(18,15,12,.025);border:1px solid rgba(18,15,12,.15);border-left:4px solid var(--gold);padding:1.75rem;height:100%}
-    .rec-icon{font-size:1.3rem;flex-shrink:0;width:2rem;text-align:center;line-height:1.5}
-    .rec-label{font-family:'Playfair Display',serif;font-size:clamp(1.1875rem,4.2vw,1.2rem);color:var(--parchment);margin-bottom:.2rem}
-    .rec-desc{font-size:clamp(1.0625rem,3.6vw,1.05rem);color:var(--smoke);line-height:1.65}
-
-    /* SIDE QUESTS
-       Built from quests.js. A quest card behaves like a catalogue card:
-       it is a button, it opens a scrollable modal, and it has its own
-       shareable URL (#quest-<id>). */
-    /* Two up from tablet, three on a wide screen. Chronology then runs
-       left to right and down, which is how a reader expects a grid of
-       dated things to run. Grid items stretch, so cards in a row match
-       height even when one title wraps to two lines. */
-    #quest-list{display:grid;grid-template-columns:1fr;gap:.9rem;align-items:stretch}
-    @media(min-width:768px){ #quest-list{grid-template-columns:repeat(2,1fr);gap:1rem} }
-    @media(min-width:1400px){ #quest-list{grid-template-columns:repeat(3,1fr)} }
-    .quest{display:block;width:100%;height:100%;text-align:left;background:rgba(18,15,12,.025);
-      border:1px solid rgba(18,15,12,.15);border-left:4px solid var(--gold);
-      cursor:pointer;position:relative;
-      padding:clamp(1rem,3.5vw,1.3rem) clamp(1.1rem,4vw,1.6rem) calc(clamp(1rem,3.5vw,1.3rem) + .9rem);
-      min-height:44px;transition:background .2s,border-color .2s;touch-action:manipulation;
-      -webkit-tap-highlight-color:transparent}
-    /* The marker sits in the bottom-right corner, out of the text flow.
-       It used to be a left gutter, which cost every line 2.6rem of width
-       and forced the kickers to wrap onto a second line. */
-    .quest::after{content:'\25B8';position:absolute;right:clamp(1.1rem,4vw,1.6rem);bottom:.55rem;
-      color:var(--ember);opacity:.55;transition:opacity .2s,transform .2s}
-    .quest:hover::after,.quest:focus-visible::after{opacity:1;transform:translateX(3px)}
-    .quest:hover{background:rgba(18,15,12,.055);border-color:rgba(18,15,12,.3)}
-    .q-kicker{display:block;font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.14em;text-transform:uppercase;color:var(--gold);margin:0 0 .35rem}
-    .q-title{display:block;font-family:'Playfair Display',serif;font-size:clamp(1.3rem,4.6vw,1.75rem);line-height:1.2;margin:0;color:var(--parchment)}
-    .q-sub{display:block;font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--smoke);line-height:1.5;margin-top:.4rem;max-width:62ch}
-    .q-stand{font-size:clamp(1.0625rem,3.6vw,1.15rem);color:var(--aged);line-height:1.8;margin:0 0 1.4rem;max-width:62ch;font-style:italic}
-    .q-body p{font-size:clamp(1.1875rem,4.2vw,1.2rem);color:var(--aged);line-height:1.9;max-width:66ch}
-    .q-chain{margin-top:1.75rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.12)}
-    .q-lbl{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--ember);display:block;margin-bottom:.9rem}
-    .q-chain ol{list-style:none;margin:0;padding:0}
-    .q-chain li{display:grid;grid-template-columns:8rem 1fr;gap:.2rem 1rem;padding:.55rem 0;border-bottom:1px dotted rgba(18,15,12,.14)}
-    .q-when{font-family:'Courier Prime',monospace;font-size:clamp(1rem,3.4vw,1rem);color:var(--ember);letter-spacing:.03em}
-    .q-what{font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--smoke);line-height:1.6}
-    /* .map-open is white-space:nowrap by design. A record name is too
-       long for that on a phone, and the page's overflow-x:hidden would
-       simply clip it, so this one wraps. */
-    .q-rec{margin-top:1.6rem;white-space:normal;text-align:left;max-width:100%}
-    .q-note{font-size:clamp(1rem,3.4vw,1.05rem);color:var(--smoke);font-style:italic;margin:.7rem 0 0;max-width:62ch}
-    .q-src{margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.12)}
-    .q-src a{display:block;font-size:clamp(1rem,3.4vw,1.05rem);line-height:1.5;margin-bottom:.55rem;color:var(--ember);border-left:2px solid rgba(18,15,12,.15);padding-left:.7rem;text-decoration:underline;text-underline-offset:2px}
-    .q-src a:hover,.q-src a:focus-visible{color:var(--gold)}
-
-    /* METHOD */
-    .method{margin-top:2.5rem;border:1px solid rgba(18,15,12,.15);border-left:4px solid var(--gold);background:rgba(18,15,12,.025)}
-    .method>summary{display:block;list-style:none;cursor:pointer;min-height:44px;
-      padding:1rem clamp(1.1rem,4vw,1.5rem);font-family:'Courier Prime',monospace;
-      font-size:clamp(1rem,3.4vw,1.05rem);letter-spacing:.14em;text-transform:uppercase;color:var(--ember)}
-    .method>summary::-webkit-details-marker{display:none}
-    .method>summary::before{content:'\25B8 ';color:var(--ember);display:inline-block;transition:transform .2s}
-    .method[open]>summary::before{transform:rotate(90deg)}
-    .method>summary:hover{color:var(--gold)}
-    .method-body{padding:0 clamp(1.1rem,4vw,1.5rem)1.5rem}
-    .method-body p{font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--aged);line-height:1.8;max-width:70ch}
-    .method-body strong{color:var(--parchment)}
-    .method-body a{color:var(--ember);text-underline-offset:2px}
-    /* Flag on a record that has no source beyond the starting survey. */
-    .m-thin{margin-top:.9rem;font-size:clamp(1rem,3.4vw,1.02rem);font-style:italic;color:var(--smoke);line-height:1.5}
-    .q-src p{font-size:clamp(1rem,3.4vw,1.05rem);line-height:1.5;margin:0 0 .55rem;color:var(--smoke);border-left:2px solid rgba(18,15,12,.15);padding-left:.7rem}
-    /* The quest modal's header: the same furniture as a record's. */
-    .qm-kicker{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--gold);display:block;margin-bottom:.5rem}
-    .qm-title{font-family:'Playfair Display',serif;font-size:clamp(1.5rem,5vw,2.1rem);color:var(--parchment);line-height:1.15;margin:0 0 .4rem}
-    .qm-sub{font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--smoke);line-height:1.5;margin:0}
-    .qm-share{display:flex;flex-wrap:wrap;align-items:center;gap:.75rem;margin-top:1.5rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.1)}
-    .qm-share-btn{font-family:'Courier Prime',monospace;font-size:clamp(1rem,3.4vw,1.05rem);letter-spacing:.1em;text-transform:uppercase;padding:.6rem 1.1rem;min-height:44px;border:1px solid var(--ember);color:var(--ember);background:transparent;border-radius:2px;cursor:pointer;transition:background .2s,color .2s;touch-action:manipulation}
-    .qm-share-btn:hover,.qm-share-btn:focus-visible{background:var(--ember);color:#fdfbf6}
-    .qm-note{font-family:'Courier Prime',monospace;font-size:clamp(.9rem,3vw,.9rem);color:var(--smoke)}
-    @media(max-width:420px){.qm-share{flex-direction:column;align-items:stretch}.qm-share-btn{width:100%}}
-
-    /* MODAL */
-    .modal-content{background:#fbf8f2;border:1px solid rgba(18,15,12,.2);border-radius:0;color:var(--parchment)}
-    .modal-header{border-bottom:1px solid rgba(18,15,12,.1);padding:1.25rem 1.5rem 1rem;align-items:flex-start}
-    .modal-body{padding:1.25rem 1.5rem 1.75rem}
-    .mcls{background:none;border:none;color:var(--smoke);font-size:1.5rem;line-height:1;padding:.25rem .5rem;cursor:pointer;transition:color .2s;flex-shrink:0;margin-left:auto}
-    .mcls:hover{color:var(--parchment)}
-    .mcls:focus-visible{outline:3px solid var(--focus);outline-offset:2px;border-radius:2px}
-    .m-badge{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;padding:.25rem .85rem;border:1px solid;display:inline-block;margin-bottom:.75rem}
-    .m-title{font-family:'Playfair Display',serif;font-size:clamp(1.5rem,5vw,2.1rem);color:var(--parchment);line-height:1.1;margin-bottom:.3rem}
-    .m-loc{font-family:'Courier Prime',monospace;font-size:clamp(1rem,3.4vw,1.05rem);color:var(--smoke);margin-bottom:1.25rem;letter-spacing:.05em}
-    .m-desc{font-size:clamp(1.1875rem,4.2vw,1.2rem);color:var(--aged);line-height:1.9}
-    .m-perp-sec{margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.1)}
-    .m-perp-lbl{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--ember);display:block;margin-bottom:.25rem}
-    .m-perp-val{font-size:clamp(1.0625rem,3.6vw,1.1rem);color:var(--smoke)}
-.resc{color:var(--c-neglect);font-size:.8em;vertical-align:.1em}
-    .fbtn-rescued{border-color:var(--c-neglect);color:var(--c-neglect)}
-    .fbtn-rescued:hover,.fbtn-rescued[aria-pressed=true]{border-color:var(--c-neglect);color:var(--c-neglect);background:rgba(30,107,85,.10)}
-    /* SIDE QUEST MARKERS
-       The manicule is U+261E followed by VS15, which forces the text
-       form on platforms that would otherwise draw an emoji hand. */
-    .manic{color:var(--ember);font-size:.92em;vertical-align:.04em;margin-left:.1rem}
-    .fbtn-quest{border-color:var(--gold);color:var(--gold)}
-    .fbtn-quest:hover,.fbtn-quest[aria-pressed=true]{border-color:var(--gold);color:var(--gold);background:rgba(95,67,16,.10)}
-
-    /* The callout inside a record. The hairline draws itself downward
-       once, then the text and button settle under it. .play is removed
-       and re-added on every open so it replays. */
-    .m-quest{position:relative;margin-top:1.25rem;padding:1.25rem 0 .25rem 1.1rem;border-top:1px solid rgba(18,15,12,.1)}
-    .m-quest::before{content:'';position:absolute;left:0;top:1.25rem;bottom:.25rem;width:2px;background:var(--ember);transform-origin:top}
-    .m-quest.play::before{animation:threadDraw .6s cubic-bezier(.22,1,.36,1) .1s backwards}
-    @keyframes threadDraw{from{transform:scaleY(0)}to{transform:scaleY(1)}}
-    .m-quest-lbl{display:block;font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.2em;text-transform:uppercase;color:var(--ember);margin-bottom:.35rem}
-    .m-quest-title{font-family:'Playfair Display',serif;font-style:italic;font-size:clamp(1.1875rem,4.2vw,1.25rem);color:var(--aged);line-height:1.35;margin:0 0 .9rem}
-    .m-quest.play .m-quest-lbl,.m-quest.play .m-quest-title,.m-quest.play .m-quest-btn{animation:qFade .45s ease .4s backwards}
-    @keyframes qFade{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
-    .m-quest-btn{font-family:'Courier Prime',monospace;font-size:clamp(1rem,3.4vw,1.05rem);letter-spacing:.1em;text-transform:uppercase;padding:.6rem 1.1rem;min-height:44px;border:1px solid var(--ember);color:var(--ember);background:transparent;border-radius:2px;cursor:pointer;transition:background .2s,color .2s;touch-action:manipulation}
-    .m-quest-btn:hover,.m-quest-btn:focus-visible{background:var(--ember);color:#fdfbf6}
-
-    /* Arriving at a quest from a record. Deliberately the same wash as
-       .lib-card-found in share.js, so a link reads the same whichever
-       direction you travelled it in. */
-    .quest-found{animation:questFound 2.6s ease-out 1}
-    @keyframes questFound{0%{background:rgba(143,52,16,.14)}70%{background:rgba(143,52,16,.08)}100%{background:rgba(18,15,12,.025)}}
-
-    .m-src-sec{margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid rgba(18,15,12,.1)}
-    #m-src a,#m-src span{display:block;font-size:clamp(1rem,3.4vw,1.05rem);line-height:1.5;
-      margin-bottom:.55rem;color:var(--smoke);border-left:2px solid rgba(18,15,12,.15);
-      padding-left:.7rem;text-decoration:none}
-    #m-src a{color:var(--ember);text-decoration:underline;text-underline-offset:2px}
-    #m-src a:hover,#m-src a:focus-visible{color:var(--gold)}
-
-    /* CLOSING */
-    .closing{background:linear-gradient(180deg,var(--ink) 0%,#e9e2d4 100%);text-align:center;padding:clamp(4rem,10vw,8rem) 1.25rem}
-    .c-symbol{font-family:'Playfair Display',serif;font-size:clamp(5rem,18vw,12rem);font-weight:900;color:rgba(168,64,26,.10);line-height:.85;margin-bottom:.75rem}
-    .c-title{font-family:'Playfair Display',serif;font-size:clamp(1.5rem,5vw,3rem);font-style:italic;color:var(--aged);margin-bottom:1.5rem}
-    .c-body{max-width:600px;margin:0 auto;font-size:clamp(1.1875rem,4.2vw,1.25rem);color:var(--smoke);line-height:1.95}
-
-    /* REVEAL */
-
-    @media(max-width:575px){
-      .hero{padding:4rem 1rem 3.5rem}
-      .pq{padding:1.25rem 1rem 1.25rem 1.5rem}
-      .lib-grid{grid-template-columns:1fr}
-      .chart-hint{display:block}
-      .modal-header,.modal-body{padding:1rem}
-      .q-chain li{grid-template-columns:1fr}
-      .sec{padding-top:2.75rem;padding-bottom:2.75rem}
-    }
-    
-    
-  
-    /* ============================================================
-       RESPONSIVE + ACCESSIBILITY LAYER
-       ============================================================ */
-
-    /* Notched / rounded phones: keep content clear of the system bars. */
-    
-    /* Bootstrap keeps the root at a flat 16px on every screen. Phones are
-       held closer to the eye but have far less width, so lift the root a
-       little - this scales every rem-based size in one move. */
-
-    /* Skip-link target must not land under anything. */
-    #main{scroll-margin-top:1rem}
-
-    /* Bootstrap dark mode drives its own components; align them to our palette. */
-    [data-bs-theme="light"]{
-      --bs-body-bg:var(--ink);
-      --bs-body-color:var(--parchment);
-      --bs-border-color:rgba(18,15,12,.18);
-      --bs-emphasis-color:var(--parchment);
-      --bs-secondary-color:var(--smoke);
-      --bs-link-color:var(--ember);
-      --bs-link-hover-color:var(--gold);
-      --bs-focus-ring-color:rgba(143,52,16,.45);
-    }
-
-    /* One consistent, high-visibility focus ring everywhere. */
-    
-
-    /* Cards are buttons: give them room to be tapped comfortably. */
-
-    /* Users who ask for more contrast get it. */
-    @media (prefers-contrast:more){
-      .lib-card,.cause-card{border:1px solid var(--aged)}
-      .fbtn{border-color:var(--aged)}
-    }
-
-    /* Small phones: tighten chrome, never the reading size. */
-    @media (max-width:420px){
-      .sec{padding-top:2.25rem;padding-bottom:2.25rem}
-      .sec-bar{padding-left:1rem}
-      .lib-card{padding:1.1rem 1rem}
-      .fbtn{padding:.5rem .8rem}
-      .modal-dialog{margin:.5rem}
-    }
-
-    /* Landscape phones are short: stop the hero eating the screen. */
-    @media (max-height:520px) and (orientation:landscape){
-      .hero{min-height:auto;padding:3.5rem 1.25rem 3rem}
-    }
-
-    /* Wide screens: cap the measure so lines stay readable. */
-    @media (min-width:1400px){
-      .sec-body,.c-body{max-width:68ch}
-    }
-  
-    @media(max-height:620px){.scroll-hint{display:none}}
-    /* the three stats need breathing room once they stack */
-    .hero .row{row-gap:1.75rem!important}
-
-    /* ---------- TIMELINE CALL TO ACTION (section 02) ---------- */
-    .tl-cta{
-      margin-top:1.4rem;padding:1.25rem;
-      border:1px solid rgba(18,15,12,.14);border-left:3px solid var(--ember);
-      background:rgba(18,15,12,.025);
-      display:flex;gap:1.1rem;align-items:center;flex-wrap:wrap;
-    }
-    .tl-cta-text{flex:1;min-width:13rem}
-    .tl-cta-text b{display:block;font-family:'Courier Prime',monospace;
-      font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.18em;text-transform:uppercase;
-      color:var(--gold);font-weight:400;margin-bottom:.3rem}
-    .tl-cta-text span{display:block;font-size:clamp(1.0625rem,3.6vw,1.1rem);
-      color:var(--aged);line-height:1.6}
-    @media(max-width:560px){.tl-cta{flex-direction:column;align-items:stretch}
-      .tl-cta .map-open{justify-content:center}}
-
-    /* ---------- MAP PREVIEW (section 03) ---------- */
-    .map-card{
-      position:relative;border:1px solid rgba(18,15,12,.14);
-      background:var(--sea,#e7e0d2);overflow:hidden;border-radius:2px;
-    }
-    .map-figure{margin:0;display:block;line-height:0}
-    .map-preview-svg{display:block;width:100%;height:auto;aspect-ratio:1553/622;background:#ece5d6}
-    .mp-land path{fill:#ded5c4;stroke:#a89a82;stroke-width:1.2;vector-effect:non-scaling-stroke}
-    /* a soft vignette so the call to action stays legible over the dots */
-    .map-card::after{
-      content:'';position:absolute;inset:0;pointer-events:none;
-      background:linear-gradient(180deg,rgba(244,241,234,.05) 0%,rgba(244,241,234,.1) 40%,rgba(244,241,234,.94) 100%);
-    }
-    .map-cta{
-      position:absolute;left:0;right:0;bottom:0;z-index:2;
-      padding:1.1rem 1.1rem 1.2rem;
-      display:flex;gap:1rem;align-items:flex-end;flex-wrap:wrap;
-    }
-    .map-cta-text{flex:1;min-width:11rem}
-    .map-cta-text b{
-      display:block;font-family:'Courier Prime',monospace;
-      font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.18em;
-      text-transform:uppercase;color:var(--gold);font-weight:400;margin-bottom:.25rem;
-    }
-    .map-cta-text span{
-      font-size:clamp(1rem,3.4vw,1.05rem);color:var(--aged);
-      line-height:1.5;display:block;
-    }
-    
-    .map-legend{
-      display:flex;flex-wrap:wrap;gap:.5rem 1.1rem;margin-top:1rem;
-    }
-    .map-legend span{
-      display:inline-flex;align-items:center;gap:.4rem;
-      font-size:clamp(1rem,3.4vw,1rem);color:var(--smoke);
-    }
-    .map-legend i{width:10px;height:10px;border-radius:50%;flex-shrink:0}
-    @media (max-width:520px){
-      .map-preview-svg{aspect-ratio:4/3;object-fit:cover}
-      .map-cta{flex-direction:column;align-items:stretch;gap:.8rem}
-      .map-open{justify-content:center}
-    }
-  
-  </style>
-</head>
-<body>
-<div id="prog" role="progressbar" aria-label="Reading progress" aria-valuenow="0" aria-valuemin="0" aria-valuemax="100"></div>
-<a href="#main" class="skip">Skip to main content</a>
-
-<header class="hero" role="banner">
-  <div class="flame" aria-hidden="true"></div>
-  <p class="eyebrow f1">A Chronicle of Erasure &middot; 1761 BC &mdash; 2026 AD</p>
-  <h1 class="hero-title mt-2 mb-3 f2">The Lost<br><em>Libraries</em></h1>
-  <p class="hero-sub f3">Every book that burns takes with it a world that will never be reconstructed. This is the record of what we chose to forget.</p>
-  <div class="row g-4 justify-content-center mt-2 f4" role="region" aria-label="Summary statistics">
-    <div class="col-auto text-center"><span class="stat-num" id="ctr-libs" aria-live="polite">0</span><span class="stat-lbl d-block">Libraries Destroyed</span></div>
-    <div class="col-auto text-center"><span class="stat-num" id="ctr-span" aria-live="polite">0</span><span class="stat-lbl d-block">Years Documented</span></div>
-    <div class="col-auto text-center"><span class="stat-num" id="ctr-human" aria-live="polite">0%</span><span class="stat-lbl d-block">Deliberate Acts</span></div>
-  </div>
-  <p class="scroll-hint pulse mt-4" aria-hidden="true">&#8595; Scroll to explore</p>
-</header>
-
-<main id="main">
-
-  <!-- Cold open: one quote before any data. Renders nothing until
-       quotes.js has a `handler` key, so it costs nothing while it waits. -->
-  <div class="container-xl px-3 px-md-4">
-    <div class="pq reveal mt-5 mb-4" data-quote="handler">
-      <blockquote></blockquote>
-      <cite></cite>
-    </div>
-  </div>
-
-  <section aria-labelledby="causes-h" class="sec">
-    <div class="container-xl px-3 px-md-4">
-      <div class="sec-bar reveal">
-        <p class="sec-num mb-1">01 &mdash; Anatomy of Destruction</p>
-        <h2 class="sec-title" id="causes-h">How knowledge dies</h2>
-        <p class="sec-body mt-2">Across nearly 3,800 years, knowledge has been extinguished in remarkably consistent ways. Armed conflict &mdash; foreign invasion and civil war alike &mdash; accounts for nearly three in five of these records. But the pattern is not only one of malice: accidental fire alone has now taken more libraries than religious purges and state censorship combined.</p>
-      </div>
-      <div class="row g-3 mt-1" id="cause-grid" role="list" aria-label="Causes of library destruction"></div>
-    </div>
-  </section>
-
-  <hr class="rule">
-
-  <div class="container-xl px-3 px-md-4">
-    <div class="pq reveal my-5" data-quote="baghdad">
-      <blockquote></blockquote>
-      <cite></cite>
-    </div>
-  </div>
-
-  <section aria-labelledby="timeline-h" class="sec">
-    <div class="container-xl px-3 px-md-4">
-      <div class="sec-bar reveal">
-        <p class="sec-num mb-1">02 &mdash; Distribution Across Time</p>
-        <h2 class="sec-title" id="timeline-h">The rhythm of erasure</h2>
-        <p class="sec-body mt-2">From ancient Mesopotamia to Gaza, Sudan and Ukraine today, no era has been free of the impulse to destroy what others preserved. The 20th century holds the most records of any century. The 21st is already within one of matching it, and it is not yet half over.</p>
-      </div>
-      <p class="chart-hint mt-3 mb-1" aria-hidden="true">&#8592; Scroll to see full timeline</p>
-      <div class="chart-wrap reveal" role="img" aria-label="Stacked bar chart of library destructions by century, 1800 BC to the 2020s, segmented by cause. Full figures follow in a table.">
-        <div class="chart" id="chart"></div>
-        <div class="visually-hidden" id="chartTable"></div>
-      </div>
-
-      <div class="tl-cta reveal">
-        <div class="tl-cta-text">
-          <b>Animated timeline</b>
-          <span>Watch the record fill in year by year, 1761&nbsp;BC to 2026, as the running toll climbs to 118.</span>
-        </div>
-        <a class="map-open" href="timeline.html">Play the timeline &rarr;</a>
-      </div>
-    </div>
-  </section>
-
-  <div class="container-xl px-3 px-md-4">
-    <div class="pq reveal my-5" data-quote="gibbon">
-      <blockquote></blockquote>
-      <cite></cite>
-    </div>
-  </div>
-
-
-
-  <hr class="rule">
-
-  <section aria-labelledby="geo-h" class="sec">
-    <div class="container-xl px-3 px-md-4">
-      <div class="sec-bar reveal">
-        <p class="sec-num mb-1">03 &mdash; Where It Happened</p>
-        <h2 class="sec-title" id="geo-h">The fault lines</h2>
-        <p class="sec-body mt-2">Destruction is not scattered evenly across the map. It gathers where empires met religions &mdash; the Fertile Crescent, the Balkans, the road between Constantinople and Baghdad. Every record in the catalogue, plotted.</p>
-      </div>
-
-      <div class="map-card reveal">
-        <figure class="map-figure">
-          <svg class="map-preview-svg" viewBox="283 117 1553 627" preserveAspectRatio="xMidYMid slice" aria-hidden="true" focusable="false"><g class="mp-land"><path d="M905.6 417.8L908.3 431.7L916.7 444.4L926.7 450.0L936.1 458.3L950.0 462.2L958.3 475.6L977.8 471.1L994.4 472.2L1008.3 466.7L1018.9 464.4L1033.3 476.1L1047.2 476.1L1052.8 483.3L1054.4 494.4L1051.7 505.6L1065.6 516.7L1072.2 532.8L1066.7 541.7L1076.7 561.1L1073.3 572.2L1065.6 588.3L1072.2 600.0L1080.6 625.0L1086.1 647.2L1097.2 661.1L1102.8 677.8L1111.1 691.7L1127.8 688.9L1144.4 687.8L1158.3 679.4L1172.2 663.9L1180.6 644.4L1183.3 622.2L1197.2 608.3L1202.8 594.4L1222.2 586.1L1225.0 569.4L1219.4 555.6L1218.3 538.9L1222.2 525.0L1230.6 511.1L1238.9 497.2L1252.8 486.1L1269.4 472.2L1285.0 441.7L1277.8 434.4L1261.1 436.1L1244.4 441.7L1238.9 430.6L1222.2 416.7L1216.7 405.6L1205.6 383.3L1197.2 366.7L1188.9 344.4L1183.3 326.7L1166.7 325.0L1150.0 327.8L1133.3 321.1L1116.7 317.8L1100.0 328.9L1086.1 321.1L1072.2 316.7L1061.1 312.2L1055.6 295.6L1044.4 294.4L1027.8 296.7L1011.1 297.2L994.4 301.1L977.8 304.4L967.2 301.1L958.3 313.9L947.2 327.8L938.9 341.7L927.8 361.1L916.7 380.6L908.3 400.0L905.6 417.8Z"/><path d="M947.2 284.4L950.0 271.1L951.1 258.3L966.7 257.8L988.9 258.3L991.7 243.3L975.0 230.6L994.4 225.0L1013.9 216.7L1023.9 211.1L1036.1 202.8L1047.2 200.0L1045.6 186.1L1058.3 178.9L1069.4 188.9L1083.3 188.9L1100.0 180.6L1116.7 177.8L1133.3 169.4L1125.0 163.9L1119.4 150.0L1133.3 134.4L1116.7 116.7L1138.9 105.6L1166.7 108.3L1194.4 113.9L1222.2 122.2L1244.4 119.4L1277.8 116.7L1305.6 113.9L1333.3 108.3L1361.1 102.8L1388.9 95.6L1416.7 97.2L1444.4 91.7L1472.2 91.7L1500.0 80.6L1527.8 77.8L1555.6 75.0L1583.3 72.2L1611.1 75.0L1638.9 86.1L1666.7 91.7L1694.4 94.4L1722.2 100.0L1750.0 97.2L1777.8 97.2L1805.6 100.0L1833.3 102.8L1861.1 105.6L1888.9 111.1L1916.7 113.9L1944.4 112.2L1972.2 116.7L1997.2 130.6L1983.3 141.7L1955.6 152.8L1927.8 163.9L1905.6 177.8L1900.0 194.4L1877.8 208.3L1866.7 216.7L1850.0 227.8L1833.3 244.4L1811.1 258.3L1783.3 263.9L1777.8 247.2L1761.1 244.4L1738.9 261.1L1727.8 277.8L1719.4 291.7L1705.6 305.6L1700.0 291.7L1688.9 278.9L1677.8 275.0L1672.2 288.9L1663.9 305.6L1675.0 322.2L1672.2 338.9L1658.3 358.3L1638.9 375.0L1613.9 383.3L1602.8 397.2L1605.6 416.7L1591.7 441.7L1577.8 444.4L1558.3 425.0L1547.2 408.3L1538.9 388.9L1522.2 380.6L1505.6 377.8L1488.9 378.9L1472.2 391.7L1450.0 411.1L1446.1 427.8L1430.6 452.8L1416.7 433.3L1405.6 411.1L1402.8 383.3L1386.1 375.0L1372.2 363.9L1355.6 360.0L1341.7 361.1L1322.2 377.8L1313.9 361.1L1319.4 350.0L1300.0 350.0L1280.6 341.7L1269.4 333.3L1266.7 330.6L1277.8 350.0L1288.9 369.4L1305.6 377.8L1325.0 388.9L1319.4 405.6L1300.0 405.6L1277.8 416.7L1250.0 427.8L1241.7 428.9L1236.1 413.9L1222.2 388.9L1211.1 366.7L1200.0 344.4L1191.7 344.4L1193.3 325.0L1200.0 300.0L1183.3 304.4L1166.7 325.0L1180.6 327.8L1188.9 298.3L1202.8 298.9L1177.8 298.3L1166.7 295.0L1151.1 296.1L1147.2 286.1L1161.1 272.2L1177.8 267.8L1200.0 269.4L1222.2 261.1L1208.3 251.1L1188.9 248.3L1175.0 241.7L1163.9 248.3L1158.3 255.6L1152.8 263.9L1138.9 273.3L1131.7 288.9L1125.0 294.4L1116.7 284.4L1108.3 275.0L1102.8 263.9L1086.1 255.6L1075.0 246.1L1068.3 247.8L1069.4 255.6L1077.8 266.7L1088.9 267.8L1095.6 275.0L1088.9 288.9L1086.7 287.2L1077.8 273.3L1066.7 269.4L1056.7 256.7L1048.9 253.3L1041.7 256.7L1022.2 258.3L1016.7 264.4L1002.8 275.0L998.3 280.6L997.2 287.2L986.1 295.6L969.4 300.0L961.1 294.4L950.6 294.4L947.2 284.4Z"/><path d="M66.7 135.0L77.8 122.2L100.0 110.0L130.6 103.9L166.7 108.3L194.4 111.1L216.7 113.3L250.0 113.9L277.8 111.1L305.6 113.9L333.3 112.2L361.1 119.4L388.9 119.4L416.7 122.2L444.4 119.4L472.2 122.2L488.9 133.3L516.7 138.9L527.8 127.8L544.4 113.9L561.1 102.8L583.3 97.2L605.6 105.6L622.2 122.2L633.3 138.9L644.4 158.3L633.3 175.0L622.2 175.0L600.0 163.9L572.2 152.8L561.1 166.7L563.9 186.1L561.1 211.1L544.4 213.9L533.3 200.0L522.2 188.9L508.3 180.6L488.9 183.3L475.0 173.3L480.6 161.1L477.8 144.4L500.0 144.4L516.7 141.7L527.8 155.6L544.4 152.8L555.6 166.7L566.7 177.8L569.4 194.4L577.8 211.1L611.1 222.2L638.9 225.0L661.1 222.2L688.9 213.9L691.7 225.0L672.2 236.1L650.0 244.4L633.3 252.8L627.8 250.0L611.1 261.1L600.0 272.2L588.9 280.6L580.6 294.4L575.0 308.3L561.1 316.7L550.0 327.8L552.8 350.0L554.4 360.0L541.7 345.6L533.3 333.3L511.1 332.2L494.4 337.8L477.8 336.1L461.1 345.6L458.3 356.1L469.4 369.4L477.8 397.2L491.7 396.1L511.1 397.2L513.9 380.6L497.2 383.3L488.9 397.2L475.0 411.1L450.0 408.3L425.0 397.2L411.1 380.6L391.7 372.2L377.8 358.3L363.9 345.6L372.2 327.8L362.2 319.4L348.9 318.9L330.6 308.3L319.4 294.4L311.1 275.0L308.3 258.3L311.1 241.7L316.7 230.6L300.0 219.4L286.1 205.6L269.4 194.4L250.0 180.6L227.8 169.4L200.0 166.7L177.8 163.9L161.1 172.2L144.4 180.6L122.2 188.9L100.0 194.4L83.3 197.2L88.9 183.3L105.6 175.0L97.2 163.9L83.3 161.1L77.8 147.2L66.7 135.0Z"/><path d="M311.1 88.9L344.4 75.0L388.9 66.7L444.4 61.1L488.9 52.8L533.3 47.2L600.0 38.9L655.6 44.4L633.3 55.6L611.1 66.7L583.3 77.8L566.7 91.7L533.3 86.1L500.0 88.9L466.7 91.7L433.3 91.7L400.0 86.1L361.1 88.9L311.1 88.9Z"/><path d="M566.7 94.4L600.0 91.7L633.3 108.3L655.6 127.8L644.4 141.7L611.1 136.1L577.8 122.2L555.6 108.3L566.7 94.4Z"/><path d="M550.0 525.0L555.6 511.1L552.8 497.2L563.9 491.7L569.4 480.6L577.8 466.7L580.6 450.0L594.4 438.9L605.6 431.1L619.4 436.1L633.3 441.1L650.0 440.6L663.9 447.2L677.8 455.6L688.9 467.8L702.8 472.2L713.9 480.6L722.2 491.7L730.6 505.6L752.8 513.9L772.2 516.7L786.1 522.2L805.6 533.3L806.7 544.4L800.0 558.3L788.9 572.2L783.3 586.1L780.6 600.0L772.2 622.2L755.6 627.8L738.9 636.1L730.6 644.4L719.4 661.1L711.1 675.0L700.0 691.7L683.3 694.4L680.6 711.1L655.6 716.7L652.8 727.8L638.9 733.3L638.9 750.0L625.0 755.6L622.2 769.4L616.7 783.3L619.4 794.4L608.3 802.8L594.4 797.2L586.1 783.3L583.3 769.4L588.9 755.6L591.7 741.7L590.0 727.8L591.7 711.1L597.2 694.4L602.8 677.8L608.3 655.6L608.3 633.3L608.3 611.1L602.8 594.4L577.8 580.6L566.7 555.6L558.3 538.9L550.0 525.0Z"/><path d="M1628.9 644.4L1632.2 625.0L1644.4 613.9L1661.1 611.1L1677.8 600.0L1697.2 591.7L1711.1 583.3L1725.0 569.4L1736.1 562.2L1750.0 566.7L1758.3 566.7L1761.1 586.1L1775.0 597.2L1786.1 583.3L1791.7 561.1L1800.0 580.6L1811.1 602.8L1825.0 613.9L1836.1 625.0L1850.0 641.7L1852.8 658.3L1847.2 677.8L1838.9 688.9L1833.3 705.6L1819.4 713.9L1805.6 713.9L1794.4 715.6L1780.6 711.1L1766.7 697.2L1763.9 683.3L1752.8 693.3L1744.4 680.6L1727.8 675.0L1711.1 677.8L1694.4 682.2L1677.8 688.9L1661.1 691.7L1644.4 694.4L1638.9 686.1L1641.7 672.2L1633.3 655.6L1628.9 644.4Z"/><path d="M0.0 933.3L111.1 936.1L222.2 916.7L333.3 911.1L444.4 908.3L555.6 905.6L611.1 888.9L655.6 861.1L677.8 852.8L666.7 877.8L638.9 900.0L666.7 922.2L750.0 933.3L833.3 930.6L888.9 919.4L944.4 900.0L1000.0 888.9L1066.7 888.9L1138.9 891.7L1211.1 880.6L1277.8 872.2L1344.4 875.0L1400.0 880.6L1455.6 872.2L1511.1 869.4L1566.7 866.7L1622.2 869.4L1677.8 869.4L1733.3 866.7L1788.9 872.2L1844.4 883.3L1900.0 894.4L1944.4 905.6L2000.0 933.3L2000.0 972.2L0.0 972.2L0.0 933.3Z"/><path d="M755.6 166.7L722.2 152.8L708.3 136.1L702.8 119.4L694.4 105.6L683.3 91.7L666.7 77.8L644.4 66.7L622.2 58.3L644.4 50.0L694.4 41.7L750.0 37.2L816.7 38.9L866.7 47.2L888.9 58.3L894.4 72.2L883.3 86.1L866.7 100.0L844.4 113.9L822.2 127.8L794.4 136.1L772.2 152.8L755.6 166.7Z"/><path d="M1240.6 566.7L1247.2 588.9L1251.1 605.6L1258.3 622.2L1263.9 636.1L1255.6 641.7L1251.1 627.8L1244.4 611.1L1241.1 594.4L1240.6 583.3L1240.6 566.7Z"/><path d="M972.2 222.2L983.3 213.9L975.0 202.8L983.3 194.4L972.2 186.1L980.6 175.0L988.9 180.6L994.4 194.4L1002.8 208.3L1008.3 206.7L1002.8 216.7L988.9 218.9L972.2 222.2Z"/><path d="M944.4 213.3L950.0 202.8L944.4 198.3L955.6 192.8L966.7 193.3L966.7 205.6L958.3 211.1L944.4 213.3Z"/><path d="M1722.2 327.8L1733.3 313.9L1750.0 311.1L1763.9 308.3L1777.8 305.6L1783.3 288.9L1786.1 272.2L1780.6 261.1L1794.4 252.8L1808.3 259.4L1800.0 266.7L1783.3 277.8L1775.0 291.7L1761.1 297.2L1750.0 302.8L1733.3 308.3L1725.0 313.9L1722.2 327.8Z"/><path d="M1958.3 691.7L1969.4 700.0L1983.3 711.1L1991.7 719.4L1983.3 722.2L1972.2 730.6L1961.1 727.8L1955.6 725.0L1950.0 733.3L1938.9 744.4L1927.8 755.6L1936.1 760.0L1947.2 752.8L1961.1 738.9L1966.7 727.8L1961.1 716.7L1958.3 691.7Z"/><path d="M1529.4 468.9L1544.4 477.8L1558.3 488.9L1572.2 500.0L1583.3 511.1L1588.9 530.6L1577.8 532.2L1566.7 522.2L1555.6 508.3L1544.4 494.4L1529.4 468.9Z"/><path d="M1605.6 490.0L1622.2 483.3L1638.9 475.0L1652.8 476.7L1661.1 494.4L1652.8 505.6L1644.4 519.4L1633.3 522.2L1616.7 516.7L1608.3 505.6L1604.4 497.2L1605.6 490.0Z"/><path d="M1586.1 533.3L1600.0 534.4L1616.7 537.8L1633.3 544.4L1636.1 548.3L1622.2 546.1L1605.6 542.8L1588.9 540.0L1586.1 533.3Z"/><path d="M1727.8 505.6L1744.4 511.1L1761.1 513.9L1777.8 513.9L1794.4 522.2L1811.1 530.6L1827.8 536.1L1836.1 552.8L1816.7 547.2L1800.0 544.4L1783.3 547.2L1766.7 544.4L1750.0 527.8L1733.3 522.2L1727.8 505.6Z"/><path d="M1666.7 397.2L1677.8 400.0L1680.6 416.7L1688.9 427.8L1700.0 444.4L1702.8 461.1L1697.2 469.4L1683.3 458.3L1672.2 450.0L1669.4 430.6L1665.6 411.1L1666.7 397.2Z"/><path d="M528.3 378.3L544.4 371.1L561.1 375.0L572.2 383.3L587.8 387.2L577.8 389.4L561.1 386.1L544.4 380.6L528.3 378.3Z"/><path d="M863.9 136.1L877.8 130.6L900.0 131.7L919.4 133.3L925.0 140.0L911.1 147.2L888.9 147.8L875.0 144.4L863.9 136.1Z"/><path d="M1443.3 446.7L1451.1 452.8L1455.0 461.1L1450.0 466.7L1444.4 466.7L1442.8 455.6L1443.3 446.7Z"/><path d="M1667.2 372.2L1672.2 359.4L1677.2 363.9L1672.2 377.8L1667.2 372.2Z"/><path d="M1068.9 290.0L1083.9 292.8L1085.0 287.2L1072.2 287.8L1068.9 290.0Z"/><path d="M586.1 397.8L602.8 389.4L620.0 394.4L617.8 398.9L602.2 398.9L586.1 397.8Z"/></g><g><circle cx="1227.1" cy="308.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1239.7" cy="298.0" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1604.0" cy="309.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1151.0" cy="282.6" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1166.2" cy="326.7" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1624.7" cy="307.3" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1151.9" cy="289.2" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1131.8" cy="289.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1131.8" cy="289.0" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1200.9" cy="298.9" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1166.1" cy="326.8" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1193.8" cy="319.4" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="994.0" cy="200.2" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="973.4" cy="289.6" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1285.8" cy="302.2" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1082.8" cy="222.9" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1199.2" cy="308.7" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1380.1" cy="313.6" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1326.7" cy="298.8" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1229.0" cy="294.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1474.7" cy="360.3" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1161.0" cy="272.2" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1161.0" cy="272.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1280.9" cy="297.5" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1246.7" cy="314.8" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1160.9" cy="272.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="980.0" cy="293.4" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1105.8" cy="236.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="991.7" cy="208.3" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="971.7" cy="221.3" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="1079.1" cy="299.8" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="502.4" cy="386.7" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="984.1" cy="212.4" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1100.4" cy="170.4" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1069.8" cy="190.7" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="999.3" cy="213.9" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="949.2" cy="284.9" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1116.7" cy="209.8" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="572.2" cy="283.9" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="449.3" cy="392.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1429.1" cy="340.8" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="513.7" cy="315.5" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1142.3" cy="260.7" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="989.4" cy="208.4" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1533.8" cy="378.0" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="563.9" cy="288.7" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1646.6" cy="278.3" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="590.3" cy="263.1" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1026.1" cy="217.3" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="965.2" cy="203.6" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1776.4" cy="301.6" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="979.4" cy="275.4" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="520.7" cy="432.6" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1674.8" cy="326.5" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1074.3" cy="208.2" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="967.5" cy="259.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1633.3" cy="333.3" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1113.7" cy="251.0" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1129.6" cy="262.8" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="572.0" cy="567.0" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1116.7" cy="209.7" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="1116.7" cy="209.8" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="1116.8" cy="209.8" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="1776.1" cy="301.7" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1116.8" cy="209.8" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="1094.1" cy="208.8" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="589.1" cy="273.3" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1197.2" cy="311.7" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1582.9" cy="435.7" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="1444.5" cy="446.3" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="651.6" cy="403.9" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1770.6" cy="694.4" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1416.0" cy="324.3" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="646.7" cy="252.1" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="343.0" cy="310.8" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1168.3" cy="167.0" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1145.0" cy="253.2" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1102.3" cy="256.3" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1102.3" cy="256.4" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1227.9" cy="261.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1007.2" cy="207.6" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1086.8" cy="175.5" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1381.7" cy="300.3" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1246.6" cy="314.8" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1532.5" cy="481.6" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1062.9" cy="216.8" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="588.8" cy="273.8" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="1173.6" cy="333.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="983.3" cy="406.8" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1156.0" cy="647.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="579.4" cy="247.7" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="1199.1" cy="308.7" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1102.2" cy="256.4" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1239.6" cy="298.1" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1240.6" cy="314.3" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="976.3" cy="189.6" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1208.7" cy="190.7" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1239.6" cy="298.2" r="5" fill="#5b4a9e" fill-opacity=".85"/><circle cx="1189.0" cy="563.7" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1172.1" cy="665.9" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="759.9" cy="627.3" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1102.6" cy="688.7" r="5" fill="#9c5416" fill-opacity=".85"/><circle cx="1201.3" cy="222.3" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1208.6" cy="238.3" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1181.2" cy="240.9" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1177.8" cy="227.8" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1475.1" cy="360.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1191.4" cy="325.0" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1191.7" cy="324.7" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1191.5" cy="325.0" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1191.4" cy="325.0" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1191.5" cy="325.0" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1191.4" cy="325.0" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1180.4" cy="413.1" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1180.9" cy="413.9" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="541.3" cy="347.9" r="5" fill="#7a5a1e" fill-opacity=".85"/><circle cx="1191.3" cy="324.9" r="5" fill="#a8401a" fill-opacity=".85"/><circle cx="1180.7" cy="413.6" r="5" fill="#a8401a" fill-opacity=".85"/></g></svg>
-          <figcaption class="visually-hidden">
-            A world map plotting all 118 recorded library destructions, coloured by cause.
-            The densest concentration runs from the Mediterranean through the Levant to
-            Mesopotamia, with secondary clusters in central and eastern Europe, the Indian
-            subcontinent and eastern China. The open map is interactive and gives the full
-            detail for each record.
-          </figcaption>
-        </figure>
-        <div class="map-cta">
-          <span class="map-cta-text">
-            <b>Interactive atlas</b>
-            <span>Filter by cause, move through eras, and open any record.</span>
-          </span>
-          <a class="map-open" href="map.html">Open the map &rarr;</a>
-        </div>
-      </div>
-
-      <div class="map-legend reveal" aria-hidden="true">
-        <span><i style="background:#a8401a"></i>Armed conflict</span>
-        <span><i style="background:#5b4a9e"></i>Religious purge</span>
-        <span><i style="background:#7a5a1e"></i>State censorship</span>
-        <span><i style="background:#9c5416"></i>Accidental fire</span>
-      </div>
-    </div>
-  </section>
-
-  <div class="container-xl px-3 px-md-4">
-    <div class="pq reveal my-5" data-quote="manguel">
-      <blockquote></blockquote>
-      <cite></cite>
-    </div>
-  </div>
-
-
-  <hr class="rule">
-
-  <section aria-labelledby="cat-h" class="sec">
-    <div class="container-xl px-3 px-md-4">
-      <div class="sec-bar reveal">
-        <p class="sec-num mb-1">04 &mdash; Named and Dated</p>
-        <h2 class="sec-title" id="cat-h">The catalogue</h2>
-        <p class="sec-body mt-2">Filter by cause of destruction. Select any entry to read its full story and its sources.</p>
-      </div>
-      <div class="d-flex flex-wrap gap-2 mt-3 mb-2 reveal" role="group" aria-label="Filter catalogue by cause of destruction" id="filters"></div>
-      <p id="count" class="mono mb-2 reveal" style="color:var(--smoke)" aria-live="polite"></p>
-      <div id="lib-grid" class="lib-grid reveal" role="list" aria-label="Destroyed libraries catalogue"></div>
-      <p id="no-res" class="mt-4 text-center" style="color:var(--smoke);display:none;font-size:var(--fs-body)" aria-live="polite">No libraries match this filter.</p>
-
-      <!-- Method. Closed by default; the argument of the closing section
-           is that this record is incomplete by construction, so the page
-           had better say how it was built. -->
-      <details class="method reveal">
-        <summary>How this record was made</summary>
-        <div class="method-body">
-          <p><strong>What counts.</strong> An entry needs a named collection, a place and a date: a library, archive or manuscript collection destroyed, damaged past recovery, or dispersed. Private and institutional collections are both included where the loss was documented at the time or reconstructed from sources since.</p>
-
-          <p><strong>Why 118.</strong> The dataset began as a published list of 99. Five duplicate records were merged, several factual errors corrected, and entries added that turned up while checking sources. The number will change again. It is a count of what has been written down, not a measurement of what was lost.</p>
-
-          <p><strong>What it over-counts, and what it misses.</strong> A destruction with a date, a perpetrator and a witness is far more likely to be recorded than a library that was quietly defunded over twenty years. So this record leans heavily towards fire and war and barely sees neglect at all &mdash; which is the opposite of how most collections are actually lost. The sources are also mostly in English, which over-represents Europe and North America and the events European and American institutions chose to write about. The oldest entries rest on chroniclers with reasons of their own; where a figure is disputed, the record says so in the entry.</p>
-
-          <p><strong>Sources.</strong> Every entry carries its own, listed in its card. 102 of the 118 cite at least one named source beyond the survey this dataset started from. The remaining 16 rest on that survey alone and are marked as such when you open them.</p>
-
-          <p><strong>Currency.</strong> Current to October 2026. Several entries describe conflicts that are still going, and those records will go out of date rather than stay still.</p>
-
-          <p><strong>Origin.</strong> The starting dataset came from <a href="https://medium.com/@sudhanshu.harsh/the-lost-libraries-visualizing-damage-done-to-99-libraries-throughout-history-e3355f85e10b" target="_blank" rel="noopener">Sudhanshu Harsh&rsquo;s article on 99 destroyed libraries</a>. This version re-verified it, corrected it, added coordinates, sources and the long-form entries, and carried it to 118.</p>
-        </div>
-      </details>
-    </div>
-  </section>
-
-  <div class="container-xl px-3 px-md-4">
-    <div class="pq reveal my-5" data-quote="brooks">
-      <blockquote></blockquote>
-      <cite></cite>
-    </div>
-  </div>
-
-
-  <hr class="rule">
-
-  <!-- Side quests. Content lives in quests.js; this is only the frame. -->
-  <section aria-labelledby="quest-h" class="sec" id="sec-quests">
-    <div class="container-xl px-3 px-md-4">
-      <div class="sec-bar reveal">
-        <p class="sec-num mb-1">05 &mdash; Side Quests</p>
-        <h2 class="sec-title" id="quest-h">The long way round</h2>
-        <p class="sec-body mt-2">A catalogue entry stops at the fire. These follow one object, or one person, the rest of the way.</p>
-      </div>
-      <div id="quest-list" class="mt-1"></div>
-    </div>
-  </section>
-
-  <div class="container-xl px-3 px-md-4">
-    <div class="pq reveal my-5" data-quote="quests">
-      <blockquote></blockquote>
-      <cite></cite>
-    </div>
-  </div>
-
-  <hr class="rule">
-
-  <section aria-labelledby="rec-h" class="sec">
-    <div class="container-xl px-3 px-md-4">
-      <div class="sec-bar reveal">
-        <p class="sec-num mb-1">06 &mdash; Further Reading</p>
-        <h2 class="sec-title" id="rec-h">The longer story</h2>
-        <p class="sec-body mt-2">Five books that treat this subject with the seriousness it deserves.</p>
-      </div>
-      <div class="row g-3 mt-1" id="rec-grid"></div>
-    </div>
-  </section>
-
-  <div class="container-xl px-3 px-md-4">
-    <div class="pq reveal my-5" data-quote="bradbury">
-      <blockquote></blockquote>
-      <cite></cite>
-    </div>
-  </div>
-
-</main>
-
-<footer class="closing" role="contentinfo">
-  <div class="c-symbol" aria-hidden="true">&#8734;</div>
-  <h2 class="c-title">What we cannot recover</h2>
-  <p class="c-body">This record holds only the libraries someone wrote down. For every loss with a date and a witness, there were others with neither. Destruction leaves evidence; neglect doesn&rsquo;t. A library that is quietly defunded never reaches a catalogue like this one, and how many were lost that way is unknown.</p>
-  <p class="c-body mt-4">But if the record can&rsquo;t measure the loss, it can show the resistance. In Sarajevo, people formed a chain under sniper fire to carry books out, and a librarian was killed walking home from it. In Timbuktu, the manuscripts were moved out by road until the roads closed, and then by river. In Weimar, the work of putting the library back together is now in its twenty-second year. In Vilna, prisoners forced to sort their own community&rsquo;s books for destruction smuggled them out a few pages at a time and buried them. And after the war, when the Soviets ordered what remained to be pulped, a librarian named Antanas Ulpis hid the books in a church basement and kept that secret for forty years.</p>
-</footer>
-
-<!-- Side quest reader. Scrollable, like the record modal, and its own
-     URL: #quest-<id> opens it directly. Filled from quests.js. -->
-<div class="modal fade" id="questModal" tabindex="-1" aria-labelledby="qm-title">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div>
-          <span class="qm-kicker" id="qm-kicker"></span>
-          <h3 class="qm-title" id="qm-title"></h3>
-          <p class="qm-sub" id="qm-sub"></p>
-        </div>
-        <button type="button" class="btn-close ms-auto flex-shrink-0" data-bs-dismiss="modal" aria-label="Close side quest"></button>
-      </div>
-      <div class="modal-body">
-        <div class="q-body" id="qm-body"></div>
-        <div class="qm-share">
-          <button type="button" class="qm-share-btn" id="qm-copy">Copy link</button>
-          <span class="qm-note" id="qm-copy-note" role="status" aria-live="polite"></span>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<div class="modal fade" id="libModal" tabindex="-1" aria-labelledby="m-name" aria-describedby="m-desc">
-  <div class="modal-dialog modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      <div class="modal-header">
-        <div id="libModalLabel">
-          <span id="m-badge" class="m-badge"></span>
-          <h3 class="m-title" id="m-name"></h3>
-          <p class="m-loc mb-0" id="m-loc"></p>
-        </div>
-        <button type="button" class="btn-close ms-auto flex-shrink-0" data-bs-dismiss="modal" aria-label="Close details"></button>
-      </div>
-      <div class="modal-body">
-        <p class="m-desc" id="m-desc"></p>
-        <div class="m-perp-sec">
-          <span class="m-perp-lbl">Perpetrator</span>
-          <span class="m-perp-val" id="m-perp"></span>
-        </div>
-        <div class="m-src-sec">
-          <span class="m-perp-lbl">Sources</span>
-          <div id="m-src"></div>
-          <p class="m-thin" id="m-thin" style="display:none">This entry rests on the survey this dataset began from, with no second source behind it yet. Treat it as provenance rather than verification.</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
-
-<script src="data.js"></script>
-<script src="quotes.js"></script>
-<script src="quests.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.8/js/bootstrap.bundle.min.js"></script>
-<script>
-'use strict';
-
-
-var RECS = [
-  {icon:'\u{1F4DA}',label:'Books on Fire',desc:"Lucien X. Polastron's history of library destruction (2007). The most thorough single-volume treatment of this subject."},
-  {icon:'\u{1F4D6}',label:'Burning the Books',desc:"Richard Ovenden, director of the Bodleian Library, on the deliberate destruction of knowledge from antiquity to the present (2020)."},
-  {icon:'\u{1F4DC}',label:'Libricide',desc:"Rebecca Knuth on regime-sponsored destruction of books and libraries in the twentieth century (2003)."},
-  {icon:'\u{1F3DB}',label:'Library: An Unquiet History',desc:"Matthew Battles on what libraries have meant, and what their loss has meant, across three thousand years (2003)."},
-  {icon:'\u{1F5C3}',label:'The Library: A Fragile History',desc:"Andrew Pettegree and Arthur der Weduwen (2021) on how collections are actually lost — far more often through neglect, dispersal and a change in what the next generation cares about than through any fire."}
-];
-
-var libModalEl=document.getElementById('libModal');
-var libModal=new bootstrap.Modal(libModalEl);
-var prog=document.getElementById('prog');
-
-window.addEventListener('scroll',function(){
-  var s=document.documentElement.scrollTop||document.body.scrollTop;
-  var h=document.documentElement.scrollHeight-document.documentElement.clientHeight;
-  var p=h>0?Math.round(s/h*100):0;
-  prog.style.width=p+'%';
-  prog.setAttribute('aria-valuenow',p);
-},{passive:true});
-
-// CAUSE CARDS
-/* counts are derived in data.js */
-var cmax=0;
-Object.keys(CAUSES).forEach(function(k){if(CAUSES[k].count>cmax)cmax=CAUSES[k].count;});
-var cgrid=document.getElementById('cause-grid');
-Object.keys(CAUSES).forEach(function(key){
-  var c=CAUSES[key];
-  if(!c.count) return;            /* a category with no records gets no card */
-  var pct=(c.count/cmax*100).toFixed(1);
-  var col=document.createElement('div');
-  col.className='col-12 col-sm-6 col-lg-4';
-  col.setAttribute('role','listitem');
-  var card=document.createElement('div');
-  card.className='cause-card reveal';
-  card.style.setProperty('--cc',c.color);
-  card.innerHTML='<div class="d-flex justify-content-between align-items-start mb-2"><div class="cause-name">'+c.label+'</div><div class="cause-count" style="color:'+c.color+'" aria-label="'+c.count+' libraries">'+c.count+'</div></div><div class="cause-bar-track" role="progressbar" aria-valuenow="'+pct+'" aria-valuemin="0" aria-valuemax="100" aria-label="'+c.label+': '+c.count+' libraries"><div class="cause-bar-fill" style="background:'+c.color+'" data-pct="'+pct+'"></div></div><p class="cause-desc mb-0">'+c.desc+'</p>';
-  col.appendChild(card);
-  cgrid.appendChild(col);
-});
-
-// CENTURY CHART
-var cdata={};
-LIBRARIES.forEach(function(l){var b=Math.floor(l.year/100)*100;cdata[b]=(cdata[b]||0)+1;});
-var ckeys=Object.keys(cdata).map(Number).sort(function(a,b){return a-b;});
-var cmax2=0;
-ckeys.forEach(function(k){if(cdata[k]>cmax2)cmax2=cdata[k];});
-var chartEl=document.getElementById('chart');
-/* Screen-reader equivalent: the chart is decorative without this. */
-(function(){
-  var t=document.getElementById('chartTable'); if(!t) return;
-  var comp2={};
-  LIBRARIES.forEach(function(d){
-    var b=Math.floor(d.year/100)*100;
-    (comp2[b]=comp2[b]||{})[d.cause]=((comp2[b]||{})[d.cause]||0)+1;
-  });
-  var rows=ckeys.map(function(y){
-    var lbl=y<0?(Math.abs(y)+' BC'):(y+' AD');
-    var parts=Object.keys(comp2[y]||{}).map(function(k){
-      return comp2[y][k]+' '+CAUSES[k].label.toLowerCase();
-    }).join(', ');
-    return '<tr><th scope="row">'+lbl+'</th><td>'+cdata[y]+'</td><td>'+parts+'</td></tr>';
-  }).join('');
-  t.innerHTML='<table><caption>Library destructions by century, with cause breakdown</caption>'+
-    '<thead><tr><th scope="col">Century</th><th scope="col">Records</th>'+
-    '<th scope="col">Causes</th></tr></thead><tbody>'+rows+'</tbody></table>';
-})();
-/* Stacked by cause: the shape shows volume, the colours show what changed.
-   War and religion carry the early centuries; fire only appears once
-   libraries get big enough and lamplit enough to burn by accident. */
-var CAUSE_ORDER=['war','religion','govt','fire','neglect'];
-var comp={};
-LIBRARIES.forEach(function(d){
-  var b=Math.floor(d.year/100)*100;
-  (comp[b]=comp[b]||{})[d.cause]=((comp[b]||{})[d.cause]||0)+1;
-});
-ckeys.forEach(function(yr){
-  var n=cdata[yr], p=(Math.sqrt(n/cmax2)*100).toFixed(2);
-  var lbl=yr<0?(Math.abs(yr)+'BC'):(yr===0?'1AD':yr+'');
-  var seg='';
-  CAUSE_ORDER.forEach(function(k){
-    var v=(comp[yr]||{})[k]; if(!v) return;
-    seg+='<i style="flex:'+v+';background:'+CAUSES[k].color+'"></i>';
-  });
-  var w=document.createElement('div');
-  w.className='cbar-wrap';
-  w.innerHTML='<span class="cbar-count" aria-hidden="true">'+n+'</span>'+
-    '<div class="cbar" style="height:0" data-h="'+p+'%" title="'+lbl+': '+n+' record'+(n>1?'s':'')+'">'+seg+'</div>'+
-    '<span class="cbar-label" aria-hidden="true">'+lbl+'</span>';
-  chartEl.appendChild(w);
-});
-
-/* SIDE QUEST LOOKUP
-   Quests name a record; the catalogue needs the reverse. Built before
-   the filter row and the cards, because both read from it. */
-var QUEST_FOR={};
-if(typeof SIDEQUESTS!=='undefined' && SIDEQUESTS){
-  for(var sq=0;sq<SIDEQUESTS.length;sq++){
-    if(SIDEQUESTS[sq] && SIDEQUESTS[sq].record) QUEST_FOR[SIDEQUESTS[sq].record]=SIDEQUESTS[sq];
-  }
-}
-function questFor(lib){ return (lib && QUEST_FOR[lib.name]) ? QUEST_FOR[lib.name] : null; }
-function anyQuests(){ for(var k in QUEST_FOR){ if(QUEST_FOR.hasOwnProperty(k)) return true; } return false; }
-
-// FILTERS
-var frow=document.getElementById('filters');
-var activeKey='all';
-function mkBtn(key,lbl){
-  var b=document.createElement('button');
-  b.className='fbtn';
-  b.textContent=lbl;
-  b.setAttribute('aria-pressed',key==='all'?'true':'false');
-  b.dataset.key=key;
-  b.onclick=function(){
-    activeKey=key;
-    document.querySelectorAll('.fbtn').forEach(function(x){x.setAttribute('aria-pressed',x.dataset.key===key?'true':'false');});
-    render(key);
-  };
-  return b;
-}
-frow.appendChild(mkBtn('all','All'));
-Object.keys(CAUSES).forEach(function(k){ if(CAUSES[k].count) frow.appendChild(mkBtn(k,CAUSES[k].label)); });
-/* Not a cause — a counter-current. These are the records where people
-   carried, hid or smuggled part of the collection out. */
-if (typeof LIB_RESCUED !== 'undefined' && LIB_RESCUED) {
-  var rb = mkBtn('rescued', 'Partly Rescued');
-  rb.classList.add('fbtn-rescued');
-  frow.appendChild(rb);
-}
-/* Also not a cause: the records with a long-form story attached. */
-if (anyQuests()) {
-  var qbtn = mkBtn('quest', 'Side Quest Available');
-  qbtn.classList.add('fbtn-quest');
-  frow.appendChild(qbtn);
+/* ============================================================
+   THE LOST LIBRARIES — shared stylesheet
+   Linked by index.html, map.html and timeline.html.
+
+   Holds only what all three pages share: the design tokens, the
+   type scale, and the accessibility base. Anything specific to one
+   page (the catalogue grid, the map HUD, the timeline controls)
+   stays in that page's own <style> block.
+
+   Must load AFTER Bootstrap so these variables win, and BEFORE
+   each page's inline styles.
+
+   Palette: Paper & Ash.
+   ============================================================ */
+
+/* ---------- DESIGN TOKENS ---------- */
+:root {
+  /* surfaces and text */
+  --ink:        #f4f1ea;   /* page background */
+  --parchment:  #120f0c;   /* primary text   */
+  --parch:      #120f0c;   /* alias: map and timeline use this name */
+  --aged:       #2a231c;   /* secondary text */
+  --smoke:      #3d342a;   /* muted text     */
+  --ash:        #c3bbae;   /* hairlines and scrollbars — never text */
+  --panel:      #fbf8f2;   /* modals, side panels */
+  --sea:        #e7e0d2;   /* map water   */
+  --land:       #ded5c4;   /* map land    */
+  --coast:      #a89a82;   /* map outlines */
+
+  /* accents */
+  --ember:      #8f3410;   /* primary accent */
+  --gold:       #5f4310;   /* labels, secondary accent */
+  --focus:      #7a3a10;   /* focus ring */
+
+  /* Cause colours. These MUST match the CAUSES object in data.js —
+     the charts and map pins are painted from JavaScript, so a change
+     in one place without the other is how the legend drifts out of
+     step with the chart. All pass WCAG AA on --ink. */
+  --c-war:      #a8401a;
+  --c-religion: #5b4a9e;
+  --c-govt:     #7a5a1e;
+  --c-fire:     #9c5416;
+  --c-neglect:  #1e6b55;
+
+  /* Type: these are minimums, not suggestions. On a phone every
+     vw-based clamp collapses to its floor, so the floors ARE the
+     mobile design. Nothing renders below 16px. */
+  --fs-body:  clamp(1.1875rem, 4.2vw, 1.25rem);
+  --fs-small: clamp(1.0625rem, 3.6vw, 1.1rem);
+  --fs-mono:  clamp(0.95rem,   3.2vw, 1rem);
+
+  /* keep content clear of notches and home indicators */
+  padding-top:    env(safe-area-inset-top, 0px);
+  padding-bottom: env(safe-area-inset-bottom, 0px);
 }
 
-// LIBRARY GRID
-var lgrid=document.getElementById('lib-grid');
-var noRes=document.getElementById('no-res');
-var countEl=document.getElementById('count');
-/* Cards are built once and then shown or hidden. Rebuilding the grid on
-   every filter click threw away 118 elements, invalidated any held
-   reference, and reset the scroll position. */
-function buildCard(lib){
-  var c=CAUSES[lib.cause];
-  var yr=lib.year<0?(Math.abs(lib.year)+' BC'):(lib.year+' AD');
-  var card=document.createElement('button');
-  card.className='lib-card';
-  card.setAttribute('role','listitem');
-  card.setAttribute('aria-label',lib.name+', '+lib.location+', '+yr+'. '+c.label+(lib.rescued?'. Part of the collection was saved':'')+(questFor(lib)?'. Side quest available':'')+'. Press Enter for details.');
-  card.style.setProperty('--lc',c.color);
-  card.innerHTML='<div class="lib-name">'+lib.name+(lib.rescued?' <span class="resc" title="Part of the collection was saved">\u25C8</span>':'')+(questFor(lib)?' <span class="manic" title="Side quest available" aria-hidden="true">\u261E\uFE0E</span>':'')+'</div><div class="lib-meta">'+lib.location+' &middot; '+yr+'</div><span class="lib-dot" style="background:'+c.color+'" aria-hidden="true"></span><span class="lib-cause">'+c.label+'</span>';
-  card.onclick=function(){openModal(lib);};
-  lib._card=card;              /* stable handle: share.js uses this */
-  return card;
+/* ---------- RESET ---------- */
+*, *::before, *::after { box-sizing: border-box; }
+
+/* Bootstrap holds the root at a flat 16px at every width — it does not
+   scale type up for mobile, and its RFS feature scales headings DOWN.
+   Lifting the root on phones scales every rem-based size in one move. */
+html {
+  font-size: 16px;
+  scroll-behavior: smooth;
+  scroll-padding-top: 1rem;
+
+  /* Stop iOS Safari inflating type when the phone is turned to landscape.
+     100%, not none: none disables the user's own pinch-zoom in some
+     engines, which is a WCAG failure. */
+  -webkit-text-size-adjust: 100%;
+          text-size-adjust: 100%;
+
+  /* No grey flash box on tap. Already set on every control; this makes it
+     the default for anything added later. */
+  -webkit-tap-highlight-color: transparent;
+}
+@media (max-width: 575.98px) { html { font-size: 17px; } }
+@media (min-width: 1600px)   { html { font-size: 17px; } }
+
+/* ---------- PAPYRUS ----------
+   Three layers, all drawn in CSS so there is no image to load.
+
+   1. FIBRE. feTurbulence with an anisotropic baseFrequency — a very low
+      value on x against a high one on y — stretches the noise into long
+      horizontal streaks. That is what reads as plant fibre rather than
+      as digital noise, and it is the whole difference between papyrus
+      and a grey dither.
+   2. GRAIN. A second, isotropic turbulence at a lower opacity, to break
+      up the regularity of the fibre.
+   3. WASH. Two very large, very soft ellipses in yellow-olive.
+
+   The tones are the important part. An earlier pass used red-leaning
+   tans (R far above G) over an already-warm base, and the midtones came
+   out pink. Papyrus is yellow: R and G close together, B well below
+   both. Nothing here has more than six points between R and G. */
+body {
+  background-color: var(--ink);
+  background-image:
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23f)' opacity='0.09'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='0.05'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 70% 60% at 22% 18%, rgba(206,201,166,.20), rgba(206,201,166,0) 72%),
+    radial-gradient(ellipse 75% 65% at 78% 72%, rgba(198,194,160,.16), rgba(198,194,160,0) 74%);
+  background-size: 240px 240px, 200px 200px, 1600px 1300px, 1500px 1400px;
+  background-position: 0 0, 0 0, 0 0, 300px 520px;
+  background-repeat: repeat;
+  background-attachment: scroll;
+  color: var(--parchment);
+  font-family: 'Crimson Pro', Georgia, 'Times New Roman', serif;
+  font-size: var(--fs-body);
+  line-height: 1.75;
+  overflow-x: hidden;
+  margin: 0;
+
+  /* Kerning and common ligatures, asked for explicitly. These are the
+     standardised properties and they do the part of optimizeLegibility
+     that is actually specified; optimizeLegibility itself is set below,
+     on the display type, where it earns its cost. */
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures contextual;
+
+  /* Font smoothing is deliberately NOT set here. On macOS and iOS these
+     two switch off subpixel antialiasing, which makes type render
+     thinner. That is right for light text on a dark ground, and wrong
+     here: this page is dark serif text on cream, and thinning the stems
+     works against the contrast this palette was corrected for. Uncomment
+     to match the usual house block.
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  */
 }
 
-function matches(lib,filter){
-  if(filter==='rescued') return !!lib.rescued;
-  if(filter==='quest') return !!questFor(lib);
-  return filter==='all' || lib.cause===filter;
+/* text-rendering is a non-standard hint, and on a page this long
+   (the catalogue alone is ~12,000px, and the quests push the document
+   past 100,000px with everything open) applying it to every node has a
+   measurable layout cost on phones. Scoped to the display faces, which
+   is where Playfair's kerning pairs and ligatures are visible anyway. */
+h1, h2, h3, h4,
+.hero-title, .hero-sub, .sec-title, .q-title, .qm-title, .m-title,
+.c-title, .pq blockquote {
+  text-rendering: optimizeLegibility;
 }
 
-function render(filter){
-  var shown=0;
-  LIBRARIES.forEach(function(lib){
-    if(!lib._card) lgrid.appendChild(buildCard(lib));
-    var ok=matches(lib,filter);
-    lib._card.style.display = ok ? '' : 'none';
-    /* hidden cards must also leave the tab order and the a11y tree */
-    if(ok){ lib._card.removeAttribute('hidden'); shown++; }
-    else  { lib._card.setAttribute('hidden',''); }
-  });
-  noRes.style.display=shown===0?'block':'none';
-  lgrid.style.display=shown===0?'none':'';
-  countEl.textContent='Showing '+shown+' of '+LIBRARIES.length+' entries';
+h1, h2, h3, h4 {
+  font-family: 'Playfair Display', Georgia, serif;
+  color: var(--parchment);
+  line-height: 1.1;
+  margin: 0;
 }
-render('all');
 
-// MODAL
-function openModal(lib){
-  var c=CAUSES[lib.cause];
-  var yr=lib.year<0?(Math.abs(lib.year)+' BC'):(lib.year+' AD');
-  var badge=document.getElementById('m-badge');
-  badge.textContent=c.label;badge.style.color=c.color;badge.style.borderColor=c.color;
-  document.getElementById('m-name').textContent=lib.name;
-  document.getElementById('m-loc').textContent=lib.location+' · '+yr;
-  document.getElementById('m-desc').textContent=lib.desc;
-  document.getElementById('m-perp').textContent=lib.perp;
-  /* Citations come from data.js. Entries resting on a single chronicler or a
-     disputed figure say so in the record text itself. */
-  /* Side quest callout. Built once, then shown, filled and replayed —
-     records without a quest hide it rather than leaving a stub. */
-  var qsec=document.getElementById('m-quest');
-  if(!qsec){
-    qsec=document.createElement('div');
-    qsec.id='m-quest'; qsec.className='m-quest';
-    qsec.innerHTML='<span class="m-quest-lbl"><span class="manic" aria-hidden="true">☞︎</span> Side quest available</span><p class="m-quest-title"></p>';
-    var qb2=document.createElement('button');
-    qb2.type='button'; qb2.className='m-quest-btn'; qb2.textContent='Read it';
-    qsec.appendChild(qb2);
-    var anchor=document.querySelector('.m-src-sec');
-    if(anchor&&anchor.parentNode) anchor.parentNode.insertBefore(qsec,anchor);
-  }
-  var qq=questFor(lib);
-  if(qq){
-    qsec.style.display='';
-    qsec.querySelector('.m-quest-title').textContent=qq.title;
-    qsec.querySelector('.m-quest-btn').onclick=function(){
-      if(typeof window.openQuestById==='function') window.openQuestById(qq.id);
-    };
-    /* restart the draw: remove, force reflow, re-add */
-    qsec.classList.remove('play'); void qsec.offsetWidth; qsec.classList.add('play');
-  } else {
-    qsec.style.display='none';
-  }
-
-  var srcEl=document.getElementById('m-src');
-  if(srcEl){
-    var srcs=(typeof sourcesFor==='function')?sourcesFor(lib):[];
-    srcEl.innerHTML=srcs.map(function(s){
-      var label=s.label+(s.note?' \u2014 '+s.note:'');
-      return s.url
-        ? '<a href="'+s.url+'" target="_blank" rel="noopener">'+label+'</a>'
-        : '<span>'+label+'</span>';
-    }).join('');
-  }
-  /* Say so when an entry has nothing behind it but the starting survey.
-     Sixteen records are in that position; quietly listing one citation
-     would imply a verification that hasn't happened. */
-  var thin=document.getElementById('m-thin');
-  if(thin){
-    var only = lib.src && lib.src.length===1 && lib.src[0]==='list';
-    thin.style.display = only ? '' : 'none';
-  }
-  libModalEl.setAttribute('aria-label','Details: '+lib.name);
-  libModal.show();
+.mono {
+  font-family: 'Courier Prime', 'Courier New', monospace;
+  font-size: var(--fs-mono);
 }
-document.addEventListener('keydown',function(e){if(e.key==='Escape')libModal.hide();});
 
-/* Pull quotes live in quotes.js so this file holds no quoted text.
-   Missing or empty entries simply leave that block blank. */
-document.querySelectorAll('.pq[data-quote]').forEach(function(el){
-  var q = (typeof QUOTES !== 'undefined') ? QUOTES[el.dataset.quote] : null;
-  if (!q || !q.text) { el.style.display = 'none'; return; }
-  el.querySelector('blockquote').textContent = q.text;
-  el.querySelector('cite').innerHTML = '&mdash; ' + q.cite;
-});
+/* ---------- ACCESSIBILITY BASE ---------- */
 
-// RECS
-var rgrid=document.getElementById('rec-grid');
-RECS.forEach(function(r){
-  var col=document.createElement('div');col.className='col-12 col-md-6';
-  var p=document.createElement('div');p.className='rec-panel reveal h-100';
-  p.innerHTML='<div class="d-flex gap-3 align-items-start"><div class="rec-icon" aria-hidden="true">'+r.icon+'</div><div><div class="rec-label">'+r.label+'</div><p class="rec-desc mb-0">'+r.desc+'</p></div></div>';
-  col.appendChild(p);rgrid.appendChild(col);
-});
-
-/* SIDE QUESTS
-   Content comes from quests.js. A quest behaves like a catalogue record:
-   the card is a button, the reading happens in a scrollable modal, and
-   every quest has its own URL (#quest-<id>) that opens it directly.
-   Text is set with textContent, not innerHTML, so an apostrophe or an
-   ampersand in a quest can't break the page. If quests.js is missing or
-   its array is empty the whole section is hidden rather than left as an
-   empty heading. */
-(function(){
-  var host=document.getElementById('quest-list');
-  var sec=document.getElementById('sec-quests');
-  if(!host) return;
-  var list=(typeof SIDEQUESTS!=='undefined' && SIDEQUESTS && SIDEQUESTS.length) ? SIDEQUESTS.slice() : null;
-  if(!list){ if(sec) sec.style.display='none'; return; }
-
-  var modalEl = document.getElementById('questModal');
-  var qModal  = (modalEl && typeof bootstrap!=='undefined') ? new bootstrap.Modal(modalEl) : null;
-  var qBody   = document.getElementById('qm-body');
-  var byId    = {};
-
-  function mk(tag,cls,text){
-    var n=document.createElement(tag);
-    if(cls) n.className=cls;
-    if(text!==undefined && text!==null) n.textContent=text;
-    return n;
-  }
-  /* Quests name a record by its exact `name` in data.js. A name that
-     matches nothing just means no button, not a broken quest. */
-  function libByName(name){
-    if(typeof LIBRARIES==='undefined' || !name) return null;
-    for(var i=0;i<LIBRARIES.length;i++){ if(LIBRARIES[i].name===name) return LIBRARIES[i]; }
-    return null;
-  }
-  function yr(y){
-    if(typeof y!=='number' || isNaN(y)) return '';
-    if(typeof yearLabel==='function') return yearLabel(y);
-    return y<0 ? (Math.abs(y)+' BC') : (y+' AD');
-  }
-  function headline(q){
-    var y=yr(q.year);
-    if(q.kicker && y) return q.kicker+' · '+y;
-    return q.kicker||y||'';
-  }
-
-  /* Chronological, by the anchor year each quest carries — the year of
-     the event it is about, not of the record it hangs off. A quest with
-     no year sorts to the end rather than to zero. */
-  list.sort(function(a,b){
-    var ay=(a && typeof a.year==='number') ? a.year : Infinity;
-    var by=(b && typeof b.year==='number') ? b.year : Infinity;
-    return ay-by;
-  });
-
-  /* ---------- fill and open the reader ---------- */
-
-  function fill(q){
-    document.getElementById('qm-kicker').textContent=headline(q);
-    document.getElementById('qm-title').textContent=q.title||'';
-    document.getElementById('qm-sub').textContent=q.sub||'';
-    if(!qBody) return;
-    qBody.innerHTML='';
-
-    if(q.stand) qBody.appendChild(mk('p','q-stand',q.stand));
-    var body=(q.body&&q.body.length)?q.body:[];
-    for(var bi=0;bi<body.length;bi++) qBody.appendChild(mk('p',null,body[bi]));
-
-    var steps=(q.steps&&q.steps.length)?q.steps:[];
-    if(steps.length){
-      var chain=mk('div','q-chain');
-      chain.appendChild(mk('span','q-lbl',q.stepsLabel||'Chain of custody'));
-      var ol=document.createElement('ol');
-      for(var si=0;si<steps.length;si++){
-        var li=document.createElement('li');
-        li.appendChild(mk('span','q-when',steps[si].when||''));
-        li.appendChild(mk('span','q-what',steps[si].what||''));
-        ol.appendChild(li);
-      }
-      chain.appendChild(ol);
-      qBody.appendChild(chain);
-    }
-
-    var lib=libByName(q.record);
-    if(lib){
-      var b=mk('button','map-open q-rec','In the catalogue: '+lib.name);
-      b.type='button';
-      b.onclick=function(){
-        /* One modal at a time: close this one, then open the record. */
-        if(qModal) qModal.hide();
-        setTimeout(function(){
-          var open=(typeof window.openModal==='function')?window.openModal:openModal;
-          open(lib);
-        },260);
-      };
-      qBody.appendChild(b);
-      if(q.note) qBody.appendChild(mk('p','q-note',q.note));
-    }
-
-    var srcs=(q.src&&q.src.length)?q.src:[];
-    if(srcs.length){
-      var sb=mk('div','q-src');
-      sb.appendChild(mk('span','q-lbl','Sources'));
-      for(var xi=0;xi<srcs.length;xi++){
-        var s=srcs[xi];
-        if(!s||!s.label) continue;
-        if(s.url){
-          var a=mk('a',null,s.label);
-          a.href=s.url; a.target='_blank'; a.rel='noopener';
-          sb.appendChild(a);
-        } else {
-          sb.appendChild(mk('p',null,s.label));   /* book, no link */
-        }
-      }
-      qBody.appendChild(sb);
-    }
-  }
-
-  var current=null;
-
-  /* Leave the card the reader came from in view, so closing the modal
-     puts them back where they were rather than at the top of the list. */
-  function parkOnCard(q){
-    var card=q._card;
-    if(!card) return;
-    card.classList.add('visible');
-    var de=document.documentElement;
-    var y=card.getBoundingClientRect().top+(window.pageYOffset||de.scrollTop)-120;
-    if(y<0) y=0;
-    var prev=de.style.scrollBehavior;
-    de.style.scrollBehavior='auto';          /* the page is scroll-behavior:smooth */
-    window.scrollTo(0,y);
-    setTimeout(function(){ de.style.scrollBehavior=prev; },0);
-  }
-
-  function openQuest(id){
-    var q=byId[id];
-    if(!q) return;
-    current=id;
-    fill(q);
-    parkOnCard(q);
-    if(history.replaceState) history.replaceState(null,'','#quest-'+id);
-    else location.hash='quest-'+id;
-    if(qModal) qModal.show();
-  }
-
-  /* ---------- the cards ---------- */
-
-  for(var qi=0;qi<list.length;qi++){
-    (function(q){
-      if(!q || !q.title) return;
-      if(q.id) byId[q.id]=q;
-
-      var card=mk('button','quest reveal');
-      card.type='button';
-      if(q.id) card.id='quest-'+q.id;
-      card.setAttribute('aria-label',q.title+(q.sub?'. '+q.sub:'')+'. Press Enter to read.');
-
-      var h=headline(q);
-      if(h) card.appendChild(mk('span','q-kicker',h));
-      card.appendChild(mk('h3','q-title',q.title));
-      if(q.sub) card.appendChild(mk('span','q-sub',q.sub));
-
-      card.onclick=function(){ if(q.id) openQuest(q.id); };
-      q._card=card;
-      host.appendChild(card);
-    })(list[qi]);
-  }
-
-  /* ---------- the link ---------- */
-
-  var copyBtn=document.getElementById('qm-copy');
-  var copyNote=document.getElementById('qm-copy-note');
-  function linkFor(id){
-    return location.origin+location.pathname+location.search+'#quest-'+id;
-  }
-  function flash(msg){
-    if(!copyNote) return;
-    copyNote.textContent=msg;
-    setTimeout(function(){ copyNote.textContent=''; },2600);
-  }
-  function fallbackCopy(url){
-    /* execCommand is deprecated but still the only option without a
-       secure context, which a file:// or http:// page does not have. */
-    var ta=document.createElement('textarea');
-    ta.value=url; ta.setAttribute('readonly','');
-    ta.style.position='fixed'; ta.style.top='-1000px';
-    document.body.appendChild(ta); ta.select();
-    try{ document.execCommand('copy'); flash('Link copied'); }
-    catch(e){ flash(url); }
-    document.body.removeChild(ta);
-  }
-  if(copyBtn){
-    copyBtn.addEventListener('click',function(){
-      if(!current) return;
-      var url=linkFor(current);
-      if(navigator.clipboard && window.isSecureContext){
-        navigator.clipboard.writeText(url).then(
-          function(){ flash('Link copied'); },
-          function(){ fallbackCopy(url); }
-        );
-      } else { fallbackCopy(url); }
-    });
-  }
-
-  /* Closing clears the fragment, so a refresh doesn't reopen it. */
-  if(modalEl){
-    modalEl.addEventListener('hidden.bs.modal',function(){
-      if(copyNote) copyNote.textContent='';
-      if(history.replaceState && (location.hash||'').indexOf('#quest-')===0){
-        history.replaceState(null,'',location.pathname+location.search);
-      }
-      current=null;
-    });
-  }
-
-  /* ---------- arriving by link, or from a record ---------- */
-
-  function openFromHash(){
-    var h=location.hash||'';
-    if(h.indexOf('#quest-')!==0) return;
-    openQuest(h.slice(7));
-  }
-  window.addEventListener('hashchange',openFromHash);
-  setTimeout(openFromHash,350);
-
-  /* Called by the callout inside a catalogue record. */
-  window.openQuestById=function(id){
-    if(!byId[id]) return;
-    try{ if(typeof libModal!=='undefined'&&libModal) libModal.hide(); }catch(e){}
-    setTimeout(function(){ openQuest(id); },260);
-  };
-})();
-
-// COUNTERS
-function animCount(el,target,suf,dur){
-  var start=null;
-  function step(ts){
-    if(!start)start=ts;
-    var prog=Math.min((ts-start)/dur,1);
-    var eased=1-Math.pow(1-prog,3);
-    el.textContent=Math.floor(eased*target)+suf;
-    if(prog<1)requestAnimationFrame(step);
-    else el.textContent=target+suf;
-  }
-  requestAnimationFrame(step);
+/* Skip link: off-screen until focused. */
+.skip {
+  position: absolute;
+  top: -100px; left: 1rem;
+  background: var(--focus); color: #fff;
+  font-family: 'Courier Prime', monospace;
+  font-size: var(--fs-mono); font-weight: 700;
+  padding: .6rem 1.2rem;
+  z-index: 9999; text-decoration: none;
+  border-radius: 0 0 4px 4px;
+  transition: top .2s;
 }
-setTimeout(function(){
-  animCount(document.getElementById('ctr-libs'),LIB_TOTAL,'',1800);
-  animCount(document.getElementById('ctr-span'),LIB_SPAN,'',1900);
-  animCount(document.getElementById('ctr-human'),DELIBERATE_PCT,'%',1700);
-},900);
+.skip:focus { top: 0; }
 
-// INTERSECTION OBSERVER
-var io=new IntersectionObserver(function(entries){
-  entries.forEach(function(e){
-    if(!e.isIntersecting)return;
-    e.target.classList.add('visible');
-    var fills=e.target.querySelectorAll('.cause-bar-fill');
-    for(var i=0;i<fills.length;i++)fills[i].style.width=fills[i].getAttribute('data-pct')+'%';
-    var bars=e.target.querySelectorAll('.cbar');
-    for(var j=0;j<bars.length;j++){bars[j].style.transition='height 1.1s cubic-bezier(0.22,1,0.36,1)';bars[j].style.height=bars[j].getAttribute('data-h');}
-  });
-},{
-  /* threshold:0 — any pixel entering counts.
-     A percentage threshold is unsatisfiable for elements taller than the
-     viewport: the catalogue grid is ~12,000px tall, so 7% of it (840px)
-     can never be on a 700px phone screen, and it would never reveal. */
-  threshold:0,
-  rootMargin:'120px 0px 120px 0px'
-});
-document.querySelectorAll('.reveal').forEach(function(el){io.observe(el);});
+/* One consistent, high-visibility focus ring everywhere. */
+:focus-visible,
+a:focus-visible, button:focus-visible, [tabindex]:focus-visible,
+input:focus-visible, select:focus-visible, .btn-close:focus-visible {
+  outline: 3px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+:focus:not(:focus-visible) { outline: none; }
+.btn-close:focus { box-shadow: none; }
 
-/* Fallback: if anything is still hidden shortly after load — observer
-   unsupported, an error, or an element taller than the observer can handle —
-   show it anyway. Content visibility must never depend on an animation. */
-setTimeout(function(){
-  document.querySelectorAll('.reveal:not(.visible)').forEach(function(el){
-    var r = el.getBoundingClientRect();
-    if (r.top < window.innerHeight && r.bottom > 0) el.classList.add('visible');
-  });
-}, 1200);
-</script>
-<!-- Shareable records: per-entry URLs, copy link, scroll to card.
-     Loads last because it wraps openModal() rather than replacing it. -->
-<script src="share.js"></script>
-</body>
-</html>
+/* Screen-reader-only, for the pages that do not load Bootstrap. */
+.sr-only {
+  position: absolute; width: 1px; height: 1px;
+  padding: 0; margin: -1px; overflow: hidden;
+  clip: rect(0,0,0,0); white-space: nowrap; border: 0;
+}
+
+/* Scroll reveal. Each page's observer adds .visible.
+   Its threshold must be 0: a percentage threshold is unsatisfiable for
+   any element taller than the viewport, and such an element would never
+   reveal at all. The catalogue grid is ~12,000px tall. */
+.reveal {
+  opacity: 0; transform: translateY(16px);
+  transition: opacity .75s ease, transform .75s ease;
+}
+.reveal.visible { opacity: 1; transform: none; }
+
+/* ---------- SCROLLBARS ---------- */
+::-webkit-scrollbar { width: 5px; height: 4px; }
+::-webkit-scrollbar-track { background: var(--ink); }
+::-webkit-scrollbar-thumb { background: var(--ash); border-radius: 3px; }
+
+/* ---------- USER PREFERENCES ---------- */
+
+/* Motion. Content must never depend on an animation to be visible. */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: .01ms !important;
+    transition-duration: .01ms !important;
+  }
+  .reveal { opacity: 1; transform: none; }
+  html { scroll-behavior: auto; }
+}
+
+/* Contrast. These DARKEN the palette. The background is light, so
+   lightening here — as a dark-mode build would — reduces contrast for
+   exactly the people who asked for more of it. */
+@media (prefers-contrast: more) {
+  :root {
+    --smoke: #241d16;
+    --aged:  #15100b;
+    --ember: #6e2408;
+  }
+  /* Someone who has asked for more contrast does not want grain and
+     mottling sitting under the text. Flat background instead. */
+  body { background-image: none; }
+}
+
+/* Windows High Contrast / forced colours. */
+@media (forced-colors: active) {
+  .lib-card, .cause-card, .rec-panel, .map-card, .tl-cta {
+    border: 1px solid ButtonText;
+  }
+  .fbtn[aria-pressed="true"], .filter-btn[aria-pressed="true"] {
+    border: 2px solid Highlight; color: Highlight;
+  }
+}
+
+/* ---------- SHARED COMPONENTS ---------- */
+
+/* Touch targets: 44px minimum, per WCAG 2.5.5. */
+.fbtn, .filter-btn, .zbtn, .zb, .ctrl-btn, .map-open {
+  min-height: 44px;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* The call-to-action button used on every page. */
+.map-open {
+  display: inline-flex; align-items: center; gap: .5rem;
+  font-family: 'Courier Prime', monospace;
+  font-size: clamp(1rem, 3.4vw, 1.05rem);
+  letter-spacing: .1em; text-transform: uppercase;
+  padding: .75rem 1.3rem; min-height: 48px;
+  border: 1px solid var(--ember); color: var(--ember);
+  background: rgba(143, 52, 16, .10);
+  text-decoration: none; border-radius: 2px;
+  transition: background .2s, color .2s;
+  white-space: nowrap;
+}
+.map-open:hover, .map-open:focus-visible {
+  background: var(--ember); color: #fdfbf6;
+}
+
+/* Hairline rule between sections. */
+.rule {
+  border: none; height: 1px; margin: 0;
+  background: linear-gradient(90deg, transparent, var(--ash) 40%, transparent);
+}
