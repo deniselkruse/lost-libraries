@@ -548,9 +548,8 @@
 <footer class="closing" role="contentinfo">
   <div class="c-symbol" aria-hidden="true">&#8734;</div>
   <h2 class="c-title">What we cannot recover</h2>
-  <p class="c-body">The libraries here are only the ones somebody wrote down. For every one with a date and a witness, there were others with neither. The real figure isn&rsquo;t large or small; it&rsquo;s unknown.</p>
-  <p class="c-body mt-4">This record has <span id="c-total">118</span> entries because destruction leaves evidence. A library that is quietly defunded has no date and no perpetrator, and never reaches a catalogue like this one.</p>
-  <p class="c-body mt-4">What the record does hold is the other thing. Sarajevo, where people formed a chain under sniper fire and a librarian died walking home from it. Timbuktu, where the manuscripts went out by road until the roads closed, and then went by river. Weimar, where the reassembly is in its twenty-second year. Vilna, where prisoners ordered to sort their own community&rsquo;s books for destruction smuggled them out a few pages at a time and buried them &mdash; and where, after the war, after the Soviets ordered what was left pulped, a librarian named Antanas Ulpis put them in a church basement and said nothing about it for forty years.</p>
+  <p class="c-body">This record holds only the libraries someone wrote down. For every loss with a date and a witness, there were others with neither. Destruction leaves evidence; neglect doesn&rsquo;t. A library that is quietly defunded never reaches a catalogue like this one, and how many were lost that way is unknown.</p>
+  <p class="c-body mt-4">But if the record can&rsquo;t measure the loss, it can show the resistance. In Sarajevo, people formed a chain under sniper fire to carry books out, and a librarian was killed walking home from it. In Timbuktu, the manuscripts were moved out by road until the roads closed, and then by river. In Weimar, the work of putting the library back together is now in its twenty-second year. In Vilna, prisoners forced to sort their own community&rsquo;s books for destruction smuggled them out a few pages at a time and buried them. And after the war, when the Soviets ordered what remained to be pulped, a librarian named Antanas Ulpis hid the books in a church basement and kept that secret for forty years.</p>
 </footer>
 
 <!-- Side quest reader. Scrollable, like the record modal, and its own
@@ -1105,12 +1104,6 @@ function animCount(el,target,suf,dur){
   }
   requestAnimationFrame(step);
 }
-/* The closing paragraph cites the count, so it reads from the data too. */
-(function(){
-  var t=document.getElementById('c-total');
-  if(t && typeof LIB_TOTAL!=='undefined') t.textContent=LIB_TOTAL;
-})();
-
 setTimeout(function(){
   animCount(document.getElementById('ctr-libs'),LIB_TOTAL,'',1800);
   animCount(document.getElementById('ctr-span'),LIB_SPAN,'',1900);
