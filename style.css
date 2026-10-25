@@ -78,23 +78,31 @@ html {
 @media (max-width: 575.98px) { html { font-size: 17px; } }
 @media (min-width: 1600px)   { html { font-size: 17px; } }
 
-/* ---------- PARCHMENT ----------
-   Four things, all drawn in CSS so there is no image to load: a fine
-   grain from an SVG turbulence tile, and three very large soft mottles
-   in slightly different warm tones. The mottles repeat, but at 900 to
-   1400px across and only a few per cent of contrast, the repeat is not
-   findable by eye. Everything is a background layer on body, not a fixed
-   overlay — iOS Safari handles background-attachment:fixed badly, and an
-   overlay on top would sit over the text. */
+/* ---------- PAPYRUS ----------
+   Three layers, all drawn in CSS so there is no image to load.
+
+   1. FIBRE. feTurbulence with an anisotropic baseFrequency — a very low
+      value on x against a high one on y — stretches the noise into long
+      horizontal streaks. That is what reads as plant fibre rather than
+      as digital noise, and it is the whole difference between papyrus
+      and a grey dither.
+   2. GRAIN. A second, isotropic turbulence at a lower opacity, to break
+      up the regularity of the fibre.
+   3. WASH. Two very large, very soft ellipses in yellow-olive.
+
+   The tones are the important part. An earlier pass used red-leaning
+   tans (R far above G) over an already-warm base, and the midtones came
+   out pink. Papyrus is yellow: R and G close together, B well below
+   both. Nothing here has more than six points between R and G. */
 body {
   background-color: var(--ink);
   background-image:
-    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='180' height='180'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='180' height='180' filter='url(%23g)' opacity='0.14'/%3E%3C/svg%3E"),
-    radial-gradient(ellipse 60% 50% at 18% 12%, rgba(205,189,158,.22), rgba(205,189,158,0) 70%),
-    radial-gradient(ellipse 55% 45% at 82% 38%, rgba(222,211,186,.26), rgba(222,211,186,0) 72%),
-    radial-gradient(ellipse 65% 55% at 48% 78%, rgba(198,182,152,.18), rgba(198,182,152,0) 70%);
-  background-size: 180px 180px, 1400px 1100px, 1150px 950px, 1250px 1300px;
-  background-position: 0 0, 0 0, 380px 220px, 140px 640px;
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='240' height='240'%3E%3Cfilter id='f'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.012 0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='240' height='240' filter='url(%23f)' opacity='0.09'/%3E%3C/svg%3E"),
+    url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='200' height='200'%3E%3Cfilter id='g'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='200' height='200' filter='url(%23g)' opacity='0.05'/%3E%3C/svg%3E"),
+    radial-gradient(ellipse 70% 60% at 22% 18%, rgba(206,201,166,.20), rgba(206,201,166,0) 72%),
+    radial-gradient(ellipse 75% 65% at 78% 72%, rgba(198,194,160,.16), rgba(198,194,160,0) 74%);
+  background-size: 240px 240px, 200px 200px, 1600px 1300px, 1500px 1400px;
+  background-position: 0 0, 0 0, 0 0, 300px 520px;
   background-repeat: repeat;
   background-attachment: scroll;
   color: var(--parchment);
