@@ -34,8 +34,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'gilgamesh',
+    year:  1991,
     kicker: 'Object biography',
-    title: 'The tablet that ended up in a craft store',
+    title: 'The Gilgamesh Dream Tablet',
+    sub:   'Looted from Iraq in 1991, sold to Hobby Lobby for $1.67m, returned in 2021',
     stand: 'A fragment of the oldest long poem we have was dug up in 1853, stolen in 1991, laundered through a false paperwork trail, and sold privately to Hobby Lobby for about $1.67 million. It took the US government two years to give it back.',
 
     body: [
@@ -85,8 +87,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'babylon',
+    year:  2003,
     kicker: 'A site, not a shelf',
-    title: 'The base on top of the part nobody had read yet',
+    title: 'Camp Alpha, Babylon',
+    sub:   'The US military base built on top of an unexcavated archaeological site',
     stand: 'In April 2003, American forces built a military camp across 150 hectares of Babylon. They left in January 2005. What a base does to an archaeological site is not what fire does to a library, and in one specific way it is worse.',
 
     body: [
@@ -137,8 +141,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'hirschfeld',
+    year:  1933,
     kicker: 'The photograph you have seen',
-    title: 'Whose books are in that picture',
+    title: 'Hirschfeld’s Institute, Berlin',
+    sub:   'The library in the photograph everyone has seen of Nazis burning books',
     stand: 'The newsreel of students throwing books onto a bonfire in Berlin is one of the most reproduced images of the twentieth century. The books mostly came from one particular library, and almost nobody who shares the picture knows which one.',
 
     body: [
@@ -187,8 +193,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'timbuktu',
+    year:  2012,
     kicker: 'An evacuation',
-    title: 'Two thousand five hundred footlockers',
+    title: 'The Timbuktu evacuation',
+    sub:   '350,000 manuscripts moved out of the city in 2,500 metal footlockers',
     stand: 'The world was told that the manuscripts of Timbuktu had burned. Most of them had already left the city in metal trunks, by road and then by boat, and nobody who knew that was in a hurry to correct the headline.',
 
     body: [
@@ -236,8 +244,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'alexandria',
+    year:  -48,
     kicker: 'The correction',
-    title: 'Alexandria did not burn down',
+    title: 'The Library of Alexandria',
+    sub:   'It never burned down in a single night. What actually happened to it',
     stand: 'The most famous library destruction in history is probably not a destruction. It is three or four partial events spread across five centuries, one outright fairy tale, and a long stretch of nobody paying for it.',
 
     body: [
@@ -283,8 +293,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'cotton',
+    year:  1731,
     kicker: 'One copy',
-    title: 'Beowulf was in the building',
+    title: 'The Cotton Library fire, 1731',
+    sub:   'Beowulf survives in one manuscript, and it was in the building',
     stand: 'Beowulf survives in exactly one manuscript. In October 1731 that manuscript was in a house that caught fire, and the men who saved the collection did it by throwing books out of the windows.',
 
     body: [
@@ -334,8 +346,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'la-freezer',
+    year:  1986,
     kicker: 'A rescue by refrigeration',
-    title: 'Seven years in a frozen food warehouse',
+    title: 'The Los Angeles library fire, 1986',
+    sub:   '700,000 soaked books, 48 hours, and seven years in frozen food warehouses',
     stand: 'The 1986 fire at the Los Angeles Central Library burned for seven and a half hours at over 2,500 degrees. The part nobody tells is what the city did with the 700,000 books that survived it soaking wet, with about two days before the mould started.',
 
     body: [
@@ -383,8 +397,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'jaffna',
+    year:  1981,
     kicker: 'What a library is worth',
-    title: 'Ninety-seven thousand books, and a war',
+    title: 'Jaffna Public Library, 1981',
+    sub:   '97,000 books burned, and a country that stopped being able to settle anything',
     stand: 'An organised mob burned the Jaffna Public Library in northern Sri Lanka over the nights of 31 May and 1 June 1981. It is widely treated since as the moment the country lost the ability to settle anything politically.',
 
     body: [
@@ -433,8 +449,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'herculaneum',
+    year:  79,
     kicker: 'Still being read',
-    title: 'The library saved by the thing that destroyed it',
+    title: 'The Herculaneum scrolls',
+    sub:   'Carbonised by Vesuvius in 79 AD, and read end to end for the first time this June',
     stand: 'Vesuvius turned roughly 1,800 scrolls into carbon in 79 AD. They sat unreadable for 270 years, because the only way to open one was to wreck it. In June this year a scroll was read from beginning to end without being opened at all.',
 
     body: [
@@ -479,8 +497,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'fisheries',
+    year:  2013,
     kicker: 'No fire, no villain',
-    title: 'Seven libraries, four hundred and forty-three thousand dollars',
+    title: 'Canada’s fisheries libraries, 2013',
+    sub:   'Seven closed, the collections dumpstered, and $443,000 saved',
     stand: 'In 2013 the Canadian government closed seven of its nine Fisheries and Oceans science libraries. No army, no arson, no mob. The claimed saving was $443,000 a year.',
 
     body: [
@@ -527,8 +547,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'zaluski',
+    year:  1795,
     kicker: 'Destroyed twice',
-    title: 'A library can be stolen and still be burned',
+    title: 'The Załuski Library',
+    sub:   'Taken to St Petersburg by Catherine II in 1795, burned by German troops in 1944',
     stand: 'Europe’s first great public library was carted off to St Petersburg by an empress in 1795. A fraction of it came home a century and a quarter later, in time for German troops to burn it in 1944.',
 
     body: [
@@ -578,8 +600,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'paper-brigade',
+    year:  1942,
     kicker: 'Smuggled the wrong way',
-    title: 'The men and women who stole books back',
+    title: 'The Paper Brigade of Vilna',
+    sub:   'Forced to sort Jewish books for the Nazis, they smuggled them out and buried them',
     stand: 'In Vilna the Nazis forced a few dozen Jewish scholars and poets to sort their own community’s libraries — deciding what would be shipped to Germany and what would go to the paper mills. They spent two years smuggling material out under their coats and burying it.',
 
     body: [
@@ -625,8 +649,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'buturovic',
+    year:  1992,
     kicker: 'One librarian',
-    title: 'Aida Buturović was thirty-two',
+    title: 'Aida Buturović',
+    sub:   'The librarian killed carrying books out of the National Library of Bosnia',
     stand: 'The catalogue entry for the National Library of Bosnia and Herzegovina says a librarian was killed rescuing books. This is who she was.',
 
     body: [
@@ -668,8 +694,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'weimar',
+    year:  2004,
     kicker: 'Put back together',
-    title: 'The ash books',
+    title: 'The Anna Amalia fire, 2004',
+    sub:   'A human chain, 25,000 books burned to fragments, and a reassembly still running',
     stand: 'Faulty wiring set the Duchess Anna Amalia Library alight in 2004. A human chain got thousands of books out that night. The interesting part is the 25,000 volumes that came out as fragments, and are being reassembled page by page, twenty years later.',
 
     body: [
@@ -717,8 +745,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'bessarion',
+    year:  1468,
     kicker: 'A rescue with a shopping list',
-    title: 'Bessarion bought a civilisation and gave it to Venice',
+    title: 'Cardinal Bessarion’s gift',
+    sub:   'He bought up Greek manuscripts before they could scatter, then gave them to Venice',
     stand: 'The usual story is that scholars fled Constantinople in 1453 with manuscripts under their arms and accidentally started the Renaissance. The better story is a cardinal who saw it coming, spent thirty years buying Greek books deliberately, and then worried hard about where to leave them.',
 
     body: [
@@ -767,8 +797,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'alamut',
+    year:  1256,
     kicker: 'The rescuer was the arsonist',
-    title: 'Who saved the library at Alamut',
+    title: 'The library at Alamut, 1256',
+    sub:   'The man who decided what to burn wrote the only surviving account of it',
     stand: 'The Mongols destroyed the Nizari Ismaili library at Alamut in 1256. One man was put in charge of deciding what to keep and what to burn — and he then wrote the only surviving account of the whole affair, which is why we know anything about it at all.',
 
     body: [
@@ -815,8 +847,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'occupy',
+    year:  2011,
     kicker: 'Two months old',
-    title: 'A library does not have to be ancient',
+    title: 'The People’s Library, Zuccotti Park',
+    sub:   '5,500 books, two months, and a $230,000 settlement',
     stand: 'The People’s Library in Zuccotti Park lasted about two months, catalogued more than 5,500 donated books, and went into sanitation trucks in the early hours of 15 November 2011.',
 
     body: [
@@ -862,8 +896,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'operation-legacy',
+    year:  1961,
     kicker: 'Erasure as policy',
-    title: 'Destruction certificates',
+    title: 'Operation Legacy',
+    sub:   'How Britain burned and hid its colonial records, and filed the paperwork',
     stand: 'As the British Empire wound down, colonial administrations burned and removed the records that might embarrass Britain, and sent paperwork back to London certifying that they had done it. The files that were not burned were admitted to exist in 2011.',
 
     body: [
@@ -908,8 +944,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'maya',
+    year:  1562,
     kicker: 'Four books',
-    title: 'Everything they wrote, minus four',
+    title: 'The Maya codices',
+    sub:   'Four books survive, and the friar who burned the rest wrote the key to reading them',
     stand: 'A Franciscan friar burned Maya books at Maní in 1562, then wrote a description of Maya culture while defending himself in Spain. That book turned out to be the key that let the writing be read again four hundred years later.',
 
     body: [
@@ -957,8 +995,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'alcuin',
+    year:  782,
     kicker: 'Copying as rescue',
-    title: 'The handwriting you are reading this in',
+    title: 'Alcuin and the Carolingian copyists',
+    sub:   'Why most Latin literature survives at all, and where our lowercase letters come from',
     stand: 'Most Latin literature that survives at all survives because somebody in the ninth century copied it out. The shapes of the letters on this screen come from the script they used to do it.',
 
     body: [
@@ -1007,8 +1047,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'jewish-archive',
+    year:  2003,
     kicker: 'Still unresolved',
-    title: 'Rescued, and never sent home',
+    title: 'The Iraqi Jewish Archive',
+    sub:   'Rescued from a flooded basement in Baghdad in 2003, still in Washington',
     stand: 'American soldiers found it rotting in a flooded basement in Baghdad in 2003. It was frozen, flown to Washington, conserved and digitised at a cost of around $3 million. It is still in Washington.',
 
     body: [
@@ -1054,8 +1096,10 @@ var SIDEQUESTS = [
   /* ---------------------------------------------------------- */
   {
     id: 'mosul',
+    year:  2014,
     kicker: 'Afterwards',
-    title: 'Restocking a million books',
+    title: 'Mosul after ISIS',
+    sub:   'Rebuilding a library of a million books, starting with 32,000',
     stand: 'ISIS destroyed something like 85 per cent of the University of Mosul’s library, a collection of roughly a million titles. The rebuilt library opened with 32,000 books on the shelves.',
 
     body: [
