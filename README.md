@@ -3,7 +3,7 @@
 
 An interactive record of **118 libraries destroyed across 3,787 years**, from the palace archives of Bronze Age Mari to libraries burning in Gaza, Sudan and Ukraine today.
 
-Originally inspired by [Sudhanshu Sharma's Medium article](https://medium.com/@sudhanshu.harsh/the-lost-libraries-visualizing-damage-done-to-99-libraries-throughout-history-e3355f85e10b) on 99 libraries. This project re-verified that dataset, merged duplicate records, corrected several factual errors, added geographic coordinates, and extended it to cover three ongoing conflicts.
+Originally inspired by [Sudhanshu Harsh's Medium article](https://medium.com/@sudhanshu.harsh/the-lost-libraries-visualizing-damage-done-to-99-libraries-throughout-history-e3355f85e10b) on 99 libraries. This project re-verified that dataset, merged duplicate records, corrected several factual errors, added geographic coordinates, and extended it to cover three ongoing conflicts.
 
 ---
 
@@ -26,6 +26,7 @@ Originally inspired by [Sudhanshu Sharma's Medium article](https://medium.com/@s
 | `map.html` | Interactive atlas — pan, pinch-zoom, filter by cause, filter by era, detail panel |
 | `timeline.html` | Animated sweep — 1761 BC to 2026, each library igniting on the map at its year |
 | `favicon.svg` | Site icon |
+| `social-preview.png` | 1200×630 image used when a link is shared |
 
 All three are self-contained. No build step, no API keys, no tile server.
 
@@ -114,3 +115,36 @@ GitHub Pages redeploys automatically from `main`.
 
 
 *"Every book that burns takes with it a world that will never be reconstructed."*
+
+---
+
+## Adding a record
+
+Records live in `data.js`, in the `LIBRARIES` array, sorted by year. Copy the
+shape of an existing one:
+
+```js
+{ name: "", location: "", year: 1944, cause: "war",
+  lat: 0, lon: 0, perp: "", rescued: true,
+  desc: "", src: ["key1","key2"] }
+```
+
+- `year` is negative for BC. `cause` is one of the keys in `CAUSES`.
+- `lat`/`lon` place the pin on the map and the timeline. Add `approx: true`
+  where the location or the date is uncertain.
+- `rescued: true` marks a record where part of the collection was saved;
+  it drives the Partly Rescued filter and the ◈ on the card.
+- `src` holds keys from the `SOURCES` object at the top of the file. Add a
+  new source there first. An entry whose only source is `"list"` is flagged
+  on the page as provenance rather than verification.
+
+Everything downstream — the counts, the percentages, the century chart, the
+map, the timeline, the closing text — reads from this array, so nothing else
+needs editing when you add one.
+
+## Adding a side quest
+
+`quests.js`, same idea. The comment at the top of the file documents every
+field. `year` is the year of the event the quest is about, and sets where it
+falls in the chronological order; `record` is the exact `name` of an entry in
+`data.js` and draws the button through to that card.
