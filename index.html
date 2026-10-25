@@ -115,9 +115,16 @@
        Built from quests.js. A quest card behaves like a catalogue card:
        it is a button, it opens a scrollable modal, and it has its own
        shareable URL (#quest-<id>). */
-    .quest{display:block;width:100%;text-align:left;background:rgba(18,15,12,.025);
+    /* Two up from tablet, three on a wide screen. Chronology then runs
+       left to right and down, which is how a reader expects a grid of
+       dated things to run. Grid items stretch, so cards in a row match
+       height even when one title wraps to two lines. */
+    #quest-list{display:grid;grid-template-columns:1fr;gap:.9rem;align-items:stretch}
+    @media(min-width:768px){ #quest-list{grid-template-columns:repeat(2,1fr);gap:1rem} }
+    @media(min-width:1400px){ #quest-list{grid-template-columns:repeat(3,1fr)} }
+    .quest{display:block;width:100%;height:100%;text-align:left;background:rgba(18,15,12,.025);
       border:1px solid rgba(18,15,12,.15);border-left:4px solid var(--gold);
-      margin-bottom:.9rem;cursor:pointer;position:relative;
+      cursor:pointer;position:relative;
       padding:clamp(1rem,3.5vw,1.3rem) clamp(1.1rem,4vw,1.6rem) clamp(1rem,3.5vw,1.3rem) 2.6rem;
       min-height:44px;transition:background .2s,border-color .2s;touch-action:manipulation;
       -webkit-tap-highlight-color:transparent}
