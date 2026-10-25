@@ -1,207 +1,438 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-<title>The Lost Libraries — Geographic Atlas of Erasure</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>The Lost Libraries — Animated Timeline of Erasure</title>
   <!-- Favicon. One SVG; every browser in current use reads it. -->
   <link rel="icon" href="favicon.svg" type="image/svg+xml">
   <meta name="theme-color" content="#f4f1ea">
-<meta name="description" content="Interactive world map of 108 libraries destroyed across 3,785 years of history.">
-<link rel="stylesheet" href="style.css">
-  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:ital,wght@0,300;0,400;0,600&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
-<style>
-  *{margin:0;padding:0;box-sizing:border-box}
-  html,body{height:100%;overflow:hidden}
-  body{background:var(--ink);color:var(--parch);font-family:'Crimson Pro',Georgia,serif;font-size:17px}
+  <meta name="description" content="Year-by-year animated sweep of 108 library destructions across 3,785 years.">
+  <link rel="stylesheet" href="style.css">
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=Crimson+Pro:ital,wght@0,300;0,400&family=Courier+Prime:wght@400;700&display=swap" rel="stylesheet">
+  <style>
+    *{margin:0;padding:0;box-sizing:border-box}
+    html,body{height:100%;overflow:hidden;background:var(--ink)}
+    body{font-family:'Crimson Pro',Georgia,serif;color:var(--parch)}
 
-  .skip{position:absolute;top:-100px;left:1rem;background:var(--focus);color:#000;padding:.55rem 1.1rem;z-index:9999;
-        text-decoration:none;font-family:'Courier Prime',monospace;font-weight:700;font-size:.85rem;border-radius:0 0 4px 4px}
-  .skip:focus{top:0}
-  :focus-visible{outline:3px solid var(--focus);outline-offset:2px}
+    /* SVG MAP */
+    #stage{position:absolute;inset:0;display:flex;flex-direction:column}
+    #map-svg{flex:1;display:block;width:100%}
 
-  /* ---------- MAP STAGE ---------- */
-  #stage{position:absolute;inset:0;background:var(--sea);overflow:hidden;cursor:grab;
-         touch-action:none;-webkit-user-select:none;user-select:none;overscroll-behavior:none}
-  #stage.dragging{cursor:grabbing}
-  #map{display:block;width:100%;height:100%;touch-action:none}
-  .country{fill:var(--land);stroke:var(--coast);stroke-width:.35;vector-effect:non-scaling-stroke}
-  .grat{fill:none;stroke:rgba(18,15,12,.05);stroke-width:.4;vector-effect:non-scaling-stroke}
+    /* GRATICULE + LAND */
+    .land{fill:#ded5c4;stroke:#a89a82;stroke-width:1.4}
+    .graticule{fill:none;stroke:rgba(18,15,12,0.10);stroke-width:1.4}
+    .border{fill:none;stroke:#2a2030;stroke-width:0.4}
 
-  .mk{cursor:pointer;vector-effect:non-scaling-stroke}
-  .mk:hover .mk-core{stroke:#120f0c;stroke-width:1.6}
-  .mk-core{stroke:rgba(18,15,12,.45);stroke-width:.8;vector-effect:non-scaling-stroke}
-  .mk.sel .mk-core{stroke:#120f0c;stroke-width:2.2;vector-effect:non-scaling-stroke}
-  .mk.approx .mk-core{stroke-dasharray:2.2 1.6}
-  .mk-halo{fill:none;opacity:0;transition:opacity .2s}
-  .mk.sel .mk-halo{opacity:.55}
+    /* PARTICLES */
+    .lib-dot{
+      cursor:pointer;
+      transition:r 0.3s ease;
+    }
+    .lib-dot:hover{filter:brightness(1.5)}
+    .lib-ring{
+      fill:none; pointer-events:none;
+      animation:ringOut 1.2s ease-out forwards;
+    }
+    @keyframes ringOut{
+      from{r:0;opacity:.9;stroke-width:8}
+      to{r:60;opacity:0;stroke-width:1.5}
+    }
+    .lib-flash{
+      pointer-events:none;
+      animation:flash 0.8s ease-out forwards;
+    }
+    @keyframes flash{
+      0%{r:34;opacity:1}
+      100%{r:0;opacity:0}
+    }
 
-  /* ---------- LOADING / ERROR ---------- */
-  #boot{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column;
-        gap:.9rem;background:var(--sea);z-index:50;text-align:center;padding:2rem}
-  #boot.hide{display:none}
-  .boot-t{font-family:'Courier Prime',monospace;font-size:.75rem;letter-spacing:.25em;text-transform:uppercase;color:var(--gold)}
-  .boot-s{font-family:'Crimson Pro',serif;font-style:italic;color:var(--smoke);max-width:420px;line-height:1.7;font-size:1rem}
-  .spin{width:26px;height:26px;border:2px solid rgba(18,15,12,.2);border-top-color:var(--ember);border-radius:50%;
-        animation:sp .9s linear infinite}
-  @keyframes sp{to{transform:rotate(360deg)}}
+    /* YEAR DISPLAY */
+    #year-display{
+      position:absolute;
+      left:50%;transform:translateX(-50%);
+      top:50%;margin-top:-4rem;
+      font-family:'Playfair Display',serif;
+      font-size:clamp(3rem,8vw,7rem);
+      font-weight:900;
+      color:rgba(224,85,32,0.34);
+      text-shadow:0 0 40px rgba(168,64,26,.18);
+      pointer-events:none;
+      white-space:nowrap;
+      transition:color 0.3s;
+      z-index:1;
+      display:flex;flex-direction:column;align-items:center;line-height:.9;
+    }
 
-  /* ---------- TOP BAR ---------- */
-  #top{position:absolute;top:0;left:0;right:0;z-index:20;padding:.9rem 1.1rem 2.6rem;
-       background:linear-gradient(180deg,rgba(244,241,234,.97) 0%,rgba(244,241,234,.85) 62%,transparent 100%);
-       display:flex;gap:1.2rem;align-items:flex-start;flex-wrap:wrap;pointer-events:none}
-  #top > *{pointer-events:auto}
-  .brand p{font-family:'Courier Prime',monospace;font-size:.6rem;letter-spacing:.22em;text-transform:uppercase;color:var(--gold);margin-bottom:.1rem}
-  .brand h1{font-family:'Playfair Display',serif;font-size:clamp(1rem,2.4vw,1.45rem);font-weight:900;line-height:1.05}
-  .brand h1 em{font-style:italic;color:var(--ember)}
+    #yd-lbl{
+      font-family:'Courier Prime',monospace;
+      font-size:clamp(.62rem,2vw,.8rem);
+      letter-spacing:.3em;text-transform:uppercase;
+      color:rgba(18,15,12,.5);
+      margin-top:.9rem;white-space:nowrap;
+    }
 
-  .ctrls{display:flex;flex-direction:column;gap:.5rem;flex:1;min-width:230px}
-  .row{display:flex;gap:.35rem;align-items:center;flex-wrap:wrap}
-  .lbl{font-family:'Courier Prime',monospace;font-size:.6rem;letter-spacing:.2em;text-transform:uppercase;color:var(--smoke);margin-right:.2rem}
-  .fb{font-family:'Courier Prime',monospace;font-size:.62rem;letter-spacing:.09em;text-transform:uppercase;
-      padding:.42rem .75rem;border:1px solid rgba(18,15,12,.22);background:rgba(244,241,234,.8);color:var(--smoke);
-      cursor:pointer;border-radius:2px;transition:.18s;white-space:nowrap;min-height:30px}
-  .fb:hover{border-color:var(--ember);color:var(--parch)}
-  .fb[aria-pressed="true"]{color:var(--ember);border-color:var(--ember);background:rgba(168,64,26,.12)}
-  .fb .sw{display:inline-block;width:7px;height:7px;border-radius:50%;margin-right:.35rem;vertical-align:middle}
+    /* ON-MAP LABELS */
+    .lib-label{
+      font-family:'Crimson Pro',Georgia,serif;
+      fill:#120f0c;paint-order:stroke;
+      stroke:rgba(251,248,242,.9);stroke-linejoin:round;
+      pointer-events:none;
+      animation:lblIn .35s ease-out, lblOut .7s 1.9s ease-in forwards;
+    }
+    @keyframes lblIn{from{opacity:0}to{opacity:1}}
+    @keyframes lblOut{to{opacity:0}}
+    @media(prefers-reduced-motion:reduce){.lib-label{animation:none;opacity:1}}
 
-  input[type=range]{-webkit-appearance:none;appearance:none;width:150px;height:3px;background:rgba(18,15,12,.2);
-                    border-radius:2px;outline:none;cursor:pointer}
-  input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:13px;height:13px;background:var(--ember);border-radius:50%;cursor:pointer}
-  input[type=range]::-moz-range-thumb{width:13px;height:13px;background:var(--ember);border:none;border-radius:50%;cursor:pointer}
-  #eraOut{font-family:'Courier Prime',monospace;font-size:.66rem;color:var(--ember);min-width:9.5rem}
+    /* TOP HUD */
+    #hud{
+      position:absolute;top:0;left:0;right:0;z-index:10;
+      background:linear-gradient(180deg,rgba(244,241,234,0.96) 0%,rgba(244,241,234,0.85) 70%,transparent 100%);
+      padding:1rem 1.5rem 3rem;
+      display:flex;align-items:flex-start;gap:1.5rem;flex-wrap:wrap;
+    }
+    #hud-title{flex-shrink:0}
+    #hud-title h1{
+      font-family:'Playfair Display',serif;
+      font-size:clamp(0.95rem,2.2vw,1.4rem);
+      font-weight:900;color:var(--parch);line-height:1.1;
+    }
+    #hud-title h1 em{font-style:italic;color:var(--ember)}
+    #hud-title p{
+      font-family:'Courier Prime',monospace;
+      font-size:0.58rem;letter-spacing:0.2em;
+      color:var(--gold);text-transform:uppercase;margin-bottom:0.15rem;
+    }
 
-  /* ---------- ZOOM ---------- */
-  #zoom{position:absolute;right:.9rem;bottom:7.4rem;z-index:30;display:flex;flex-direction:column;gap:.4rem}
-  .zb{width:46px;height:46px;border:1px solid rgba(18,15,12,.28);background:rgba(244,241,234,.94);color:var(--aged);
-      font-size:1.3rem;cursor:pointer;border-radius:3px;line-height:1;
-      display:flex;align-items:center;justify-content:center;
+    /* CONTROLS */
+    #controls{display:flex;align-items:center;gap:0.75rem;flex-wrap:wrap;margin-top:0.3rem}
+    .ctrl-btn{
+      font-family:'Courier Prime',monospace;
+      font-size:0.7rem;letter-spacing:0.1em;text-transform:uppercase;
+      padding:0.4rem 1rem;border:1px solid rgba(201,185,154,0.25);
+      background:rgba(244,241,234,0.85);color:var(--smoke);
+      cursor:pointer;border-radius:2px;transition:all 0.2s;
+      min-width:44px;min-height:36px;
+    }
+    .ctrl-btn:hover,.ctrl-btn.active{border-color:var(--ember);color:var(--ember);background:rgba(224,85,32,0.12)}
+    .ctrl-btn:focus-visible{outline:2px solid var(--gold);outline-offset:2px}
+    .ctrl-btn#btn-play{font-size:1rem;padding:0.3rem 0.9rem}
+
+    .speed-group{display:flex;align-items:center;gap:0.4rem}
+    .speed-label{font-family:'Courier Prime',monospace;font-size:0.58rem;letter-spacing:0.15em;text-transform:uppercase;color:var(--smoke)}
+
+    /* YEAR COUNTER HUD */
+    #year-hud{display:flex;align-items:baseline;gap:0.5rem;margin-left:auto}
+    #year-now{
+      font-family:'Playfair Display',serif;
+      font-size:clamp(1.5rem,4vw,2.8rem);font-weight:900;
+      color:var(--ember);line-height:1;
+    }
+    #year-label{
+      font-family:'Courier Prime',monospace;
+      font-size:0.6rem;letter-spacing:0.1em;
+      text-transform:uppercase;color:var(--smoke);
+    }
+
+    /* BOTTOM HUD */
+    #bottom{
+      position:absolute;bottom:0;left:0;right:0;z-index:10;
+      background:linear-gradient(0deg,rgba(244,241,234,0.97) 0%,rgba(244,241,234,0.85) 60%,transparent 100%);
+      padding:3rem 1.5rem 1rem;
+    }
+
+    /* PROGRESS TIMELINE */
+    #progress-wrap{position:relative;margin-bottom:0.75rem}
+    #progress-track{
+      height:3px;background:rgba(201,185,154,0.12);
+      border-radius:2px;position:relative;cursor:pointer;
+    }
+    #progress-fill{
+      height:100%;background:linear-gradient(90deg,var(--ember),var(--gold));
+      border-radius:2px;width:0%;transition:width 0.1s linear;pointer-events:none;
+    }
+    #scrubber{
+      position:absolute;top:-4px;
+      width:11px;height:11px;background:var(--ember);
+      border-radius:50%;transform:translateX(-50%);
+      cursor:grab;transition:left 0.1s linear;
+      box-shadow:0 0 6px var(--ember);
+    }
+    #scrubber:active{cursor:grabbing}
+
+    /* ERA MARKERS */
+    .era-tick{
+      position:absolute;top:-8px;width:1px;height:19px;
+      background:rgba(201,185,154,0.15);pointer-events:none;
+    }
+    .era-tick-label{
+      position:absolute;top:10px;
+      font-family:'Courier Prime',monospace;font-size:0.45rem;
+      color:rgba(201,185,154,0.35);text-transform:uppercase;
+      transform:translateX(-50%);white-space:nowrap;pointer-events:none;
+    }
+
+    /* STATS ROW */
+    #stats-row{display:flex;gap:2rem;align-items:center;flex-wrap:wrap}
+    .sstat{text-align:center}
+    .sstat-n{
+      font-family:'Playfair Display',serif;font-size:1.6rem;
+      font-weight:700;color:var(--ember);line-height:1;
+    }
+    .sstat-l{
+      font-family:'Courier Prime',monospace;font-size:0.52rem;
+      letter-spacing:0.12em;text-transform:uppercase;color:var(--smoke);
+    }
+
+    /* LEGEND */
+    #legend{
+      display:flex;gap:0.75rem;flex-wrap:wrap;margin-left:auto;align-items:center;
+    }
+    .leg-item{display:flex;align-items:center;gap:0.3rem}
+    .leg-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+    .leg-lbl{font-family:'Courier Prime',monospace;font-size:0.55rem;color:var(--aged)}
+
+    #zoomctl{position:absolute;right:1rem;top:50%;transform:translateY(-50%);z-index:12;
+      display:flex;flex-direction:column;gap:.4rem}
+    .zbtn{width:46px;height:46px;border:1px solid rgba(18,15,12,.3);
+      background:rgba(244,241,234,.94);color:var(--aged);font-size:1.3rem;line-height:1;
+      cursor:pointer;border-radius:3px;display:flex;align-items:center;justify-content:center;
+      font-family:'Courier Prime',monospace;
       -webkit-tap-highlight-color:transparent;touch-action:manipulation}
-  .zb:hover,.zb:active{border-color:var(--ember);color:var(--ember);background:rgba(168,64,26,.12)}
-  .zb.sm{font-size:.56rem;letter-spacing:.06em}
+    .zbtn:hover,.zbtn:active{border-color:var(--ember);color:var(--ember);background:rgba(168,64,26,.12)}
+    .zbtn:focus-visible{outline:3px solid var(--gold);outline-offset:2px}
+    .zbtn.sm{font-size:.56rem;letter-spacing:.06em}
+    @media(max-width:600px){#zoomctl{right:.6rem;gap:.3rem}.zbtn{width:42px;height:42px}}
 
-  /* ---------- BOTTOM ---------- */
-  #bot{position:absolute;bottom:0;left:0;right:0;z-index:20;padding:2.4rem 1.1rem .85rem;
-       background:linear-gradient(0deg,rgba(244,241,234,.97) 0%,rgba(244,241,234,.85) 62%,transparent 100%);
-       display:flex;gap:1.6rem;align-items:flex-end;flex-wrap:wrap;pointer-events:none}
-  #bot > *{pointer-events:auto}
-  .stat{text-align:center}
-  .stat-n{font-family:'Playfair Display',serif;font-size:1.65rem;font-weight:700;color:var(--ember);line-height:1}
-  .stat-l{font-family:'Courier Prime',monospace;font-size:.54rem;letter-spacing:.14em;text-transform:uppercase;color:var(--smoke);margin-top:.15rem}
-  .note{margin-left:auto;max-width:300px;text-align:right}
-  .note b{display:block;font-family:'Courier Prime',monospace;font-size:.55rem;letter-spacing:.14em;
-          text-transform:uppercase;color:var(--smoke);margin-bottom:.22rem;font-weight:400}
-  .note span{font-size:.82rem;font-style:italic;color:rgba(18,15,12,.6);line-height:1.5}
+    /* TOOLTIP */
+    #tooltip{
+      position:absolute;z-index:20;pointer-events:none;
+      background:rgba(251,248,242,0.97);border:1px solid rgba(201,185,154,0.2);
+      padding:0.5rem 0.8rem;max-width:220px;display:none;
+    }
+    .tt-name{font-family:'Playfair Display',serif;font-size:0.9rem;color:var(--parch);margin-bottom:0.15rem}
+    .tt-loc{font-family:'Courier Prime',monospace;font-size:0.6rem;color:var(--smoke)}
 
-  /* ---------- PANEL ---------- */
-  #panel{position:absolute;top:0;right:0;bottom:0;width:340px;max-width:100%;background:var(--panel);z-index:40;
-         border-left:1px solid rgba(18,15,12,.13);transform:translateX(100%);
-         transition:transform .34s cubic-bezier(.22,1,.36,1);display:flex;flex-direction:column}
-  #panel.open{transform:none}
-  #pclose{position:absolute;top:.6rem;right:.6rem;background:none;border:none;color:var(--smoke);
-          font-size:1.3rem;cursor:pointer;padding:.25rem .45rem;line-height:1}
-  #pclose:hover{color:var(--parch)}
-  #pin{overflow-y:auto;padding:1.5rem 1.4rem 2rem;flex:1}
-  #pin::-webkit-scrollbar{width:3px}
-  #pin::-webkit-scrollbar-thumb{background:var(--ash)}
-  .pb{font-family:'Courier Prime',monospace;font-size:.58rem;letter-spacing:.2em;text-transform:uppercase;
-      padding:.2rem .7rem;border:1px solid;display:inline-block;margin-bottom:.7rem}
-  .pt{font-family:'Playfair Display',serif;font-size:1.35rem;line-height:1.2;margin-bottom:.3rem}
-  .pl{font-family:'Courier Prime',monospace;font-size:.66rem;color:var(--smoke);margin-bottom:.4rem}
-  .papprox{font-family:'Courier Prime',monospace;font-size:.58rem;color:var(--gold);
-           border:1px solid rgba(208,160,64,.3);padding:.18rem .5rem;display:inline-block;margin-bottom:1rem}
-  .pd{font-size:.97rem;color:var(--aged);line-height:1.85}
-  .pp{margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid rgba(18,15,12,.1)}
-  .pp b{display:block;font-family:'Courier Prime',monospace;font-size:.55rem;letter-spacing:.2em;
-        text-transform:uppercase;color:var(--ember);margin-bottom:.2rem;font-weight:400}
-  .pp span{font-size:.9rem;color:var(--smoke)}
-  .psame{margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid rgba(18,15,12,.1)}
-  .psame b{display:block;font-family:'Courier Prime',monospace;font-size:.55rem;letter-spacing:.2em;
-           text-transform:uppercase;color:var(--smoke);margin-bottom:.45rem;font-weight:400}
-  .psame button{display:block;width:100%;text-align:left;background:none;border:none;border-left:2px solid;
-                padding:.3rem .6rem;margin-bottom:.25rem;color:var(--aged);font-family:'Crimson Pro',serif;
-                font-size:.88rem;cursor:pointer}
-  .psame button:hover{background:rgba(255,255,255,.04);color:var(--parch)}
+    /* FLASH LOG */
+    #flash-log{
+      position:absolute;right:1.5rem;top:6rem;z-index:10;
+      display:flex;flex-direction:column;gap:0.3rem;
+      max-width:200px;pointer-events:none;
+    }
+    .log-entry{
+      font-family:'Courier Prime',monospace;font-size:0.6rem;
+      color:var(--parch);background:rgba(244,241,234,0.9);
+      border-left:2px solid var(--ember);padding:0.2rem 0.5rem;
+      animation:logIn 0.3s ease forwards, logOut 0.5s 3s ease forwards;
+      white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
+    }
+    @keyframes logIn{from{opacity:0;transform:translateX(10px)}to{opacity:1;transform:none}}
+    @keyframes logOut{to{opacity:0;height:0;padding:0;margin:0}}
 
-  .psrc{margin-top:1.1rem;padding-top:1.1rem;border-top:1px solid rgba(18,15,12,.1)}
-  .psrc b{display:block;font-family:'Courier Prime',monospace;font-size:.6rem;
-    letter-spacing:.2em;text-transform:uppercase;color:var(--ember);
-    margin-bottom:.45rem;font-weight:400}
-  .psrc a,.psrc span{display:block;font-size:.88rem;line-height:1.45;
-    margin-bottom:.4rem;color:var(--smoke);text-decoration:none;
-    border-left:2px solid rgba(18,15,12,.15);padding-left:.6rem}
-  .psrc a{color:var(--ember);text-decoration:underline;text-underline-offset:2px}
-  .psrc a:hover{color:var(--gold)}
-
-  /* ---------- TOOLTIP ---------- */
-  #tip{position:absolute;z-index:45;pointer-events:none;display:none;background:rgba(251,248,242,.97);
-       border:1px solid rgba(18,15,12,.2);padding:.42rem .7rem;max-width:230px}
-  #tip .n{font-family:'Playfair Display',serif;font-size:.9rem;line-height:1.25}
-  #tip .m{font-family:'Courier Prime',monospace;font-size:.6rem;color:var(--smoke);margin-top:.12rem}
-
-  @media(max-width:640px){
-    #panel{width:100%}
-    #top{padding:.7rem .8rem 2.2rem;gap:.7rem}
-    #bot{padding:2rem .8rem .7rem;gap:1rem}
-    .note{display:none}
-    #zoom{bottom:6.4rem;right:.7rem}
-    input[type=range]{width:110px}
-  }
-  @media(prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
-</style>
+    @media(max-width:600px){
+      #hud{padding:0.75rem 1rem 2.5rem}
+      #bottom{padding:2.5rem 1rem 0.75rem}
+      #flash-log{display:none}
+      #legend{display:none}
+    }
+  </style>
 </head>
 <body>
-<a href="#panel" class="skip">Skip to details panel</a>
+<a href="#controls" style="position:absolute;top:-100px;left:1rem;background:#ffd040;color:#000;padding:0.5rem 1rem;z-index:9999;text-decoration:none;border-radius:0 0 4px 4px;font-family:'Courier Prime',monospace;font-weight:700;font-size:0.8rem" onfocus="this.style.top='0'" onblur="this.style.top='-100px'">Skip to controls</a>
 
 <div id="stage">
-  <svg id="map" role="application" aria-label="World map of destroyed libraries. Use arrow keys to pan, plus and minus to zoom.">
-    <g id="gGrat"></g><g id="gLand"></g><g id="gMarks"></g>
+  <svg id="map-svg" viewBox="0 0 2000 1000" preserveAspectRatio="xMidYMid slice"
+       role="img" aria-label="Animated world map showing library destructions over time">
+    <defs>
+      <filter id="glow">
+        <feGaussianBlur stdDeviation="2.5" result="blur"/>
+        <feComposite in="SourceGraphic" in2="blur" operator="over"/>
+      </filter>
+      <radialGradient id="pulseGrad" cx="50%" cy="50%" r="50%">
+        <stop offset="0%" stop-color="#e05520" stop-opacity="0.4"/>
+        <stop offset="100%" stop-color="#e05520" stop-opacity="0"/>
+      </radialGradient>
+    </defs>
+    <!-- World map paths drawn with equirectangular projection, simplified -->
+    <g id="countries"></g>
+    <g id="dots-layer"></g>
+    <g id="anim-layer"></g>
   </svg>
 </div>
 
-<div id="top">
-  <div class="brand">
-    <p>Lost Libraries &mdash; Geographic Atlas</p>
+<div id="year-display" aria-hidden="true"><b id="yd-num">0</b><span id="yd-lbl">libraries destroyed</span></div>
+
+<div id="hud">
+  <div id="hud-title">
+    <p>Lost Libraries &mdash; Animated Timeline</p>
     <h1>The Lost <em>Libraries</em></h1>
   </div>
-  <div class="ctrls">
-    <div class="row" role="group" aria-label="Filter by cause of destruction" id="causeRow">
-      <span class="lbl">Cause</span>
+  <div style="flex:1">
+    <div id="controls" role="toolbar" aria-label="Playback controls">
+      <button class="ctrl-btn" id="btn-play" aria-label="Play animation" aria-pressed="false">&#9654;</button>
+      <button class="ctrl-btn" id="btn-reset" aria-label="Reset to beginning">&#9664;&#9664;</button>
+      <div class="speed-group" role="group" aria-label="Playback speed">
+        <span class="speed-label">Speed:</span>
+        <button class="ctrl-btn active" data-speed="1" aria-pressed="true">1×</button>
+        <button class="ctrl-btn" data-speed="3" aria-pressed="false">3×</button>
+        <button class="ctrl-btn" data-speed="8" aria-pressed="false">8×</button>
+        <button class="ctrl-btn" data-speed="20" aria-pressed="false">20×</button>
+      </div>
     </div>
-    <div class="row">
-      <span class="lbl">Era</span>
-      <input type="range" id="era" min="0" max="9" value="0" aria-label="Filter by historical era">
-      <span id="eraOut">All eras</span>
-    </div>
+  </div>
+  <div id="year-hud">
+    <div id="year-now" aria-live="polite" aria-atomic="true">1761 BC</div>
+    <div id="year-label">Current year</div>
   </div>
 </div>
 
-<div id="zoom">
-  <button class="zb" id="zin"  aria-label="Zoom in">+</button>
-  <button class="zb" id="zout" aria-label="Zoom out">&minus;</button>
-  <button class="zb sm" id="zres"  aria-label="Reset to default view">RESET</button>
-  <button class="zb sm" id="zworld" aria-label="Show whole world">WORLD</button>
+<div id="zoomctl" role="group" aria-label="Map zoom">
+  <button class="zbtn" id="z-in"    aria-label="Zoom in">+</button>
+  <button class="zbtn" id="z-out"   aria-label="Zoom out">&minus;</button>
+  <button class="zbtn sm" id="z-fit" aria-label="Fit to records">FIT</button>
+  <button class="zbtn sm" id="z-all" aria-label="Show whole world">WORLD</button>
 </div>
 
-<div id="bot">
-  <div class="stat"><div class="stat-n" id="sShown">108</div><div class="stat-l">Shown</div></div>
-  <div class="stat"><div class="stat-n" id="sSites">—</div><div class="stat-l">Map Sites</div></div>
-  <div class="stat"><div class="stat-n">108</div><div class="stat-l">Total Records</div></div>
-  <div class="note">
-    <b>A note on the pins</b>
-    <span>Pinch or double-tap to zoom. Dashed rings mark records covering a whole region, not one address.</span>
+<div id="flash-log" aria-live="polite" aria-label="Recently destroyed libraries"></div>
+<div id="tooltip" role="tooltip"><div class="tt-name" id="tt-name"></div><div class="tt-loc" id="tt-loc"></div></div>
+
+<div id="bottom">
+  <div id="progress-wrap">
+    <div id="progress-track" role="slider" aria-label="Timeline position" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" tabindex="0">
+      <div id="progress-fill"></div>
+      <div id="scrubber"></div>
+    </div>
+  </div>
+  <div id="stats-row">
+    <div class="sstat"><div class="sstat-n" id="cnt-total">0</div><div class="sstat-l">Libraries Destroyed</div></div>
+    <div class="sstat"><div class="sstat-n" id="cnt-century">0</div><div class="sstat-l">This Century</div></div>
+    <div class="sstat"><div class="sstat-n" id="cnt-year">—</div><div class="sstat-l">This Year</div></div>
+    <div id="legend">
+      <div class="leg-item"><div class="leg-dot" style="background:#a8401a"></div><div class="leg-lbl">War</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#5b4a9e"></div><div class="leg-lbl">Religion</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#7a5a1e"></div><div class="leg-lbl">State</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#9c5416"></div><div class="leg-lbl">Fire</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#a8401a"></div><div class="leg-lbl">Civil</div></div>
+      <div class="leg-item"><div class="leg-dot" style="background:#1e6b55"></div><div class="leg-lbl">Neglect</div></div>
+    </div>
   </div>
 </div>
-
-<div id="panel" role="complementary" aria-label="Library details" aria-hidden="true">
-  <button id="pclose" aria-label="Close details panel">&#x2715;</button>
-  <div id="pin"></div>
-</div>
-
-<div id="tip" role="tooltip"></div>
 
 <script src="data.js"></script>
 <script>
+'use strict';
+
+/* data.js supplies CAUSES; this page was written against a flat
+   colour map, so derive one rather than rewrite every reference. */
+var CAUSE_COLORS = {};
+Object.keys(CAUSES).forEach(function(k){ CAUSE_COLORS[k] = CAUSES[k].color; });
+
+
+// Sort by year
+LIBRARIES.sort(function(a,b){return a.year - b.year;});
+
+var MIN_YEAR = -1761;
+var MAX_YEAR = 2026;
+var TOTAL_SPAN = MAX_YEAR - MIN_YEAR;
+
+// Equirectangular projection
+var SVG_W = 2000, SVG_H = 1000;
+/* Markers are drawn in SVG units, so a fixed radius shrinks as you zoom out.
+   Scale it with the viewBox instead: constant size on screen at any zoom. */
+var DOT_K = 0.018;
+function viewW(){
+  var svg=document.getElementById('map-svg');
+  var vb=(svg&&svg.getAttribute('viewBox')||'0 0 2000 1000').split(' ').map(Number);
+  return vb[2]||2000;
+}
+function dotR(){ return viewW()*DOT_K; }
+function rescaleDots(){
+  var r=dotR(), kids=dotsLayer?dotsLayer.children:null;
+  if(!kids) return;
+  for(var i=0;i<kids.length;i++){
+    kids[i].setAttribute('r', r);
+    kids[i].setAttribute('stroke-width', r*0.28);
+  }
+}
+
+/* The old view letterboxed the whole 2:1 world into a tall phone, leaving
+   the map at a quarter of the screen height. Fit to where the data actually
+   is, and on tall screens fill vertically instead of fitting horizontally. */
+function fitView(){
+  var svg = document.getElementById('map-svg');
+  var r = svg.getBoundingClientRect();
+  if (!r.width || !r.height) return;
+  var aspect = r.width / r.height;
+
+  var xs = LIBRARIES.map(function(d){ return project(d.lat,d.lon).x; });
+  var ys = LIBRARIES.map(function(d){ return project(d.lat,d.lon).y; });
+  var x0 = Math.min.apply(null,xs), x1 = Math.max.apply(null,xs);
+  var y0 = Math.min.apply(null,ys), y1 = Math.max.apply(null,ys);
+  var padX = (x1-x0)*0.06, padY = (y1-y0)*0.18;
+  x0-=padX; x1+=padX; y0-=padY; y1+=padY;
+
+  var bw = x1-x0, bh = y1-y0, w, hgt;
+  /* Fit the whole data range at every aspect. Dots hold their screen size,
+     so zooming out costs nothing in legibility. */
+  w = bw; hgt = bw/aspect;
+  if (hgt < bh){ hgt = bh; w = bh*aspect; }
+  var cx = (x0+x1)/2, cy = (y0+y1)/2;
+  svg.setAttribute('viewBox', (cx-w/2)+' '+(cy-hgt/2)+' '+w+' '+hgt);
+  rescaleDots();
+}
+window.addEventListener('resize', fitView);
+
+/* Zoom: scale the viewBox about its own centre. */
+function zoomBy(f){
+  var svg=document.getElementById('map-svg');
+  var vb=(svg.getAttribute('viewBox')||'0 0 2000 1000').split(' ').map(Number);
+  var cx=vb[0]+vb[2]/2, cy=vb[1]+vb[3]/2;
+  var w=vb[2]/f, h=vb[3]/f;
+  if (w < 120 || w > 5200) return;          /* sane limits */
+  svg.setAttribute('viewBox',(cx-w/2)+' '+(cy-h/2)+' '+w+' '+h);
+  rescaleDots();
+}
+function fitWorld(){
+  var svg=document.getElementById('map-svg');
+  var r=svg.getBoundingClientRect();
+  var aspect=(r.width&&r.height)?r.width/r.height:2;
+  var w=SVG_W, h=SVG_W/aspect;
+  if (h < SVG_H){ h=SVG_H; w=SVG_H*aspect; }
+  svg.setAttribute('viewBox',((SVG_W-w)/2)+' '+((SVG_H-h)/2)+' '+w+' '+h);
+  rescaleDots();
+}
+function project(lat, lon) {
+  var x = (lon + 180) / 360 * SVG_W;
+  var y = (90 - lat) / 180 * SVG_H;
+  return { x: x, y: y };
+}
+
+// Draw simplified world map using Natural Earth-style paths
+var svgNS = 'http://www.w3.org/2000/svg';
+var countriesG = document.getElementById('countries');
+
+// Simple graticule
+function drawGraticule() {
+  for (var lon = -180; lon <= 180; lon += 30) {
+    var el = document.createElementNS(svgNS, 'line');
+    var x = (lon + 180) / 360 * SVG_W;
+    el.setAttribute('x1', x); el.setAttribute('y1', 0);
+    el.setAttribute('x2', x); el.setAttribute('y2', SVG_H);
+    el.setAttribute('class', 'graticule');
+    countriesG.appendChild(el);
+  }
+  for (var lat = -90; lat <= 90; lat += 30) {
+    var el2 = document.createElementNS(svgNS, 'line');
+    var y = (90 - lat) / 180 * SVG_H;
+    el2.setAttribute('x1', 0); el2.setAttribute('y1', y);
+    el2.setAttribute('x2', SVG_W); el2.setAttribute('y2', y);
+    el2.setAttribute('class', 'graticule');
+    countriesG.appendChild(el2);
+  }
+}
+drawGraticule();
+
+// Continent blobs (simplified polygons — rough shapes for atmosphere)
 var COASTLINES = [
   "M905.6 417.8L908.3 431.7L916.7 444.4L926.7 450.0L936.1 458.3L950.0 462.2L958.3 475.6L977.8 471.1L994.4 472.2L1008.3 466.7L1018.9 464.4L1033.3 476.1L1047.2 476.1L1052.8 483.3L1054.4 494.4L1051.7 505.6L1065.6 516.7L1072.2 532.8L1066.7 541.7L1076.7 561.1L1073.3 572.2L1065.6 588.3L1072.2 600.0L1080.6 625.0L1086.1 647.2L1097.2 661.1L1102.8 677.8L1111.1 691.7L1127.8 688.9L1144.4 687.8L1158.3 679.4L1172.2 663.9L1180.6 644.4L1183.3 622.2L1197.2 608.3L1202.8 594.4L1222.2 586.1L1225.0 569.4L1219.4 555.6L1218.3 538.9L1222.2 525.0L1230.6 511.1L1238.9 497.2L1252.8 486.1L1269.4 472.2L1285.0 441.7L1277.8 434.4L1261.1 436.1L1244.4 441.7L1238.9 430.6L1222.2 416.7L1216.7 405.6L1205.6 383.3L1197.2 366.7L1188.9 344.4L1183.3 326.7L1166.7 325.0L1150.0 327.8L1133.3 321.1L1116.7 317.8L1100.0 328.9L1086.1 321.1L1072.2 316.7L1061.1 312.2L1055.6 295.6L1044.4 294.4L1027.8 296.7L1011.1 297.2L994.4 301.1L977.8 304.4L967.2 301.1L958.3 313.9L947.2 327.8L938.9 341.7L927.8 361.1L916.7 380.6L908.3 400.0L905.6 417.8Z",
   "M947.2 284.4L950.0 271.1L951.1 258.3L966.7 257.8L988.9 258.3L991.7 243.3L975.0 230.6L994.4 225.0L1013.9 216.7L1023.9 211.1L1036.1 202.8L1047.2 200.0L1045.6 186.1L1058.3 178.9L1069.4 188.9L1083.3 188.9L1100.0 180.6L1116.7 177.8L1133.3 169.4L1125.0 163.9L1119.4 150.0L1133.3 134.4L1116.7 116.7L1138.9 105.6L1166.7 108.3L1194.4 113.9L1222.2 122.2L1244.4 119.4L1277.8 116.7L1305.6 113.9L1333.3 108.3L1361.1 102.8L1388.9 95.6L1416.7 97.2L1444.4 91.7L1472.2 91.7L1500.0 80.6L1527.8 77.8L1555.6 75.0L1583.3 72.2L1611.1 75.0L1638.9 86.1L1666.7 91.7L1694.4 94.4L1722.2 100.0L1750.0 97.2L1777.8 97.2L1805.6 100.0L1833.3 102.8L1861.1 105.6L1888.9 111.1L1916.7 113.9L1944.4 112.2L1972.2 116.7L1997.2 130.6L1983.3 141.7L1955.6 152.8L1927.8 163.9L1905.6 177.8L1900.0 194.4L1877.8 208.3L1866.7 216.7L1850.0 227.8L1833.3 244.4L1811.1 258.3L1783.3 263.9L1777.8 247.2L1761.1 244.4L1738.9 261.1L1727.8 277.8L1719.4 291.7L1705.6 305.6L1700.0 291.7L1688.9 278.9L1677.8 275.0L1672.2 288.9L1663.9 305.6L1675.0 322.2L1672.2 338.9L1658.3 358.3L1638.9 375.0L1613.9 383.3L1602.8 397.2L1605.6 416.7L1591.7 441.7L1577.8 444.4L1558.3 425.0L1547.2 408.3L1538.9 388.9L1522.2 380.6L1505.6 377.8L1488.9 378.9L1472.2 391.7L1450.0 411.1L1446.1 427.8L1430.6 452.8L1416.7 433.3L1405.6 411.1L1402.8 383.3L1386.1 375.0L1372.2 363.9L1355.6 360.0L1341.7 361.1L1322.2 377.8L1313.9 361.1L1319.4 350.0L1300.0 350.0L1280.6 341.7L1269.4 333.3L1266.7 330.6L1277.8 350.0L1288.9 369.4L1305.6 377.8L1325.0 388.9L1319.4 405.6L1300.0 405.6L1277.8 416.7L1250.0 427.8L1241.7 428.9L1236.1 413.9L1222.2 388.9L1211.1 366.7L1200.0 344.4L1191.7 344.4L1193.3 325.0L1200.0 300.0L1183.3 304.4L1166.7 325.0L1180.6 327.8L1188.9 298.3L1202.8 298.9L1177.8 298.3L1166.7 295.0L1151.1 296.1L1147.2 286.1L1161.1 272.2L1177.8 267.8L1200.0 269.4L1222.2 261.1L1208.3 251.1L1188.9 248.3L1175.0 241.7L1163.9 248.3L1158.3 255.6L1152.8 263.9L1138.9 273.3L1131.7 288.9L1125.0 294.4L1116.7 284.4L1108.3 275.0L1102.8 263.9L1086.1 255.6L1075.0 246.1L1068.3 247.8L1069.4 255.6L1077.8 266.7L1088.9 267.8L1095.6 275.0L1088.9 288.9L1086.7 287.2L1077.8 273.3L1066.7 269.4L1056.7 256.7L1048.9 253.3L1041.7 256.7L1022.2 258.3L1016.7 264.4L1002.8 275.0L998.3 280.6L997.2 287.2L986.1 295.6L969.4 300.0L961.1 294.4L950.6 294.4L947.2 284.4Z",
@@ -230,472 +461,306 @@ var COASTLINES = [
   "M586.1 397.8L602.8 389.4L620.0 394.4L617.8 398.9L602.2 398.9L586.1 397.8Z"
 ];
 
-/* ============ CONFIG ============ */
-
-var ERAS = [
-  {l:"All eras",              a:-3000, b:3000},
-  {l:"Ancient (to 500 AD)",   a:-3000, b:500},
-  {l:"Early Med. (500–1000)", a:500,   b:1000},
-  {l:"High Med. (1000–1400)", a:1000,  b:1400},
-  {l:"Early Mod. (1400–1700)",a:1400,  b:1700},
-  {l:"Enlighten. (1700–1850)",a:1700,  b:1850},
-  {l:"Industrial (1850–1914)",a:1850,  b:1914},
-  {l:"World Wars (1914–1950)",a:1914,  b:1950},
-  {l:"Cold War (1950–2000)",  a:1950,  b:2000},
-  {l:"21st century (2000+)",  a:2000,  b:3000}
-];
-
-/* Records that describe a whole country/region rather than one building.
-   These get a dashed ring so the pin is not read as a precise address. */
-
-/* ============ PROJECTION ============ */
-/* Equirectangular. World space is 0..2000 x 0..1000. */
-var W = 2000, H = 1000;
-function px(lon){ return (lon + 180) / 360 * W; }
-function py(lat){ return (90 - lat) / 180 * H; }
-
-/* ============ VIEW (pan / zoom via viewBox) ============ */
-var view = {x:0, y:0, w:W, h:H};
-var svg  = document.getElementById("map");
-var stage= document.getElementById("stage");
-
-function applyView(){
-  svg.setAttribute("viewBox", view.x+" "+view.y+" "+view.w+" "+view.h);
-}
-function dataBounds(){
-  var x0=1e9,y0=1e9,x1=-1e9,y1=-1e9;
-  LIBRARIES.forEach(function(d){
-    if(d._x<x0)x0=d._x; if(d._x>x1)x1=d._x;
-    if(d._y<y0)y0=d._y; if(d._y>y1)y1=d._y;
-  });
-  var padX=(x1-x0)*0.07, padY=(y1-y0)*0.14;
-  return {x0:x0-padX, y0:y0-padY, x1:x1+padX, y1:y1+padY};
-}
-function fitBox(b){
-  var r = stage.getBoundingClientRect();
-  var aspect = r.width / r.height;
-  var bw = b.x1-b.x0, bh = b.y1-b.y0;
-  var w = bw, h = bw/aspect;
-  if (h < bh){ h = bh; w = bh*aspect; }
-  view.w = w; view.h = h;
-  view.x = (b.x0+b.x1)/2 - w/2;
-  view.y = (b.y0+b.y1)/2 - h/2;
-  applyView();
-}
-function dataCentre(){
-  var xs = LIBRARIES.map(function(d){return d._x;}).sort(function(a,b){return a-b;});
-  var ys = LIBRARIES.map(function(d){return d._y;}).sort(function(a,b){return a-b;});
-  var m = Math.floor(xs.length/2);
-  return {x:xs[m], y:ys[m]};   /* median — sits in the dense Europe/Levant band */
-}
-function fitInitial(){
-  var r = stage.getBoundingClientRect();
-  var aspect = r.width / r.height;
-  var b = dataBounds();
-  if (aspect < 0.85){
-    /* Tall screen: filling the box would leave the map a thin strip.
-       Fill vertically around the densest cluster instead; pan for the rest. */
-    var h = (b.y1 - b.y0) * 1.45;
-    var w = h * aspect;
-    var c = dataCentre();
-    view.w = w; view.h = h;
-    view.x = c.x - w/2;
-    view.y = c.y - h/2;
-    applyView();
-  } else {
-    fitBox(b);
-  }
-}
-
-function fitWorld(){ fitBox({x0:0,y0:0,x1:W,y1:H}); }
-
-function zoomBy(f, cx, cy){
-  if (cx === undefined) { cx = view.x + view.w/2; cy = view.y + view.h/2; }
-  var nw = view.w / f, nh = view.h / f;
-  var minW = W/60, maxW = W*2.2;
-  if (nw < minW || nw > maxW) return;
-  view.x = cx - (cx - view.x) * (nw / view.w);
-  view.y = cy - (cy - view.y) * (nh / view.h);
-  view.w = nw; view.h = nh;
-  applyView();
-}
-function clientToWorld(clientX, clientY){
-  var r = stage.getBoundingClientRect();
-  return {
-    x: view.x + (clientX - r.left) / r.width  * view.w,
-    y: view.y + (clientY - r.top)  / r.height * view.h
-  };
-}
-
-/* ---- pointer handling: 1 finger pans, 2 fingers pinch-zoom ---- */
-var pointers = {};        /* active pointers by id */
-var panStart = null;      /* single-finger pan anchor */
-var pinch = null;         /* two-finger gesture state */
-var lastTap = 0;
-
-function ptList(){
-  var a = []; for (var k in pointers) a.push(pointers[k]); return a;
-}
-function dist(a,b){
-  var dx=a.x-b.x, dy=a.y-b.y; return Math.sqrt(dx*dx+dy*dy);
-}
-function mid(a,b){ return {x:(a.x+b.x)/2, y:(a.y+b.y)/2}; }
-
-stage.addEventListener("pointerdown", function(e){
-  if (e.target.closest(".mk")) return;
-  pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
-  try { stage.setPointerCapture(e.pointerId); } catch(err){}
-
-  var p = ptList();
-  if (p.length === 1){
-    panStart = {sx:e.clientX, sy:e.clientY, vx:view.x, vy:view.y};
-    pinch = null;
-    /* double-tap to zoom in */
-    var now = Date.now();
-    if (now - lastTap < 300){
-      var w = clientToWorld(e.clientX, e.clientY);
-      zoomBy(1.8, w.x, w.y);
-      lastTap = 0;
-    } else lastTap = now;
-  } else if (p.length === 2){
-    panStart = null;
-    var m = mid(p[0], p[1]);
-    pinch = {
-      d: dist(p[0], p[1]),
-      world: clientToWorld(m.x, m.y),
-      w: view.w, h: view.h
-    };
-  }
-  stage.classList.add("dragging");
+COASTLINES.forEach(function(d) {
+  var path = document.createElementNS(svgNS, 'path');
+  path.setAttribute('d', d);
+  path.setAttribute('class', 'land');
+  countriesG.appendChild(path);
 });
 
-stage.addEventListener("pointermove", function(e){
-  if (!(e.pointerId in pointers)) return;
-  pointers[e.pointerId] = {x:e.clientX, y:e.clientY};
-  var p = ptList();
-  var r = stage.getBoundingClientRect();
+// ANIMATION STATE
+var currentYear = MIN_YEAR;
+var isPlaying = false;
+var speed = 1; // years per frame at 60fps => adjust
+var animFrame = null;
+var lastTimestamp = null;
+var yearsPerSecond = 50; // base speed
+var placedIds = {};
 
-  if (p.length >= 2 && pinch){
-    var nd = dist(p[0], p[1]);
-    if (nd < 8) return;
-    var scale = nd / pinch.d;
-    var nw = pinch.w / scale, nh = pinch.h / scale;
-    var minW = W/60, maxW = W*2.2;
-    if (nw < minW){ nw = minW; nh = minW * (pinch.h/pinch.w); }
-    if (nw > maxW){ nw = maxW; nh = maxW * (pinch.h/pinch.w); }
-    var m = mid(p[0], p[1]);
-    var fx = (m.x - r.left) / r.width, fy = (m.y - r.top) / r.height;
-    view.w = nw; view.h = nh;
-    view.x = pinch.world.x - fx * nw;
-    view.y = pinch.world.y - fy * nh;
-    applyView();
-    e.preventDefault();
-  } else if (p.length === 1 && panStart){
-    view.x = panStart.vx - (e.clientX - panStart.sx) / r.width  * view.w;
-    view.y = panStart.vy - (e.clientY - panStart.sy) / r.height * view.h;
-    applyView();
-  }
-}, {passive:false});
+var dotsLayer = document.getElementById('dots-layer');
+var animLayer = document.getElementById('anim-layer');
+var yearDisplay = document.getElementById('year-display');
+var yearNow = document.getElementById('year-now');
+var cntTotal = document.getElementById('cnt-total');
+var cntCentury = document.getElementById('cnt-century');
+var cntYear = document.getElementById('cnt-year');
+var progressFill = document.getElementById('progress-fill');
+var scrubberEl = document.getElementById('scrubber');
+var flashLog = document.getElementById('flash-log');
 
-function dropPointer(e){
-  delete pointers[e.pointerId];
-  var p = ptList();
-  if (p.length < 2) pinch = null;
-  if (p.length === 1){
-    panStart = {sx:p[0].x, sy:p[0].y, vx:view.x, vy:view.y};
-  }
-  if (p.length === 0){
-    panStart = null;
-    stage.classList.remove("dragging");
-  }
-}
-stage.addEventListener("pointerup", dropPointer);
-stage.addEventListener("pointercancel", dropPointer);
-stage.addEventListener("pointerleave", function(e){
-  if (e.pointerType === "mouse") dropPointer(e);
-});
-
-stage.addEventListener("wheel", function(e){
-  e.preventDefault();
-  var w = clientToWorld(e.clientX, e.clientY);
-  zoomBy(e.deltaY < 0 ? 1.18 : 1/1.18, w.x, w.y);
-}, {passive:false});
-
-/* block the browser's own pinch/double-tap so ours is the only zoom */
-stage.addEventListener("gesturestart",  function(e){ e.preventDefault(); });
-stage.addEventListener("gesturechange", function(e){ e.preventDefault(); });
-stage.addEventListener("dblclick",      function(e){ e.preventDefault(); });
-
-document.getElementById("zin").onclick  = function(){ zoomBy(1.6); };
-document.getElementById("zout").onclick = function(){ zoomBy(1/1.6); };
-document.getElementById("zres").onclick = function(){ fitInitial(); };
-document.getElementById("zworld").onclick = function(){ fitWorld(); };
-
-svg.setAttribute("tabindex","0");
-svg.addEventListener("keydown", function(e){
-  var step = view.w * 0.08;
-  if (e.key === "ArrowLeft"){  view.x -= step; applyView(); e.preventDefault(); }
-  if (e.key === "ArrowRight"){ view.x += step; applyView(); e.preventDefault(); }
-  if (e.key === "ArrowUp"){    view.y -= step; applyView(); e.preventDefault(); }
-  if (e.key === "ArrowDown"){  view.y += step; applyView(); e.preventDefault(); }
-  if (e.key === "+" || e.key === "="){ zoomBy(1.3); e.preventDefault(); }
-  if (e.key === "-"){ zoomBy(1/1.3); e.preventDefault(); }
-});
-window.addEventListener("resize", fitInitial);
-
-/* ============ DRAW LAND ============ */
-var NS = "http://www.w3.org/2000/svg";
-
-function drawLand(){
-  var g = document.getElementById("gLand"), frag = document.createDocumentFragment();
-  COASTLINES.forEach(function(d){
-    var p = document.createElementNS(NS, "path");
-    p.setAttribute("d", d);
-    p.setAttribute("class", "country");
-    frag.appendChild(p);
-  });
-  g.appendChild(frag);
+function yearToStr(y) {
+  return y < 0 ? (Math.abs(y) + ' BC') : (y + ' AD');
 }
 
-function drawGraticule(){
-  var g = document.getElementById("gGrat"), frag = document.createDocumentFragment();
-  for (var lon = -180; lon <= 180; lon += 30){
-    var l = document.createElementNS(NS,"line");
-    l.setAttribute("x1",px(lon)); l.setAttribute("y1",0);
-    l.setAttribute("x2",px(lon)); l.setAttribute("y2",H);
-    l.setAttribute("class","grat"); frag.appendChild(l);
-  }
-  for (var lat = -60; lat <= 80; lat += 30){
-    var l2 = document.createElementNS(NS,"line");
-    l2.setAttribute("x1",0); l2.setAttribute("y1",py(lat));
-    l2.setAttribute("x2",W); l2.setAttribute("y2",py(lat));
-    l2.setAttribute("class","grat"); frag.appendChild(l2);
-  }
-  g.appendChild(frag);
+function getPct(y) {
+  return (y - MIN_YEAR) / TOTAL_SPAN * 100;
 }
 
-/* ============ SITES (de-overlap co-located records) ============ */
-/* Several records share one city (Warsaw x4, Sarajevo x3, Mosul x3...).
-   Group them, then fan the members out so every record stays clickable. */
-var SITES = [];
-function buildSites(){
-  var byKey = {};
-  LIBRARIES.forEach(function(d){
-    var k = d.lat.toFixed(1) + "," + d.lon.toFixed(1);
-    (byKey[k] = byKey[k] || []).push(d);
-  });
-  Object.keys(byKey).forEach(function(k){
-    var members = byKey[k].sort(function(a,b){ return a.year - b.year; });
-    var bx = px(members[0].lon), by = py(members[0].lat);
-    if (members.length === 1){
-      members[0]._x = bx; members[0]._y = by;
-    } else {
-      var R = 5.2 + members.length * 0.9;
-      members.forEach(function(d,i){
-        var a = (i / members.length) * Math.PI * 2 - Math.PI/2;
-        d._x = bx + Math.cos(a) * R;
-        d._y = by + Math.sin(a) * R;
-      });
+function placeLib(lib) {
+  if (placedIds[lib.id]) return;
+  placedIds[lib.id] = true;
+  var p = project(lib.lat, lib.lon);
+  var color = CAUSE_COLORS[lib.cause] || '#888';
+
+  // Persistent dot
+  var dot = document.createElementNS(svgNS, 'circle');
+  dot.setAttribute('cx', p.x); dot.setAttribute('cy', p.y);
+  var _r = dotR();
+  dot.setAttribute('r', _r); dot.setAttribute('fill', color);
+  dot.setAttribute('stroke', 'rgba(255,255,255,.45)');
+  dot.setAttribute('stroke-width', _r*0.28);
+  dot.setAttribute('fill-opacity', '0.95');
+  dot.setAttribute('class', 'lib-dot');
+  dot.setAttribute('tabindex', '0');
+  dot.setAttribute('role', 'img');
+  dot.setAttribute('aria-label', lib.name + ' — ' + yearToStr(lib.year));
+  dotsLayer.appendChild(dot);
+
+  // Burst ring animation
+  var ring = document.createElementNS(svgNS, 'circle');
+  ring.setAttribute('cx', p.x); ring.setAttribute('cy', p.y);
+  ring.setAttribute('r', '0'); ring.setAttribute('fill', 'none');
+  ring.setAttribute('stroke', color); ring.setAttribute('class', 'lib-ring');
+  animLayer.appendChild(ring);
+
+  // Flash fill
+  var flash = document.createElementNS(svgNS, 'circle');
+  flash.setAttribute('cx', p.x); flash.setAttribute('cy', p.y);
+  flash.setAttribute('r', '0'); flash.setAttribute('fill', color);
+  flash.setAttribute('class', 'lib-flash');
+  animLayer.appendChild(flash);
+
+  /* Name the library on the map as it ignites. Font is sized from the
+     current viewBox so it stays readable at any zoom level. */
+  var label = null;
+  if (speed <= 8 && animLayer.childNodes.length < 14) {
+    var vb = (document.getElementById('map-svg').getAttribute('viewBox')||'0 0 2000 1000').split(' ').map(Number);
+    var fs = Math.max(9, vb[2] * 0.032);
+    label = document.createElementNS(svgNS, 'text');
+    label.setAttribute('x', p.x + _r * 1.9);
+    label.setAttribute('y', p.y + fs * 0.34);
+    label.setAttribute('class', 'lib-label');
+    label.setAttribute('font-size', fs);
+    label.setAttribute('stroke-width', fs * 0.18);
+    if (p.x > vb[0] + vb[2] * 0.62) {           /* flip near the right edge */
+      label.setAttribute('x', p.x - _r * 1.9);
+      label.setAttribute('text-anchor', 'end');
     }
-    members.forEach(function(d){ d._site = members; });
-    SITES.push(members);
-  });
-}
-
-/* ============ MARKERS ============ */
-var markEls = {};
-function radiusFor(year){
-  if (year < 0)    return 3.0;
-  if (year < 1000) return 3.3;
-  if (year < 1700) return 3.7;
-  if (year < 1900) return 4.1;
-  return 4.6;
-}
-function drawMarkers(){
-  var g = document.getElementById("gMarks"), frag = document.createDocumentFragment();
-  LIBRARIES.forEach(function(d){
-    var c = CAUSES[d.cause] || {color:"#999", label:"Unknown"};
-    var r = radiusFor(d.year);
-    var el = document.createElementNS(NS,"g");
-    el.setAttribute("class","mk" + (APPROX[d.id] ? " approx" : ""));
-    el.setAttribute("tabindex","0");
-    el.setAttribute("role","button");
-    el.setAttribute("aria-label", d.name + ", " + d.loc + ", " + yr(d.year) + ", " + c.label);
-
-    var halo = document.createElementNS(NS,"circle");
-    halo.setAttribute("class","mk-halo");
-    halo.setAttribute("cx",d._x); halo.setAttribute("cy",d._y);
-    halo.setAttribute("r", r*2.9);
-    halo.setAttribute("stroke", c.color);
-    halo.setAttribute("stroke-width","1.4");
-    el.appendChild(halo);
-
-    var core = document.createElementNS(NS,"circle");
-    core.setAttribute("class","mk-core");
-    core.setAttribute("cx",d._x); core.setAttribute("cy",d._y);
-    core.setAttribute("r", r);
-    core.setAttribute("fill", c.color);
-    core.setAttribute("fill-opacity", APPROX[d.id] ? ".35" : ".9");
-    el.appendChild(core);
-
-    el.addEventListener("click", function(ev){ ev.stopPropagation(); select(d); });
-    el.addEventListener("keydown", function(ev){
-      if (ev.key === "Enter" || ev.key === " "){ ev.preventDefault(); select(d); }
-    });
-    el.addEventListener("pointerenter", function(ev){ showTip(d, ev); });
-    el.addEventListener("pointerleave", hideTip);
-
-    markEls[d.id] = el;
-    frag.appendChild(el);
-  });
-  g.appendChild(frag);
-}
-
-/* ============ TOOLTIP ============ */
-var tip = document.getElementById("tip");
-function showTip(d, ev){
-  tip.innerHTML = '<div class="n">' + esc(d.name) + '</div><div class="m">' +
-                  esc(d.loc) + ' &middot; ' + yr(d.year) + '</div>';
-  tip.style.display = "block";
-  var r = stage.getBoundingClientRect();
-  var x = ev.clientX - r.left + 14, y = ev.clientY - r.top - 10;
-  if (x + 240 > r.width) x = ev.clientX - r.left - 240;
-  tip.style.left = x + "px"; tip.style.top = y + "px";
-}
-function hideTip(){ tip.style.display = "none"; }
-
-/* ============ PANEL ============ */
-var panel = document.getElementById("panel");
-var pin   = document.getElementById("pin");
-var selected = null;
-
-function yr(y){ return y < 0 ? Math.abs(y) + " BC" : y + " AD"; }
-function esc(s){ return String(s).replace(/[&<>"]/g, function(m){
-  return {"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[m]; }); }
-
-function select(d){
-  if (selected && markEls[selected.id]) markEls[selected.id].classList.remove("sel");
-  selected = d;
-  var el = markEls[d.id];
-  if (el){ el.classList.add("sel"); el.parentNode.appendChild(el); }
-
-  var c = CAUSES[d.cause] || {color:"#999",label:"Unknown"};
-  var html =
-    '<div class="pb" style="color:'+c.color+';border-color:'+c.color+'">'+c.label+'</div>' +
-    '<div class="pt">'+esc(d.name)+'</div>' +
-    '<div class="pl">'+esc(d.loc)+' &middot; '+yr(d.year)+'</div>';
-  if (APPROX[d.id]) html += '<div class="papprox">Region-wide record &mdash; pin is indicative</div>';
-  html += '<div class="pd">'+esc(d.desc)+'</div>' +
-          '<div class="pp"><b>Perpetrator</b><span>'+esc(d.perp)+'</span></div>';
-
-  var srcs = (typeof sourcesFor === 'function') ? sourcesFor(d) : [];
-  if (srcs.length){
-    html += '<div class="psrc"><b>Sources</b>';
-    srcs.forEach(function(s){
-      html += s.url
-        ? '<a href="'+s.url+'" target="_blank" rel="noopener">'+esc(s.label)+'</a>'
-        : '<span>'+esc(s.label)+'</span>';
-    });
-    html += '</div>';
+    label.textContent = lib.name;
+    animLayer.appendChild(label);
   }
 
-  if (d._site && d._site.length > 1){
-    html += '<div class="psame"><b>'+(d._site.length-1)+' more at this location</b>';
-    d._site.forEach(function(o){
-      if (o.id === d.id) return;
-      var oc = CAUSES[o.cause] || {color:"#999"};
-      html += '<button data-go="'+o.id+'" style="border-color:'+oc.color+'">'+
-              esc(o.name)+' &middot; '+yr(o.year)+'</button>';
-    });
-    html += '</div>';
-  }
-  pin.innerHTML = html;
-  pin.querySelectorAll("[data-go]").forEach(function(b){
-    b.onclick = function(){
-      var id = +b.getAttribute("data-go");
-      var t = LIBRARIES.filter(function(x){ return x.id === id; })[0];
-      if (t) select(t);
-    };
-  });
+  setTimeout(function() {
+    if (ring.parentNode) ring.parentNode.removeChild(ring);
+    if (flash.parentNode) flash.parentNode.removeChild(flash);
+    if (label && label.parentNode) label.parentNode.removeChild(label);
+  }, 2700);
 
-  panel.classList.add("open");
-  panel.setAttribute("aria-hidden","false");
-
-  /* centre on the pin, and zoom in if we are still far out */
-  if (view.w > W/5){
-    var f = (W/5) / view.w;
-    view.w *= f; view.h *= f;
+  // Flash log
+  if (speed <= 3) {
+    var entry = document.createElement('div');
+    entry.className = 'log-entry';
+    entry.style.borderColor = color;
+    entry.textContent = yearToStr(lib.year) + ' — ' + lib.name;
+    flashLog.insertBefore(entry, flashLog.firstChild);
+    if (flashLog.children.length > 4) flashLog.removeChild(flashLog.lastChild);
+    setTimeout(function(){ if(entry.parentNode) entry.parentNode.removeChild(entry); }, 4000);
   }
-  view.x = d._x - view.w/2;
-  view.y = d._y - view.h/2;
-  applyView();
 }
-document.getElementById("pclose").onclick = function(){
-  panel.classList.remove("open");
-  panel.setAttribute("aria-hidden","true");
-  if (selected && markEls[selected.id]) markEls[selected.id].classList.remove("sel");
-  selected = null;
-};
-document.addEventListener("keydown", function(e){
-  if (e.key === "Escape") document.getElementById("pclose").click();
+
+function updateStats() {
+  var total = 0, inCentury = 0, inYear = 0;
+  var currentCentury = Math.floor(currentYear / 100) * 100;
+  LIBRARIES.forEach(function(lib) {
+    if (lib.year <= currentYear) {
+      total++;
+      if (lib.year >= currentCentury && lib.year < currentCentury + 100) inCentury++;
+      if (lib.year === Math.round(currentYear)) inYear++;
+    }
+  });
+  cntTotal.textContent = total;
+  var ydn = document.getElementById('yd-num');
+  if (ydn) ydn.textContent = total;
+  cntCentury.textContent = inCentury;
+  cntYear.textContent = inYear > 0 ? inYear : '—';
+}
+
+function updateHUD() {
+  var ys = yearToStr(Math.round(currentYear));
+  yearNow.textContent = ys;   /* the year lives in the HUD, not the centre */
+  var pct = getPct(currentYear);
+  progressFill.style.width = pct + '%';
+  scrubberEl.style.left = pct + '%';
+  document.getElementById('progress-track').setAttribute('aria-valuenow', Math.round(pct));
+  // Glow intensity based on recency
+  var intensity = Math.min(0.46, 0.26 + (currentYear > 1900 ? 0.22 : 0));
+  yearDisplay.style.color = 'rgba(224,85,32,' + intensity + ')';
+}
+
+function stepTo(targetYear) {
+  LIBRARIES.forEach(function(lib) {
+    if (lib.year <= targetYear && !placedIds[lib.id]) {
+      placeLib(lib);
+    }
+  });
+  currentYear = targetYear;
+  updateHUD();
+  updateStats();
+}
+
+function animate(timestamp) {
+  if (!lastTimestamp) lastTimestamp = timestamp;
+  var delta = (timestamp - lastTimestamp) / 1000; // seconds
+  lastTimestamp = timestamp;
+  var advance = yearsPerSecond * speed * delta;
+  var nextYear = currentYear + advance;
+  if (nextYear >= MAX_YEAR) {
+    nextYear = MAX_YEAR;
+    stepTo(nextYear);
+    stopPlayback();
+    return;
+  }
+  stepTo(nextYear);
+  animFrame = requestAnimationFrame(animate);
+}
+
+function startPlayback() {
+  if (currentYear >= MAX_YEAR) resetAll();
+  isPlaying = true;
+  lastTimestamp = null;
+  document.getElementById('btn-play').textContent = '⏸';
+  document.getElementById('btn-play').setAttribute('aria-pressed', 'true');
+  document.getElementById('btn-play').setAttribute('aria-label', 'Pause animation');
+  animFrame = requestAnimationFrame(animate);
+}
+
+function stopPlayback() {
+  isPlaying = false;
+  if (animFrame) { cancelAnimationFrame(animFrame); animFrame = null; }
+  document.getElementById('btn-play').textContent = '▶';
+  document.getElementById('btn-play').setAttribute('aria-pressed', 'false');
+  document.getElementById('btn-play').setAttribute('aria-label', 'Play animation');
+}
+
+function resetAll() {
+  stopPlayback();
+  currentYear = MIN_YEAR;
+  placedIds = {};
+  while (dotsLayer.firstChild) dotsLayer.removeChild(dotsLayer.firstChild);
+  while (animLayer.firstChild) animLayer.removeChild(animLayer.firstChild);
+  while (flashLog.firstChild) flashLog.removeChild(flashLog.firstChild);
+  updateHUD();
+  updateStats();
+}
+
+// CONTROLS
+document.getElementById('btn-play').addEventListener('click', function() {
+  if (isPlaying) stopPlayback(); else startPlayback();
+});
+document.getElementById('btn-reset').addEventListener('click', resetAll);
+document.querySelectorAll('[data-speed]').forEach(function(btn) {
+  btn.addEventListener('click', function() {
+    speed = parseFloat(btn.dataset.speed);
+    document.querySelectorAll('[data-speed]').forEach(function(b) {
+      b.classList.remove('active');
+      b.setAttribute('aria-pressed', 'false');
+    });
+    btn.classList.add('active');
+    btn.setAttribute('aria-pressed', 'true');
+  });
 });
 
-/* ============ FILTERS ============ */
-var fCause = "all", fEra = 0;
-
-function buildCauseButtons(){
-  var row = document.getElementById("causeRow");
-  function mk(key, label, color){
-    var b = document.createElement("button");
-    b.className = "fb";
-    b.setAttribute("aria-pressed", key === "all" ? "true" : "false");
-    b.dataset.k = key;
-    b.innerHTML = (color ? '<span class="sw" style="background:'+color+'"></span>' : "") + label;
-    b.onclick = function(){
-      fCause = key;
-      row.querySelectorAll(".fb").forEach(function(x){
-        x.setAttribute("aria-pressed", x.dataset.k === key ? "true" : "false");
-      });
-      applyFilters();
-    };
-    row.appendChild(b);
-  }
-  mk("all","All");
-  Object.keys(CAUSES).forEach(function(k){ mk(k, CAUSES[k].label, CAUSES[k].color); });
-}
-
-function applyFilters(){
-  var era = ERAS[fEra], shown = 0, sites = {};
-  LIBRARIES.forEach(function(d){
-    var ok = (fCause === "all" || d.cause === fCause) &&
-             (d.year >= era.a && d.year < era.b);
-    var el = markEls[d.id];
-    if (el) el.style.display = ok ? "" : "none";
-    if (ok){ shown++; sites[d.lat.toFixed(1)+","+d.lon.toFixed(1)] = 1; }
+// SCRUBBER
+var isDragging = false;
+function scrubTo(clientX) {
+  var track = document.getElementById('progress-track');
+  var rect = track.getBoundingClientRect();
+  var pct = Math.max(0, Math.min(1, (clientX - rect.left) / rect.width));
+  var targetYear = MIN_YEAR + pct * TOTAL_SPAN;
+  // Place all libs up to this year
+  placedIds = {};
+  while (dotsLayer.firstChild) dotsLayer.removeChild(dotsLayer.firstChild);
+  while (animLayer.firstChild) animLayer.removeChild(animLayer.firstChild);
+  currentYear = MIN_YEAR;
+  LIBRARIES.forEach(function(lib) {
+    if (lib.year <= targetYear) placeLib(lib);
   });
-  document.getElementById("sShown").textContent = shown;
-  document.getElementById("sSites").textContent = Object.keys(sites).length;
+  currentYear = targetYear;
+  updateHUD();
+  updateStats();
 }
+document.getElementById('progress-track').addEventListener('mousedown', function(e) {
+  isDragging = true; stopPlayback(); scrubTo(e.clientX);
+});
+document.getElementById('progress-track').addEventListener('touchstart', function(e) {
+  isDragging = true; stopPlayback(); scrubTo(e.touches[0].clientX);
+}, {passive:true});
+window.addEventListener('mousemove', function(e) { if (isDragging) scrubTo(e.clientX); });
+window.addEventListener('touchmove', function(e) { if (isDragging) scrubTo(e.touches[0].clientX); }, {passive:true});
+window.addEventListener('mouseup', function() { isDragging = false; });
+window.addEventListener('touchend', function() { isDragging = false; });
 
-document.getElementById("era").addEventListener("input", function(){
-  fEra = +this.value;
-  document.getElementById("eraOut").textContent = ERAS[fEra].l;
-  applyFilters();
+// KEYBOARD on track
+document.getElementById('progress-track').addEventListener('keydown', function(e) {
+  var step = TOTAL_SPAN / 100;
+  if (e.key === 'ArrowRight') stepTo(Math.min(MAX_YEAR, currentYear + step));
+  if (e.key === 'ArrowLeft') stepTo(Math.max(MIN_YEAR, currentYear - step));
 });
 
-/* ============ BOOT ============ */
-function start(){
-  buildSites();
-  drawGraticule();
-  drawLand();
-  drawMarkers();
-  fitInitial();
-  applyFilters();
-}
+// SVG TOOLTIP
+document.getElementById('map-svg').addEventListener('mousemove', function(e) {
+  var target = e.target;
+  if (target.classList.contains('lib-dot')) {
+    // Find lib by position
+    var cx = parseFloat(target.getAttribute('cx'));
+    var cy = parseFloat(target.getAttribute('cy'));
+    var found = null;
+    LIBRARIES.forEach(function(lib) {
+      var p = project(lib.lat, lib.lon);
+      if (Math.abs(p.x - cx) < 1 && Math.abs(p.y - cy) < 1) found = lib;
+    });
+    if (found) {
+      var tt = document.getElementById('tooltip');
+      tt.style.display = 'block';
+      tt.style.left = (e.pageX + 14) + 'px';
+      tt.style.top  = (e.pageY - 30) + 'px';
+      document.getElementById('tt-name').textContent = found.name;
+      document.getElementById('tt-loc').textContent = found.loc + ' · ' + yearToStr(found.year);
+    }
+  } else {
+    document.getElementById('tooltip').style.display = 'none';
+  }
+});
 
-buildCauseButtons();
-if (document.readyState === "complete" || document.readyState === "interactive") start();
-else document.addEventListener("DOMContentLoaded", start);
+// ADD ERA TICK MARKS
+var eras = [
+  {year:-1000,label:'-1000'},{year:0,label:'0'},{year:500,label:'500'},
+  {year:1000,label:'1000'},{year:1500,label:'1500'},{year:1800,label:'1800'},
+  {year:1900,label:'1900'},{year:1950,label:'1950'},{year:2000,label:'2000'}
+];
+var track = document.getElementById('progress-track');
+eras.forEach(function(e) {
+  var pct = getPct(e.year);
+  var tick = document.createElement('div');
+  tick.className = 'era-tick';
+  tick.style.left = pct + '%';
+  track.appendChild(tick);
+  var lbl = document.createElement('div');
+  lbl.className = 'era-tick-label';
+  lbl.style.left = pct + '%';
+  lbl.textContent = e.label;
+  track.appendChild(lbl);
+});
+
+// INIT
+document.getElementById('z-in').onclick  = function(){ zoomBy(1.5); };
+document.getElementById('z-out').onclick = function(){ zoomBy(1/1.5); };
+document.getElementById('z-fit').onclick = fitView;
+document.getElementById('z-all').onclick = fitWorld;
+
+fitView();
+updateHUD();
+updateStats();
 </script>
 </body>
 </html>
