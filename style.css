@@ -64,6 +64,16 @@ html {
   font-size: 16px;
   scroll-behavior: smooth;
   scroll-padding-top: 1rem;
+
+  /* Stop iOS Safari inflating type when the phone is turned to landscape.
+     100%, not none: none disables the user's own pinch-zoom in some
+     engines, which is a WCAG failure. */
+  -webkit-text-size-adjust: 100%;
+          text-size-adjust: 100%;
+
+  /* No grey flash box on tap. Already set on every control; this makes it
+     the default for anything added later. */
+  -webkit-tap-highlight-color: transparent;
 }
 @media (max-width: 575.98px) { html { font-size: 17px; } }
 @media (min-width: 1600px)   { html { font-size: 17px; } }
@@ -76,6 +86,35 @@ body {
   line-height: 1.75;
   overflow-x: hidden;
   margin: 0;
+
+  /* Kerning and common ligatures, asked for explicitly. These are the
+     standardised properties and they do the part of optimizeLegibility
+     that is actually specified; optimizeLegibility itself is set below,
+     on the display type, where it earns its cost. */
+  font-kerning: normal;
+  font-variant-ligatures: common-ligatures contextual;
+
+  /* Font smoothing is deliberately NOT set here. On macOS and iOS these
+     two switch off subpixel antialiasing, which makes type render
+     thinner. That is right for light text on a dark ground, and wrong
+     here: this page is dark serif text on cream, and thinning the stems
+     works against the contrast this palette was corrected for. Uncomment
+     to match the usual house block.
+
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  */
+}
+
+/* text-rendering is a non-standard hint, and on a page this long
+   (the catalogue alone is ~12,000px, and the quests push the document
+   past 100,000px with everything open) applying it to every node has a
+   measurable layout cost on phones. Scoped to the display faces, which
+   is where Playfair's kerning pairs and ligatures are visible anyway. */
+h1, h2, h3, h4,
+.hero-title, .hero-sub, .sec-title, .q-title, .qm-title, .m-title,
+.c-title, .pq blockquote {
+  text-rendering: optimizeLegibility;
 }
 
 h1, h2, h3, h4 {
