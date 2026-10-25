@@ -43,8 +43,10 @@
     .sec-num{font-family:'Courier Prime',monospace;font-size:clamp(.95rem,3.2vw,.95rem);letter-spacing:.22em;text-transform:uppercase;color:var(--ember)}
 
     /* HERO */
-    .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:4.5rem 1.25rem 3rem;position:relative;background:radial-gradient(ellipse at 50% 60%,#ffffff 0%,var(--ink) 70%);overflow:hidden}
-    .hero::before{content:'';position:absolute;inset:0;background-image:repeating-linear-gradient(0deg,transparent,transparent 80px,rgba(18,15,12,.05) 80px,rgba(18,15,12,.05) 81px),repeating-linear-gradient(90deg,transparent,transparent 80px,rgba(18,15,12,.05) 80px,rgba(18,15,12,.05) 81px);pointer-events:none}
+    /* The hero used to carry an 80px ruled grid, which read as graph
+       paper. It now just lifts the centre so the title sits in a pool of
+       light; the parchment texture underneath comes from style.css. */
+    .hero{min-height:100svh;display:flex;flex-direction:column;justify-content:center;align-items:center;text-align:center;padding:4.5rem 1.25rem 3rem;position:relative;background:radial-gradient(ellipse at 50% 55%,rgba(255,253,248,.85) 0%,rgba(255,253,248,0) 68%);overflow:hidden}
     .flame{position:absolute;bottom:0;left:50%;transform:translateX(-50%);width:min(700px,110vw);height:260px;background:radial-gradient(ellipse at 50% 100%,rgba(168,64,26,.10) 0%,transparent 70%);pointer-events:none}
     .hero-title{font-size:clamp(3rem,11vw,8rem);font-weight:900;line-height:.92}
     .hero-title em{font-style:italic;color:var(--ember)}
